@@ -32,6 +32,7 @@ A non-exhaustive list...
  * Should work smoothly and cleanly on mobile devices.
  * User experience should be snappy. Avoid anything that creates lags to reload data or render visualizations.
  * User experience should be solid and robust.  Must not feel kvetchy, subject to program hangs, error messages, etc.
+ * Should be able to scale up smoothly to many simultaneous users without performance degrading.
  * Updates with new data should be automatic and, to the extent feasible, immediate.
  * Need for manual maintenance of back-end (installing software patches, updating data series, etc.) should be very low. Once it is set up, it should just run, requiring very little attention.
  * System should be easy to modify and extend. It must be easy and low-cost to change or add any visual elements. 
