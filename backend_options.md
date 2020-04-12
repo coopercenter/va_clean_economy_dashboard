@@ -4,24 +4,24 @@ Draft version of 2020-04-12
 
 A summary of options for tools for creating and hosting the Virginia Renewables Progress Dashboard.
 
-**Background:** The front-end design for the dashboard is currently under discussion with DMME. Salient issues include:
+**Background:** The Virgina Renewables Progress Dashboard will display information about the Commonwealth's progress towards acheiving its quantitative targets towards its adopted clean energy goals. The design for the dashboard is currently under discussion with staff at the Virginia Department of Mines, Minerals & Energy (DMME). Salient issues include:
 
  * *Selection of data elements:* Choice of exactly which data elements will be incorporated into the dashboard.
     - Example elements: 
       - Total installed renewables generation capacity (MW, by year); 
       - Renewables generation as a fraction of total generation (% GWh/GWh, by year)
       - etc.
-    - Almost surely, elements will be added incrementally: start simple, then build
+    - Almost surely, elements will be added incrementally: start simple, then build.
 
  * *Visual design of individual data elements:* Exactly how each data element will be visualized -- dials, line graphs, maps, etc.
  * *Overall dashboard layout:* How the individual data elements will be arranged, framed, and presented to create an overall user experience.
 
 These front-end design issues are the subject of a separate [design document](https://3.basecamp.com/4370323/buckets/15566178/google_documents/2472959220).
  
-Based on identified requirements for the front end, we need to design the dashboard's *back end* - the system that prepares and
-delivers the required visual elements to end users, to display in their respective web browsers. 
+Based on identified requirements for the front end, we need to design the dashboard's *back end* - the system that prepares
+and delivers the required visual elements to end users, for display in their respective web browsers. 
 
-## Requirements and preferences for the dashboard back end
+## Requirements and preferences for dashboard back end
 
 A non-exhaustive list...
 
@@ -47,28 +47,56 @@ A non-exhaustive list...
  * System absolutely must be secure. Keep out hackers.
  * Subject to the all the above: keep expenses low. Can't support high monthly total cost of ownership.
 
+## Back-end design: Issues and choices
 
+Some issues about the back-end design have already been settled:
 
-Issues already decided:
-
- * *Database:* Postgres
+ * *Database:* Postgres db hosted on Azure
+   - Postgres is open-source, industry-standard, and free to use. 
+   - Postgres commands are crafted in PostgreSQL, which is likewise standard.
+   - The database can be moved very easily to any other cloud service or in-house server. Monthly rental charges on cloud services are low. Operation is secure at industry standard.
  * *Data munging and structuring:* R scripts
+   - R is open-source and free to use. It is the second-most popular language for data science (after Python), with millions of users, thousands of add-on packages, and a deep and active market for skilled staff and consultants.
 
-Issues still under discussion:
+Other issues about the back end are still under discussion:
+
+  * Tools for generating visualizations (dials, line graphs, maps, etc.) from structured data objects.
+  * Tools for organizing visual elements into a dashboard.
+  * Possibly, a system for containerizing and porting the finished dashboard to a hosting solution.
+  * A hosting solution.
+
+For each issue, there are many options available. Here we focus on a narrowed list of "finalists" that we've identified through research.
+
+All coding options identified here are free and open-source. Hosting options are available at manageable cost and don't create lock-in problems.
+
+## Visualization tools
+
+### Option 1: R code, esp. `ggplot2`
 
 
 
-Selection of dashboard elements: choice of exactly which data elements will be incorporated into the dashboard.
-
-    
+### Option 2: Dash/Plotly
 
 
-Render visualizations:
-R code, esp. `ggplot2`
-Dash/Plotly
+## Dashboarding tools
 
-Arrange visualizations into a dashboard layout:
-R Shiny + 
-Dash
+### Option 1: R Shiny
+
+### Option 2: Dash
+
+
+## Containerization option: Docker
+
+
+## Hosting solution
+
+### Shinyapps.io
+
+### Heroku
+
+### Dash
+
+
+
 
 
