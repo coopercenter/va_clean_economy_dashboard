@@ -68,16 +68,21 @@ Other issues about the back end are still under discussion:
 
 For each issue, there are many options available. Here we focus on a narrowed list of "finalists" that we've identified through research.
 
-All coding options identified here are free and open-source. Hosting options are available at manageable cost and don't create lock-in problems.
+All coding options identified here are free and open-source. Hosting options are available at manageable cost and don't create lock-in problems. Solutions apparently meet all the other requirements listed above.
 
 ## Visualization tools
 
 ### Option 1: R code, esp. `ggplot2`
 
+R offers great options for creating figures, tables, maps (including interactive maps) that are extremely flexible and customizable. CCPS staff are already fluent in these tools. All are free and open source.
 
+### Option 2: Dash Open Source for R, by Plotly
 
-### Option 2: Dash/Plotly
+[Dash](https://dash.plotly.com/introduction) is an open-source framework for building web applications for data visualization that sit on top of Python or R models. Its viz tools look great. Because they are designed specifically for integration into web apps, they may have some additional advantages.
 
+### Comments
+
+It is surely possible in principle to mix visualizations based on Dash, ggplot2, and other open-source data visualization packages for R. However, our visualization strategy would tilt towards Dash if we plan to use Dash Enterprise as our hosting solution. If we plan to implement the dashboard using R Shiny, then `ggplot2` and friends probably make the most sense, especially as CCPS is already familiar with them.
 
 ## Dashboarding tools
 
@@ -89,15 +94,46 @@ All coding options identified here are free and open-source. Hosting options are
 ## Containerization option: Docker
 
 
+
+
 ## Hosting solution
 
 ### Shinyapps.io
 
+A hosted solution from R Studio. 
+
+Pros:
+
+  * 
+
+One-click deployment and updating.
+
+Cons:
+
+  * Costs $300/mo (or $3,300/yr) for the tier of service that is appropriate for this deployment, which is relatively expensive both in absolute terms and relative to Heroku.
+
+Other notes/issues/questions:
+
+  * Only for deployment of R Shiny apps.
+
+
+
 ### Heroku
 
-### Dash
+A general-purpose "Platform as a Service" (PaaS) hosting solution for web apps. Will launch mult
 
+Pros:
 
+  * Supports "one-click" deployment of web apps from Github.
+  * Supports Docker containers.
+
+Other notes/issues/questions:
+
+  * Unclear whether Heroku will fully and effectively support an R Shiny deployment.
+
+### Dash Enterprise
+
+(Have reached out to learn more about pricing and technical specs of Dash Enterprise hosting solution.)
 
 
 
