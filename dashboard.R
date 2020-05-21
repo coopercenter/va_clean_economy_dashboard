@@ -22,11 +22,11 @@ ui <- dashboardPage(
       tabItem(tabName="summary",
               h1("Summary of Overall Progress"),
               fluidRow(
-                box(width = 3, plotOutput("renewable_progress_donut")),
-                box(width = 3, plotOutput("carbon_free_donut")), 
+                box(width = 5, plotlyOutput("renewable_progress_donut")),
+                box(width = 5, plotlyOutput("carbon_free_donut")) 
                 # box(width = 3, title = "Energy efficiency goal donut. Data needed."),
-                box(width = 3, title = "Energy Storage goal donut. Data needed."),  # Plot still needed
-                box(width = 3, title = "Energy Equity goal donut. Data needed.") # Plot still needed# Plot still needed
+#                box(width = 3, title = "Energy Storage goal donut. Data needed."),  # Plot still needed
+#                box(width = 3, title = "Energy Equity goal donut. Data needed.") # Plot still needed# Plot still needed
               ),
               h2("Production"),
               fluidRow(
@@ -53,7 +53,7 @@ ui <- dashboardPage(
                 box(title = "offshore wind",width = 4)
               ),
               fluidRow(
-                box(plotOutput("sw_donut2"))
+                box(plotOutput("sw_donut"))
               ),
               h3("Summary Over Time"),
               fluidRow(
@@ -145,11 +145,11 @@ ui <- dashboardPage(
 
 server <- function(input,output){
   
-  output$renewable_progress_donut <- renderPlot({
+  output$renewable_progress_donut <- renderPlotly({
     renewable_donut_p
   })
   
-  output$carbon_free_donut <- renderPlot({
+  output$carbon_free_donut <- renderPlotly({
     carbon_free_donut_p
   })
   
@@ -278,7 +278,7 @@ server <- function(input,output){
       write.csv(con_download_Input(), file, row.names = FALSE)
     }
   )
-  output$sw_donut<- renderPlot(sw_capacity_donut_p)
+  output$sw_donut<- renderPlotly(sw_capacity_donut_p)
 
   
 }
