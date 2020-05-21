@@ -7,7 +7,6 @@ library(DT)
 
 source(here("ggplot2", "dashboard_plots.R"))
 
-
 ui <- dashboardPage(
   dashboardHeader(title = "EO43 Project Dashboard"),
   dashboardSidebar(
