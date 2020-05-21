@@ -11,6 +11,8 @@ source(here("R Shiny","consumption_va.R"))
 source(here("R Shiny","renewable_progress_goals_visualization.R"))
 source(here("ggplot2","donut_figures.R"))
 source(here("ggplot2", "gen_by_source_type.R"))
+source(here("ggplot2", "viz_functions.R"))
+source(here("ggplot2", "dashboard_plots.R"))
 
 ui <- dashboardPage(
   dashboardHeader(title = "EO43 Project Dashboard"),
