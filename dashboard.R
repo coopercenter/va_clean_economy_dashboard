@@ -22,8 +22,8 @@ ui <- dashboardPage(
       tabItem(tabName="summary",
               h1("Summary of Overall Progress"),
               fluidRow(
-                box(width = 5, plotlyOutput("renewable_progress_donut")),
-                box(width = 5, plotlyOutput("carbon_free_donut")) 
+                box(width = 6, plotlyOutput("renewable_progress_donut")),
+                box(width = 6, plotlyOutput("carbon_free_donut")) 
                 # box(width = 3, title = "Energy efficiency goal donut. Data needed."),
 #                box(width = 3, title = "Energy Storage goal donut. Data needed."),  # Plot still needed
 #                box(width = 3, title = "Energy Equity goal donut. Data needed.") # Plot still needed# Plot still needed
@@ -45,19 +45,16 @@ ui <- dashboardPage(
       ),
       tabItem(tabName="generation",
               h1("Generation"),
-              h2("Renewable Production"),
-              h3("Breakdown"),
+              h2("Goals"),
               fluidRow(
-                box(title = "solar",width = 4),
-                box(title = "onshore wind",width = 4),
-                box(title = "offshore wind",width = 4)
-              ),
+                box(width = 4,plotlyOutput("sw_donut")),
+                box(width = 4,plotlyOutput("gen_goal1")),
+                box(width = 4,plotlyOutput("gen_goal2"))),
+              h2("Renewable and Carbon-Free Generation"),
+              h3("Overview"),
               fluidRow(
-                box(plotOutput("sw_donut"))
-              ),
-              h3("Summary Over Time"),
-              fluidRow(
-                box(title="time series graph")
+                box(title = "Percentage of Renewable and Carbon-Free Generation",plotOutput("rc_line")),
+                box(title = "Breakdown of Carbon-Free Generation by Fuel Type",plotOutput("rc_break_line")),
               ),
               h3("Solar"),
               fluidRow(
@@ -142,8 +139,7 @@ ui <- dashboardPage(
                 
               ))
     ))
-  )
-
+)
 
 server <- function(input,output){
   
@@ -152,6 +148,14 @@ server <- function(input,output){
   })
   
   output$carbon_free_donut <- renderPlotly({
+    carbon_free_donut_p
+  })
+  
+  output$gen_goal1 <- renderPlotly({
+    renewable_donut_p
+  })
+  
+  output$gen_goal2 <- renderPlotly({
     carbon_free_donut_p
   })
   
@@ -252,8 +256,14 @@ server <- function(input,output){
     }
   )
   output$sw_donut<- renderPlotly(sw_capacity_donut_p)
+  
+  output$rc_line<- renderPlot(percent_renewable_and_carbon_free_line)
+  
+  output$rc_break_line<- renderPlot(annual_carbon_free_generation_by_type_line2
+)
 
   
 }
+
 
 shinyApp(ui=ui,server=server)
