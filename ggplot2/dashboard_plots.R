@@ -19,6 +19,26 @@ table="whole_electric_industry_capacity"
 script  <- paste0("select * from ",table," ;")
 capacity <- data.table(dbGetQuery(db,script))
 
+#load in dataframe from database on multiple types of emission compounds
+va_emissions_compounds <- dbGetQuery(db, "SELECT * from emission") 
+
+dbDisconnect(db)
+
+#get relevant features to analyze, in this case the total emissions for each compound
+va_emissions_compounds <- select(va_emissions_compounds, Year, Total, Total1, Total2)
+#rename columns
+colnames(va_emissions_compounds) <- c("Year", "SO2", "NO", "CO2")
+#convert to numeric
+va_emissions_compounds <- (sapply(va_emissions_compounds, as.numeric))
+#make it a dataframe
+va_emissions_compounds <- data.frame(va_emissions_compounds)
+#limit data to baseline year of 2000
+va_emissions_compounds <- va_emissions_compounds[1:19,]
+#convert it into a graphable format for line_graph function
+va_emissions_compounds <- va_emissions_compounds %>%
+  select(Year, SO2, NO, CO2) %>%
+  gather(key = "Compound", value = "emissions_in_million_metric_tons", -Year)
+
 dbDisconnect(db)
 
 source(here::here("my_eia_api_key.R"))
@@ -128,8 +148,19 @@ for(row in 1:nrow(series_list_con)){
   {va_annual_consumption <-  merge(va_annual_consumption, dt[], by ="year", all=TRUE)}
 }
 
+#isolating renewable and carbon free generation in it's own table
 va_annual_renewable_and_carbon_free_gen <- va_annual_generation[,.(year,nuclear,utility_solar,distributed_solar,hydropower,total)]
 va_annual_renewable_and_carbon_free_gen[,all_solar:=distributed_solar+utility_solar]
+
+#series ID for CO2 emissions from electric sector in VA
+series_id = ("EMISS.CO2-TOTV-EC-TO-VA.A")
+virginia_emissions_electric <- get_EIA_series(eiaKey,series_id)
+virginia_emissions_electric <- virginia_emissions_electric[1:18,]
+
+#series ID for CO2 emissions in VA
+series_id = ("EMISS.CO2-TOTV-TT-TO-VA.A")
+virginia_emissions <- get_EIA_series(eiaKey,series_id)
+virginia_emissions <- virginia_emissions[1:18,]
 
 source(here::here("ggplot2","viz_functions.R"))
 
@@ -276,6 +307,19 @@ melted_renewable_and_carbon_free<-melt(va_annual_renewable_and_carbon_free_gen[,
 renewable_and_carbon_free_line<-line_figure(melted_renewable_and_carbon_free,"GWh","Annual VA Generation by Type",annual=TRUE,x_label="Year",subtitle_name=NULL,lower_limit=0)
 renewable_and_carbon_free_line
 
+#PLOTTING EMISSIONS FIGURES:
+virginia_emissions[,variable:="co2_emissions"] #adding variable column so that line_figure function can be utilized
+co2_emissions_line <- line_figure(virginia_emissions,"emissions (million metric tons CO2)","Virginia Annual CO2 Emissions") + 
+  theme(legend.position = "none") #removing legend as only one line is plotted
+co2_emissions_line
 
+virginia_emissions_electric[,variable:="co2_emissions_electric"]
+co2_electric_emissions_line<-line_figure(virginia_emissions_electric,"emissions (million metric tons CO2)","Virginia Annual CO2 Emissions from Electric Sector") +
+  theme(legend.position = "none") #removing legend as only one line is plotted
+co2_electric_emissions_line
 
+setnames(va_emissions_compounds,old=c("Compound","emissions_in_million_metric_tons","Year"),new=c("variable","value","year")) #changing names to fit function inputs
+emissions_line <- line_figure(va_emissions_compounds,"emissions (million metric tons)","Virginia Annual Emissions") +
+  scale_y_continuous(labels = comma)
+emissions_line
 
