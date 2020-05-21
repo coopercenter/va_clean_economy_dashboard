@@ -146,11 +146,11 @@ ui <- dashboardPage(
 server <- function(input,output){
   
   output$renewable_progress_donut <- renderPlot({
-    renewable_donut 
+    renewable_donut_p
   })
   
   output$carbon_free_donut <- renderPlot({
-    carbon_free_donut
+    carbon_free_donut_p
   })
   
   output$gen_area <- renderPlot({
@@ -278,7 +278,7 @@ server <- function(input,output){
       write.csv(con_download_Input(), file, row.names = FALSE)
     }
   )
-  output$sw_donut<- renderPlot(sw_capacity_donut)
+  output$sw_donut<- renderPlot(sw_capacity_donut_p)
 
   
 }
