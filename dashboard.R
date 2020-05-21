@@ -40,7 +40,7 @@ ui <- dashboardPage(
               ),
               h2("Emissions"),
               fluidRow(
-                box(plotOutput("emissions_plot")),
+                box(plotOutput("electric_emissions_plot")),
               )
       ),
       tabItem(tabName="generation",
@@ -127,8 +127,10 @@ ui <- dashboardPage(
               
       ),
       tabItem(tabName="emissions",
-              h1("VA CO2 Emissions from Electricity Sector"),
+              h1("Greenhouse Gas Emissions in Virginia"),
               fluidRow(
+                box(plotOutput('all_co2_emissions_plot')),
+                box(plotOutput('emissions_by_compound_plot'))
               ),
               fluidRow(
                 box(selectInput(inputId = "electric_emissions_download", "Choose the content:",
@@ -161,8 +163,16 @@ server <- function(input,output){
     va_annual_production_2019_pie_chart_p_with_legend
   })
   
-  output$emissions_plot <- renderPlot({
+  output$electric_emissions_plot <- renderPlot({
     co2_electric_emissions_line
+  })
+  
+  output$all_co2_emissions_plot <- renderPlot({
+    co2_emissions_line
+  })
+  
+  output$emissions_by_compound_plot <- renderPlot({
+    emissions_line
   })
   
   output$con_area <- renderPlot({
