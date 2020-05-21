@@ -162,16 +162,7 @@ server <- function(input,output){
   })
   
   output$emissions_plot <- renderPlot({
-    series_id = ("EMISS.CO2-TOTV-EC-TO-VA.A")
-    virginia_emissions_electric <- get_EIA_series(my_api_key,series_id)
-    virginia_emissions_electric <- virginia_emissions_electric[1:18,]
-    setnames(virginia_emissions_electric,old="value",new="CO2_emissions")
-    ggplot() +
-      geom_line(data=virginia_emissions_electric,mapping=aes(x=year, y=CO2_emissions)) + 
-      ylab("emissions (million metric tons CO2)") + 
-      xlab(NULL) +
-      ylim(0,NA)+
-      labs(title =paste("VA","Annual CO2 Emissions from Electric Power Industry"),subtitle="2000-2017") 
+    co2_electric_emissions_line
   })
   
   output$con_area <- renderPlot({
