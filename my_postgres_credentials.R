@@ -1,5 +1,5 @@
 dbname   <- "postgres"
-host     <- "eo43.postgres.database.azure.com"
+db_host     <- "eo43.postgres.database.azure.com"
 port     <- 5432
-user     <- 'ccps-ceps@eo43'
-password <- "apps88:Splash"
+db_user     <- 'ccps-ceps@eo43'
+ra_pwd <- "apps88:Splash"
