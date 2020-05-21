@@ -30,12 +30,12 @@ ui <- dashboardPage(
               ),
               h2("Production"),
               fluidRow(
-                box(plotOutput("gen_pie")),
+                box(plotlyOutput("gen_pie")),
                 box(plotOutput("gen_area"))
               ),
               h2("Consumption"),
               fluidRow(
-                box(plotOutput("con_pie")),
+                box(plotlyOutput("con_pie")),
                 box(plotOutput("con_area")),
               ),
               h2("Emissions"),
@@ -154,25 +154,11 @@ server <- function(input,output){
   })
   
   output$gen_area <- renderPlot({
-    va <- melt(eia_elec_gen_va_a, id="year")
-    setnames(va, old=c("variable", "value"), new=c("fuel_type","generation"))
-    ggplot(va[fuel_type!="total"&year<=2019], aes(fill=fuel_type, x=year, y=generation)) +
-      geom_area(aes(fill=fuel_type)) + ylab("generation (GWh)") + 
-      xlab(NULL) +
-      labs(title ="VA Historical Electricity Generation By Fuel Type",subtitle="2001-2019") 
+    va_annual_production_area
   })
   
-  output$gen_pie <- renderPlot({
-    va2019 <- eia_elec_gen_va_a %>%
-      gather(key = "group", value = "value", -year) %>%
-      filter(year==2019) 
-    va2019 <- va2019[,2:3]
-    colnames(va2019)<-c("group","value")
-    ggplot(va2019, aes(x="", y=value, fill=group)) +
-      geom_bar(stat="identity", width=1) +
-      coord_polar("y", start=0)+
-      theme_void()+
-      labs(title ="VA Current Electric Generation By Fuel Type",subtitle = "Data in 2019") 
+  output$gen_pie <- renderPlotly({
+    va_annual_production_2019_pie_chart_p_with_legend
   })
   
   output$emissions_plot <- renderPlot({
@@ -189,34 +175,20 @@ server <- function(input,output){
   })
   
   output$con_area <- renderPlot({
-    ggplot(m_con_xtotal, aes(fill=sector, x=year, y=consumption)) +
-      geom_area(aes(fill=sector)) + ylab("consumption (Billion Btu)") + 
-      xlab(NULL) +
-      labs(title ="VA Historical Energy Consumption Estimates",subtitle="by end-use sector,1960-2017") +
-      scale_y_continuous(labels = scales::comma)
+    va_annual_consumption_area
   })
   
-  output$con_pie <- renderPlot({
-    ggplot(cpie, aes(x = "", y = prop, fill = group)) +
-      geom_bar(width = 1, stat = "identity", color = "white") +
-      coord_polar("y", start = 0)+
-      geom_text(aes(y = lab.ypos, label = prop), color = "white",size=6)+
-      theme_void()+
-      labs(title ="VA Current Electric Consumption By Sector",subtitle = "Data in 2017") 
+  output$con_pie <- renderPlotly({
+    va_annual_consumption_2017_pie_chart_p_with_legend
   })
   
   output$renewable_timeline_plot <- renderPlot({
-    selected_year <- input$selected_year
-    renewable_timeline_df <- filter(renewable_timeline_df, Year == selected_year)
-    ggplot(renewable_timeline_df, aes(x = Company, y = percentage_of_energy_from_renewables, fill = Company)) + 
-      geom_bar(stat = "identity")+
-      labs(title ="Renewable Energy Goals") +
-      ylab("Percent of Energy from Renewables")+
-      ylim(0,100)
+    percent_renewable_and_carbon_free_line
+    
   })
   
   gen_table <- DT::renderDataTable(
-    eia_elec_gen_va_a, 
+    va_annual_generation, 
     options = list(pageLength = 19),
     rownames= FALSE
   )
@@ -260,7 +232,7 @@ server <- function(input,output){
   )
   
   output$con_table<-DT::renderDataTable(
-    consumption, 
+    va_annual_consumption, 
     options = list(pageLength = 20),
     rownames= FALSE
   )
