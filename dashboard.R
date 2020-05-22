@@ -21,11 +21,11 @@ ui <- dashboardPage(
       tabItem(tabName="summary",
               h1("Summary of Overall Progress"),
               fluidRow(
-                box(width = 6, plotlyOutput("renewable_progress_donut")),
-                box(width = 6, plotlyOutput("carbon_free_donut")) 
-                # box(width = 3, title = "Energy efficiency goal donut. Data needed."),
-#                box(width = 3, title = "Energy Storage goal donut. Data needed."),  # Plot still needed
-#                box(width = 3, title = "Energy Equity goal donut. Data needed.") # Plot still needed# Plot still needed
+                box(width = 4, plotlyOutput("renewable_progress_donut")),
+                box(width = 4, plotlyOutput("carbon_free_donut")),
+              # box(width = 3, title = "Energy efficiency goal donut. Data needed."),
+                box(width = 3, title = "Energy Storage goal donut. Data needed."),  # Plot still needed
+                box(width = 3, title = "Energy Equity goal donut. Data needed.") # Plot still needed# Plot still needed
               ),
               h2("Production"),
               fluidRow(
@@ -92,7 +92,7 @@ ui <- dashboardPage(
               ),
               h2("Electricity Consumption"),
               fluidRow(
-                box(title = "Timeseries plot of energy usage over time, plot completed, pending insertion")
+                box(title = "Energy Consumption by Sector",plotOutput("con_ts"))
               ),
               fluidRow(
                 box(title = "Timeseries of gap in energy consumption. ")
@@ -181,7 +181,9 @@ server <- function(input,output){
   output$con_area <- renderPlot({
     va_annual_consumption_area
   })
-  
+  output$con_ts <- renderPlot({
+    va_annual_consumption_area
+  })  
   output$con_pie <- renderPlotly({
     va_annual_consumption_2017_pie_chart_p_with_legend
   })
