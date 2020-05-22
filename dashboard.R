@@ -57,7 +57,7 @@ ui <- dashboardPage(
               fluidRow(box(title = "Breakdown of Carbon-Free Generation by Fuel Type",plotOutput("rc_break_line"),align="center")),
               fluidRow(
                 box(title="Solar Generation over Time",width = 6,plotOutput("solar_gen")),
-                box(title="Wind Generation over Time",width = 6,plotOutput("wood_gen"))
+                box(title="Wood Generation over Time",width = 6,plotOutput("wood_gen"))
               ),
               h2("Full Data for Generation"),
               fluidRow(
