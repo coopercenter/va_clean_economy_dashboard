@@ -23,7 +23,7 @@ ui <- dashboardPage(
               fluidRow(
                 box(width = 4, plotlyOutput("renewable_progress_donut")),
                 box(width = 4, plotlyOutput("carbon_free_donut")),
-              # box(width = 3, title = "Energy efficiency goal donut. Data needed."),
+                # box(width = 3, title = "Energy efficiency goal donut. Data needed."),
                 box(width = 3, title = "Energy Storage goal donut. Data needed."),  # Plot still needed
                 box(width = 3, title = "Energy Equity goal donut. Data needed.") # Plot still needed# Plot still needed
               ),
@@ -57,11 +57,13 @@ ui <- dashboardPage(
               ),
               h3("Solar"),
               fluidRow(
-                box(title="solar generation over time",width = 6)
+                box(title="solar generation over time",width = 6),
+                box(title="map for solar",width = 6),
               ),
               h3("Wind"),
               fluidRow(
-                box(title="wind generation over time",width = 6)
+                box(title="wind generation over time",width = 6),
+                box(title="map for wind",width = 6),
               ),
               h2("Full Data for Generation"),
               fluidRow(
@@ -110,11 +112,11 @@ ui <- dashboardPage(
               fluidRow(
                 box(selectInput(inputId = "equity_year","Select year:", choices = c("2019","2018","2017"))),
                 box(title = "Map of monthly households expenditures on electricity, in $ and as a % of income, shaded by country"
-              )),
+                )),
               h2("Electricity Expenditures"),
               fluidRow(
                 box(title = "Time series of annual expenditures on electricity by income bracket"
-
+                    
                 )
               )
               
@@ -259,8 +261,8 @@ server <- function(input,output){
   output$rc_line<- renderPlot(percent_renewable_and_carbon_free_line)
   
   output$rc_break_line<- renderPlot(annual_carbon_free_generation_by_type_line2
-)
-
+  )
+  
   
 }
 
