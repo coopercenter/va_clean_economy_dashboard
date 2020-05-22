@@ -347,3 +347,28 @@ va_gen_w_commas<-cbind(va_annual_generation[,1],va_gen_w_commas)
 # reformatting the consumption dataset
 va_con_w_commas<-data.frame(format(va_annual_consumption[,2:5],big.mark=",",scientific=FALSE,trim=TRUE))
 va_con_w_commas<-cbind(va_annual_consumption[,1],va_con_w_commas)
+
+#reformatting carbon emissions
+virginia_emissions_electric <- virginia_emissions_electric[,1:2]
+virginia_emissions_electric_commas <- data.frame(signif(virginia_emissions_electric[,2], digits=4))
+virginia_emissions_electric_commas <- cbind(virginia_emissions_electric[,1],virginia_emissions_electric_commas)
+colnames(virginia_emissions_electric_commas) <- c('Year','Million Metric Tons of CO2')
+
+#reformatting emissions compounds dataset
+db_driver = dbDriver("PostgreSQL")
+source(here("ggplot2", "my_postgres_credentials.R"))
+db <- dbConnect(db_driver,user=db_user, password=ra_pwd,dbname="postgres", host=db_host)
+va_emissions_compounds <- dbGetQuery(db, "SELECT * from emission") 
+#get relevant features to analyze, in this case the total emissions for each compound
+va_emissions_compounds <- select(va_emissions_compounds, Year, Total, Total1, Total2)
+#rename columns
+colnames(va_emissions_compounds) <- c("Year", "SO2", "NO", "CO2")
+#convert to numeric
+va_emissions_compounds <- (sapply(va_emissions_compounds, as.numeric))
+#make it a dataframe
+va_emissions_compounds <- data.frame(va_emissions_compounds)
+#limit data to baseline year of 2000
+va_emissions_compounds <- va_emissions_compounds[1:19,]
+dbDisconnect(db)
+
+
