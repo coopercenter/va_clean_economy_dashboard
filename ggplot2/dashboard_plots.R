@@ -317,6 +317,8 @@ virginia_emissions_electric[,variable:="co2_emissions_electric"]
 co2_electric_emissions_line<-line_figure(virginia_emissions_electric,"emissions (million metric tons CO2)","Virginia Annual CO2 Emissions from Electric Sector") +
   theme(legend.position = "none") #removing legend as only one line is plotted
 co2_electric_emissions_line
+virginia_emissions_electric <- virginia_emissions_electric[,1:2]
+colnames(virginia_emissions_electric) <- c('Year','Million Metric Tons of CO2')
 
 setnames(va_emissions_compounds,old=c("Compound","emissions_in_million_metric_tons","Year"),new=c("variable","value","year")) #changing names to fit function inputs
 emissions_line <- line_figure(va_emissions_compounds,"emissions (million metric tons)","Virginia Annual Emissions") +
