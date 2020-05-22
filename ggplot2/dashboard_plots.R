@@ -323,3 +323,7 @@ emissions_line <- line_figure(va_emissions_compounds,"emissions (million metric 
   scale_y_continuous(labels = comma)
 emissions_line
 
+#--------------------------------------------------------------------------------
+# reformatting the generation dataset
+va_gen_w_commas<-data.frame(format(va_annual_generation[,2:12],big.mark=",",scientific=FALSE,trim=TRUE))
+va_gen_w_commas<-cbind(va_annual_generation[,1],va_gen_w_commas)
