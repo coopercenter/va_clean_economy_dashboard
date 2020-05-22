@@ -343,7 +343,7 @@ va_con_w_commas<-cbind(va_annual_consumption[,1],va_con_w_commas)
 
 #reformatting carbon emissions
 virginia_emissions_electric <- virginia_emissions_electric[,1:2]
-virginia_emissions_electric_commas <- data.frame(format(virginia_emissions_electric[,2], big.mark=',',scientific=FALSE,trim=TRUE))
+virginia_emissions_electric_commas <- data.frame(signif(virginia_emissions_electric[,2], digits=4))
 virginia_emissions_electric_commas <- cbind(virginia_emissions_electric[,1],virginia_emissions_electric_commas)
 colnames(virginia_emissions_electric_commas) <- c('Year','Million Metric Tons of CO2')
 
