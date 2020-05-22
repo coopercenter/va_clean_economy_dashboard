@@ -39,8 +39,6 @@ va_emissions_compounds <- va_emissions_compounds %>%
   select(Year, SO2, NO, CO2) %>%
   gather(key = "Compound", value = "emissions_in_million_metric_tons", -Year)
 
-dbDisconnect(db)
-
 source(here::here("my_eia_api_key.R"))
 
 get_EIA_series <- function(eiaKey,series_id) {
@@ -176,6 +174,9 @@ renewable_donut
 renewable_donut_p <- donut_figure_p(renewable_percent_gen_2019,"2019","2.6%",renewable_percent_gen_2030_goal,"2030","30%","Renewable Generation","skyblue","steelblue")
 renewable_donut_p
 
+single_ring_renewable_donut_p <- single_ring_donut_figure_p(renewable_percent_gen_2019,"2019","2.6%",renewable_percent_gen_2030_goal,"2030","30%","Renewable Generation","skyblue","steelblue")
+single_ring_renewable_donut_p
+
 #plotting donut figure of progress towards carbon-free generation goal
 carbon_free_percent_gen_2019 = va_annual_renewable_and_carbon_free_gen[year==2019,(all_solar+hydropower+nuclear)/total]
 carbon_free_percent_gen_2050_goal = 1 #100% of Virginia’s electricity from carbon-free sources by 2050
@@ -185,6 +186,9 @@ carbon_free_donut
 
 carbon_free_donut_p <- donut_figure_p(carbon_free_percent_gen_2019,"2019","32.9%",carbon_free_percent_gen_2050_goal,"2050","100%","Carbon-Free Generation","mediumseagreen","seagreen")
 carbon_free_donut_p
+
+single_ring_carbon_free_donut_p <- single_ring_donut_figure_p(carbon_free_percent_gen_2019,"2019","32.9%",carbon_free_percent_gen_2050_goal,"2050","100%","Carbon-Free Generation","mediumseagreen","seagreen")
+single_ring_carbon_free_donut_p
 
 #plotting donut figure of progess towards wind and solar capacity goals
 solar_capacity_2018_mw = capacity[Year==2018,as.numeric(Solar)]
@@ -200,6 +204,9 @@ sw_capacity_donut
 
 sw_capacity_donut_p = donut_figure_p(solar_capacity_percent_2018,"2018","392.5 MW",sw_capacity_percent_goal_2028,"2028","5,500 MW in Operation","Wind & Solar Energy","lightcoral","indianred",sw_capacity_percent_goal_2030,"2030","13,600 MW Total","maroon")
 sw_capacity_donut_p
+
+single_ring_sw_capacity_donut_p <- single_ring_donut_figure_p(solar_capacity_percent_2018,"2018","392.5 MW",sw_capacity_percent_goal_2028,"2028","5,500 MW in Operation","Wind & Solar Energy","lightcoral","indianred",sw_capacity_percent_goal_2030,"2030","13,600 MW Total","maroon")
+single_ring_sw_capacity_donut_p
 
 #PLOTTING GENERATION/PRODUCTION FIGURES:
 
@@ -279,6 +286,14 @@ melted_generation2 <- melt(va_annual_renewable_and_carbon_free_gen[,.(year,utili
 annual_carbon_free_generation_by_type_line2<-line_figure(melted_generation2,"GWh","Annual VA Generation by Carbon-Free Sources")
 annual_carbon_free_generation_by_type_line2
 
+# Solar (broken into distributed and utility) over time
+solar_generation_time_series_line<-line_figure(melted_generation2[variable!="total"&variable!="nuclear"&variable!="hydropower"],"GWh","Annual VA Generation of Solar Energy")
+solar_generation_time_series_line
+
+# Wood generation over time
+wood_generation_time_series_line<-line_figure(lf_va_annual_generation[variable=="wood"],"GWh","Annual VA Energy Generation from Wood")
+wood_generation_time_series_line
+
 #Stacked Annual Carbon Free Generation Broken Out by Type
 carbon_free_generation_by_type_stacked<-stacked_area_figure(melted_generation2[variable!="total"],"GWh","Annual VA Generation by Carbon-Free Sources")
 carbon_free_generation_by_type_stacked
@@ -307,15 +322,6 @@ melted_renewable_and_carbon_free<-melt(va_annual_renewable_and_carbon_free_gen[,
 renewable_and_carbon_free_line<-line_figure(melted_renewable_and_carbon_free,"GWh","Annual VA Generation by Type",annual=TRUE,x_label="Year",subtitle_name=NULL,lower_limit=0)
 renewable_and_carbon_free_line
 
-# Solar (broken into distributed and utility) over time
-solar_generation_time_series_line<-line_figure(melted_generation2[variable!="total"&variable!="nuclear"&variable!="hydropower"],"GWh","Annual VA Generation of Solar Energy")
-solar_generation_time_series_line
-
-# Wood generation over time
-wood_generation_time_series_line<-line_figure(lf_va_annual_generation[variable=="wood"],"GWh","Annual VA Energy Generation from Wood")
-wood_generation_time_series_line
-
-
 #PLOTTING EMISSIONS FIGURES:
 virginia_emissions[,variable:="co2_emissions"] #adding variable column so that line_figure function can be utilized
 co2_emissions_line <- line_figure(virginia_emissions,"emissions (million metric tons CO2)","Virginia Annual CO2 Emissions") + 
@@ -326,13 +332,12 @@ virginia_emissions_electric[,variable:="co2_emissions_electric"]
 co2_electric_emissions_line<-line_figure(virginia_emissions_electric,"emissions (million metric tons CO2)","Virginia Annual CO2 Emissions from Electric Sector") +
   theme(legend.position = "none") #removing legend as only one line is plotted
 co2_electric_emissions_line
-virginia_emissions_electric <- virginia_emissions_electric[,1:2]
-colnames(virginia_emissions_electric) <- c('Year','Million Metric Tons of CO2')
 
 setnames(va_emissions_compounds,old=c("Compound","emissions_in_million_metric_tons","Year"),new=c("variable","value","year")) #changing names to fit function inputs
 emissions_line <- line_figure(va_emissions_compounds,"emissions (million metric tons)","Virginia Annual Emissions") +
   scale_y_continuous(labels = comma)
 emissions_line
+
 
 #--------------------------------------------------------------------------------
 # reformatting the generation dataset

@@ -140,19 +140,19 @@ ui <- dashboardPage(
 server <- function(input,output){
   
   output$renewable_progress_donut <- renderPlotly({
-    renewable_donut_p
+    single_ring_renewable_donut_p
   })
   
   output$carbon_free_donut <- renderPlotly({
-    carbon_free_donut_p
+    single_ring_carbon_free_donut_p
   })
   
   output$gen_goal1 <- renderPlotly({
-    renewable_donut_p
+    single_ring_renewable_donut_p
   })
   
   output$gen_goal2 <- renderPlotly({
-    carbon_free_donut_p
+    single_ring_carbon_free_donut_p
   })
   
   output$gen_area <- renderPlot({
@@ -253,7 +253,7 @@ server <- function(input,output){
       write.csv(con_download_Input(), file, row.names = FALSE)
     }
   )
-  output$sw_donut<- renderPlotly(sw_capacity_donut_p)
+  output$sw_donut<- renderPlotly(single_ring_sw_capacity_donut_p)
   
   output$rc_line<- renderPlot(percent_renewable_and_carbon_free_line)
   

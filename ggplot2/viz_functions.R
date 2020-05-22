@@ -114,6 +114,42 @@ donut_figure_p <- function(data_value,data_year,data_with_true_units,goal_value,
   return(figure)
 }
 
+#for plotly donut figures with a single ring:
+single_ring_donut_figure_p <- function(data_value,data_year,data_with_true_units,goal_value,goal_year,goal_with_true_units,description_of_goal,light_color,dark_color,end_goal_value=NULL,end_goal_year=NULL,end_goal_with_true_units=NULL,darkest_color=NULL){
+  #see above donut_figure function for input descriptions 
+  
+  require(plotly)
+  
+  if (is.null(end_goal_value)){
+    ring = data.frame(category=c(" ","currently","goal"),
+                      value=c(1-goal_value,data_value,goal_value-data_value))
+    
+    figure <- plot_ly(textinfo="none",hoverinfo="label") %>%
+      add_pie(data = ring, values = ~value, labels = ~category, sort = F, hole = 0.7,
+              domain = list(x = c(0, 1), y = c(0, 1)),
+              marker=list(colors=c("whitesmoke",light_color,dark_color),
+                          line=list(color="white",width=1))) %>%
+      layout(title=list(text=paste(data_with_true_units,"in",data_year),font = list(color = light_color,size = 16),x=0.55),showlegend = F) %>%
+      add_annotations(x=0.5,y=0.5,text=description_of_goal,showarrow=F,font = list(color = "black",size = 14)) %>%
+      add_annotations(x=0.5,y=-0.1,text=paste(goal_with_true_units,"by",goal_year),showarrow=F,font = list(color = dark_color,size = 16))
+  }
+  else{
+    ring = data.frame(category=c(" ","currently","intermediate goal","end goal"),
+                      value=c(1-end_goal_value,data_value,goal_value-data_value,end_goal_value-goal_value))
+    
+    figure <- plot_ly(textinfo="none",hoverinfo="label") %>%
+      add_pie(data = ring, values = ~value, labels = ~category, sort = F,hole = 0.7,
+              domain = list(x = c(0, 1), y = c(0, 1)),
+              marker=list(colors=c("whitesmoke",light_color,dark_color,darkest_color),
+                          line=list(color="white",width=1))) %>%
+      layout(title=list(text=paste(data_with_true_units,"in",data_year),font = list(color = light_color,size = 15),x=0.55),showlegend = F) %>%
+      add_annotations(x=0.5,y=0.5,text=description_of_goal,showarrow=F,font = list(color = "black",size = 14)) %>%
+      add_annotations(x=0.5,y=-0.05,text=paste(goal_with_true_units,"by",goal_year),showarrow=F,font = list(color = dark_color,size = 15))%>%
+      add_annotations(x=0.5,y=-0.1,text=paste(end_goal_with_true_units,"by",end_goal_year),showarrow=F,font = list(color = darkest_color,size = 15))
+  }
+  return(figure)
+}
+
 #for timeseries stacked area figures by particular category:
 stacked_area_figure <- function(data_table,value_unit,title_name,annual=TRUE,x_label="Year",subtitle_name=NULL,lower_limit=0){
   #data_table must have three columns: year (or date if monthly data is being plotted where date must be of form "1990-01-01" for example), variable, and value
