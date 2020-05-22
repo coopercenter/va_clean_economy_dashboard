@@ -8,7 +8,7 @@ library(DT)
 source(here("ggplot2", "dashboard_plots.R"))
 
 ui <- dashboardPage(
-  dashboardHeader(title = "Virginia Clean Economy Progress"),
+  dashboardHeader(title = "Virginia Clean Economy Progress",titleWidth = 350),
   dashboardSidebar(
     menuItem("Summary",tabName="summary",icon = icon("dashboard")),
     menuItem("Generation",tabName = "generation"),
