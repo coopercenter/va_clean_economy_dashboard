@@ -307,6 +307,15 @@ melted_renewable_and_carbon_free<-melt(va_annual_renewable_and_carbon_free_gen[,
 renewable_and_carbon_free_line<-line_figure(melted_renewable_and_carbon_free,"GWh","Annual VA Generation by Type",annual=TRUE,x_label="Year",subtitle_name=NULL,lower_limit=0)
 renewable_and_carbon_free_line
 
+# Solar (broken into distributed and utility) over time
+solar_generation_time_series_line<-line_figure(melted_generation2[variable!="total"&variable!="nuclear"&variable!="hydropower"],"GWh","Annual VA Generation of Solar Energy")
+solar_generation_time_series_line
+
+# Wood generation over time
+wood_generation_time_series_line<-line_figure(lf_va_annual_generation[variable=="wood"],"GWh","Annual VA Energy Generation from Wood")
+wood_generation_time_series_line
+
+
 #PLOTTING EMISSIONS FIGURES:
 virginia_emissions[,variable:="co2_emissions"] #adding variable column so that line_figure function can be utilized
 co2_emissions_line <- line_figure(virginia_emissions,"emissions (million metric tons CO2)","Virginia Annual CO2 Emissions") + 
@@ -329,3 +338,7 @@ emissions_line
 # reformatting the generation dataset
 va_gen_w_commas<-data.frame(format(va_annual_generation[,2:12],big.mark=",",scientific=FALSE,trim=TRUE))
 va_gen_w_commas<-cbind(va_annual_generation[,1],va_gen_w_commas)
+
+# reformatting the consumption dataset
+va_con_w_commas<-data.frame(format(va_annual_consumption[,2:5],big.mark=",",scientific=FALSE,trim=TRUE))
+va_con_w_commas<-cbind(va_annual_consumption[,1],va_con_w_commas)

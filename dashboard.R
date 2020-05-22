@@ -57,11 +57,11 @@ ui <- dashboardPage(
               ),
               h3("Solar"),
               fluidRow(
-                box(title="solar generation over time",width = 6)
+                box(title="solar generation over time",width = 6,plotOutput("solar_gen"))
               ),
               h3("Wind"),
               fluidRow(
-                box(title="wind generation over time",width = 6)
+                box(title="wind generation over time",width = 6,plotOutput("wood_gen"))
               ),
               h2("Full Data for Generation"),
               fluidRow(
@@ -239,7 +239,7 @@ server <- function(input,output){
   )
   
   output$con_table<-DT::renderDataTable(
-    va_annual_consumption, 
+    va_con_w_commas, 
     options = list(pageLength = 20),
     rownames= FALSE
   )
@@ -261,8 +261,12 @@ server <- function(input,output){
   
   output$rc_line<- renderPlot(percent_renewable_and_carbon_free_line)
   
-  output$rc_break_line<- renderPlot(annual_carbon_free_generation_by_type_line2
-)
+  output$rc_break_line<- renderPlot(annual_carbon_free_generation_by_type_line2)
+  
+  output$solar_gen<- renderPlot(solar_generation_time_series_line)
+  
+  output$wood_gen<- renderPlot(wood_generation_time_series_line)
+  
 
   
 }
