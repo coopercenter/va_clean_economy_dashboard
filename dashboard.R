@@ -195,7 +195,7 @@ server <- function(input,output){
   })
   
   gen_table <- DT::renderDataTable(
-    va_annual_generation, 
+    va_gen_w_commas, 
     options = list(pageLength = 19),
     rownames= FALSE
   )
