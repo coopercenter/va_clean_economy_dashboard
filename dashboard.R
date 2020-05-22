@@ -49,19 +49,15 @@ ui <- dashboardPage(
                 box(width = 4,plotlyOutput("sw_donut")),
                 box(width = 4,plotlyOutput("gen_goal1")),
                 box(width = 4,plotlyOutput("gen_goal2"))),
-              h2("Renewable and Carbon-Free Generation"),
-              h3("Overview"),
+              h2("Progress on Renewable and Carbon-Free Generation"),
               fluidRow(
-                box(title = "Percentage of Renewable and Carbon-Free Generation",plotOutput("rc_line")),
-                box(title = "Breakdown of Carbon-Free Generation by Fuel Type",plotOutput("rc_break_line")),
+                box(title = "Percentage of Renewable and Carbon-Free Generation",plotOutput("rc_line"))
               ),
-              h3("Solar"),
+              h2("Breakdown"),
+              fluidRow(box(title = "Breakdown of Carbon-Free Generation by Fuel Type",plotOutput("rc_break_line"),align="center")),
               fluidRow(
-                box(title="solar generation over time",width = 6,plotOutput("solar_gen"))
-              ),
-              h3("Wind"),
-              fluidRow(
-                box(title="wind generation over time",width = 6,plotOutput("wood_gen"))
+                box(title="Solar Generation over Time",width = 6,plotOutput("solar_gen")),
+                box(title="Wind Generation over Time",width = 6,plotOutput("wood_gen"))
               ),
               h2("Full Data for Generation"),
               fluidRow(
