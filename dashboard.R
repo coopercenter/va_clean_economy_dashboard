@@ -8,7 +8,7 @@ library(DT)
 source(here("ggplot2", "dashboard_plots.R"))
 
 ui <- dashboardPage(
-  dashboardHeader(title = "EO43 Project Dashboard"),
+  dashboardHeader(title = "Virginia Clean Economy Progress"),
   dashboardSidebar(
     menuItem("Summary",tabName="summary",icon = icon("dashboard")),
     menuItem("Generation",tabName = "generation"),
@@ -65,7 +65,7 @@ ui <- dashboardPage(
                 box(title="wind generation over time",width = 6),
                 box(title="map for wind",width = 6),
               ),
-              h2("Full Data for Genereation"),
+              h2("Full Data for Generation"),
               fluidRow(
                 box(selectInput(inputId = "gen_download", "Choose the content:",
                                 choices = c("VA generation")),
