@@ -116,8 +116,11 @@ ui <- dashboardPage(
                 box(title = "Time series of annual expenditures on electricity by income bracket"
 
                 )
+              ),
+              h2("Residential Solar Distribution"),
+              fluidRow(
+                box(title= "Interactive map of residential solar distribution, broken down by race, income bracket, and education level")
               )
-              
               
       ),
       tabItem(tabName="emissions",
