@@ -197,7 +197,7 @@ server <- function(input,output){
   )
   
   electric_emissions_table <- DT::renderDataTable(
-    virginia_emissions_electric,
+    virginia_emissions_electric_commas,
     options = list(pageLength = 19),
     rownames = FALSE
   )

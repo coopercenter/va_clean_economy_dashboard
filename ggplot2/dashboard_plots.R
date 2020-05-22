@@ -326,8 +326,6 @@ virginia_emissions_electric[,variable:="co2_emissions_electric"]
 co2_electric_emissions_line<-line_figure(virginia_emissions_electric,"emissions (million metric tons CO2)","Virginia Annual CO2 Emissions from Electric Sector") +
   theme(legend.position = "none") #removing legend as only one line is plotted
 co2_electric_emissions_line
-virginia_emissions_electric <- virginia_emissions_electric[,1:2]
-colnames(virginia_emissions_electric) <- c('Year','Million Metric Tons of CO2')
 
 setnames(va_emissions_compounds,old=c("Compound","emissions_in_million_metric_tons","Year"),new=c("variable","value","year")) #changing names to fit function inputs
 emissions_line <- line_figure(va_emissions_compounds,"emissions (million metric tons)","Virginia Annual Emissions") +
@@ -342,3 +340,10 @@ va_gen_w_commas<-cbind(va_annual_generation[,1],va_gen_w_commas)
 # reformatting the consumption dataset
 va_con_w_commas<-data.frame(format(va_annual_consumption[,2:5],big.mark=",",scientific=FALSE,trim=TRUE))
 va_con_w_commas<-cbind(va_annual_consumption[,1],va_con_w_commas)
+
+virginia_emissions_electric <- virginia_emissions_electric[,1:2]
+virginia_emissions_electric_commas <- data.frame(format(virginia_emissions_electric[,2], big.mark=',',scientific=FALSE,trim=TRUE))
+virginia_emissions_electric_commas <- cbind(virginia_emissions_electric[,1],virginia_emissions_electric_commas)
+colnames(virginia_emissions_electric_commas) <- c('Year','Million Metric Tons of CO2')
+
+
