@@ -122,7 +122,8 @@ ui <- dashboardPage(
       tabItem(tabName="emissions",
               h1("Greenhouse Gas Emissions in Virginia"),
               fluidRow(
-                box(plotOutput('all_co2_emissions_plot')),
+                box(plotOutput('electric_emissions_plot2')),
+                box(plotOutput('co2_emissions_by_fuel')),
                 box(plotOutput('emissions_by_compound_plot'))
               ),
               fluidRow(
@@ -167,8 +168,12 @@ server <- function(input,output){
     co2_electric_emissions_line
   })
   
-  output$all_co2_emissions_plot <- renderPlot({
-    co2_emissions_line
+  output$electric_emissions_plot2 <- renderPlot({
+    co2_electric_emissions_line
+  })
+  
+  output$co2_emissions_by_fuel <- renderPlot({
+    carbon_by_fuel_emissions_stacked
   })
   
   output$emissions_by_compound_plot <- renderPlot({

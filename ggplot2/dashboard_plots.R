@@ -24,6 +24,8 @@ va_emissions_compounds <- dbGetQuery(db, "SELECT * from emission")
 
 dbDisconnect(db)
 
+co2_emissions_by_fuel <- va_emissions_compounds%>%select(Year, Coal2,`Natural gas2`,Petroleum2, Other2)
+  
 #get relevant features to analyze, in this case the total emissions for each compound
 va_emissions_compounds <- select(va_emissions_compounds, Year, Total, Total1, Total2)
 #rename columns
@@ -38,6 +40,16 @@ va_emissions_compounds <- va_emissions_compounds[1:19,]
 va_emissions_compounds <- va_emissions_compounds %>%
   select(Year, SO2, NO, CO2) %>%
   gather(key = "Compound", value = "emissions_in_million_metric_tons", -Year)
+
+colnames(co2_emissions_by_fuel) <- c('year', "coal","natural_gas", "petroleum", 'other')
+co2_emissions_by_fuel <- (sapply(co2_emissions_by_fuel, as.numeric))
+#make it a dataframe
+co2_emissions_by_fuel <- data.frame(co2_emissions_by_fuel)
+co2_emissions_by_fuel <- co2_emissions_by_fuel[1:19,]
+co2_emissions_by_fuel <- co2_emissions_by_fuel %>%
+  select(year, coal, natural_gas, petroleum, other) %>%
+  gather(key = "Fuel Type", value = "emissions_in_million_metric_tons", -year)
+
 
 source(here::here("my_eia_api_key.R"))
 
@@ -337,6 +349,12 @@ setnames(va_emissions_compounds,old=c("Compound","emissions_in_million_metric_to
 emissions_line <- line_figure(va_emissions_compounds,"emissions (million metric tons)","Virginia Annual Emissions") +
   scale_y_continuous(labels = comma)
 emissions_line
+
+setnames(co2_emissions_by_fuel,old=c("Fuel Type","emissions_in_million_metric_tons","year"),new=c("variable","value","year")) #changing names to fit function inputs
+carbon_by_fuel_emissions_stacked <- stacked_area_figure(co2_emissions_by_fuel,"emissions (million metric tons)","Virginia CO2 Emissions By Fuel Type") +
+  scale_y_continuous(labels = comma)
+carbon_by_fuel_emissions_stacked
+
 
 
 #--------------------------------------------------------------------------------
