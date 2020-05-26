@@ -2,10 +2,11 @@ library(here)
 library(ggplot2)
 library(shiny)
 library(shinydashboard)
+library(plotly)
 library(dplyr, warn.conflicts = FALSE)
 library(DT)
 
-source(here("ggplot2", "dashboard_plots.R"))
+load('dashboard_plots_output.RData')
 
 ui <- dashboardPage(
   dashboardHeader(title = "Virginia Clean Economy Progress",titleWidth = 350),
