@@ -173,7 +173,7 @@ server <- function(input,output){
   })
   
   output$co2_emissions_by_fuel <- renderPlot({
-    carbon_by_fuel_emissions_line
+    carbon_by_fuel_emissions_stacked
   })
   
   output$emissions_by_compound_plot <- renderPlot({

@@ -351,9 +351,9 @@ emissions_line <- line_figure(va_emissions_compounds,"emissions (million metric 
 emissions_line
 
 setnames(co2_emissions_by_fuel,old=c("Fuel Type","emissions_in_million_metric_tons","year"),new=c("variable","value","year")) #changing names to fit function inputs
-carbon_by_fuel_emissions_line <- line_figure(co2_emissions_by_fuel,"emissions (million metric tons)","Virginia CO2 Emissions By Fuel Type") +
+carbon_by_fuel_emissions_stacked <- stacked_area_figure(co2_emissions_by_fuel,"emissions (million metric tons)","Virginia CO2 Emissions By Fuel Type") +
   scale_y_continuous(labels = comma)
-carbon_by_fuel_emissions_line
+carbon_by_fuel_emissions_stacked
 
 
 
