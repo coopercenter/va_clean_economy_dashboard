@@ -12,7 +12,7 @@ library(RPostgreSQL)
 library(scales)
 
 db_driver = dbDriver("PostgreSQL")
-source(here("ggplot2", "my_postgres_credentials.R"))
+source(here("ggplot2", "postgres_credentials.R"))
 db <- dbConnect(db_driver,user=db_user, password=ra_pwd,dbname="postgres", host=db_host)
 
 table="whole_electric_industry_capacity"
@@ -374,7 +374,7 @@ colnames(virginia_emissions_electric_commas) <- c('Year','Million Metric Tons of
 
 #reformatting emissions compounds dataset
 db_driver = dbDriver("PostgreSQL")
-source(here("ggplot2", "my_postgres_credentials.R"))
+source(here("ggplot2", "postgres_credentials.R"))
 db <- dbConnect(db_driver,user=db_user, password=ra_pwd,dbname="postgres", host=db_host)
 va_emissions_compounds <- dbGetQuery(db, "SELECT * from emission") 
 #get relevant features to analyze, in this case the total emissions for each compound
