@@ -2,19 +2,22 @@ library(here)
 library(ggplot2)
 library(shiny)
 library(shinydashboard)
+library(plotly)
 library(dplyr, warn.conflicts = FALSE)
 library(DT)
 
-source(here("ggplot2", "dashboard_plots.R"))
+load('dashboard_plots_output.RData')
 
 ui <- dashboardPage(
   dashboardHeader(title = "Virginia Clean Economy Progress",titleWidth = 350),
   dashboardSidebar(
-    menuItem("Summary",tabName="summary",icon = icon("dashboard")),
-    menuItem("Generation",tabName = "generation"),
-    menuItem("Energy Efficiency",tabName = "efficiency"),
-    menuItem("Energy Equity", tabName = "equity"),
-    menuItem("Emissions",tabName = "emissions")
+    sidebarMenu(
+      menuItem("Summary",tabName="summary",icon = icon("dashboard")),
+      menuItem("Generation",tabName = "generation"),
+      menuItem("Energy Efficiency",tabName = "efficiency"),
+      menuItem("Energy Equity", tabName = "equity"),
+      menuItem("Emissions",tabName = "emissions")
+    )
   ),
   dashboardBody(
     tabItems(
