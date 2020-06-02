@@ -8,8 +8,13 @@ library(DT)
 
 load('dashboard_plots_output.RData')
 
-ui <- dashboardPage(
-  dashboardHeader(title = "Virginia Clean Economy Progress",titleWidth = 350),
+title <- tags$a(href="https://ceps.coopercenter.org/", 
+                tags$img(src="logo.png", height = '40', width = '100'),
+                "Virginia Clean Economy Progress")
+
+ui <- tagList(
+  dashboardPage(
+  dashboardHeader(title = title, titleWidth = 550),
   dashboardSidebar(
     sidebarMenu(
       menuItem("Summary",tabName="summary",icon = icon("dashboard")),
@@ -20,12 +25,15 @@ ui <- dashboardPage(
     )
   ),
   dashboardBody(
+    tags$head(
+      tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
+    ),
     tabItems(
       tabItem(tabName="summary",
               h1("Summary of Overall Progress"),
               fluidRow(
-                box(width = 4, plotlyOutput("renewable_progress_donut")),
-                box(width = 4, plotlyOutput("carbon_free_donut")),
+                box(width = 3, plotlyOutput("renewable_progress_donut")),
+                box(width = 3, plotlyOutput("carbon_free_donut")),
               # box(width = 3, title = "Energy efficiency goal donut. Data needed."),
                 box(width = 3, title = "Energy Storage goal donut. Data needed."),  # Plot still needed
                 box(width = 3, title = "Energy Equity goal donut. Data needed.") # Plot still needed# Plot still needed
@@ -138,7 +146,20 @@ ui <- dashboardPage(
                 box(div(DT::dataTableOutput("electric_emissions_table")),width = 9)
                 
               ))
-    ))
+    ))),
+  tags$footer(
+    tags$p("Developed by the",
+    tags$a(href = "https://ceps.coopercenter.org/", "Weldon Cooper Center for Public Service Center for Economic Policy Studies"), "in conjunction with the Virginia Department of Mines, Minerals, and Energy"),
+    align = "center", 
+      style = "
+      position:relative;
+      bottom:0;
+      width:100%;
+      height:60px;   /* Height of the footer */
+      color: white;
+      padding: 10px;
+      background-color: grey;
+      z-index: 1000;")
 )
 
 server <- function(input,output){

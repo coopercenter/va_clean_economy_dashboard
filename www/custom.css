@@ -1,0 +1,27 @@
+
+/* change the background color of header (logo part) when mouse hover */
+.skin-blue .main-header .logo:hover {
+          background-color: orange; /* backgorund color of the logo header part on mouse hover */
+          color:black;
+        }
+  
+/* Edit the below for the header title hyperlink */
+.skin-blue .main-header .logo>a {
+            color: AliceBlue; /* color of the hyperlink text */
+
+          
+        }
+        
+/* Edit the below to get the header title hyperlink hover effect */  
+.skin-blue .main-header .logo>a:hover {
+          color:white;  /* color of the hyperlink text on mouse hover */
+          
+        }
+        
+p {
+ color: black;
+}
+
+a {
+  color: #00008B;
+}
