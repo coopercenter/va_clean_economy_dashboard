@@ -19,7 +19,6 @@ ui <- tagList(
     sidebarMenu(
       menuItem("Summary",tabName="summary",icon = icon("dashboard")),
       menuItem("Generation",tabName = "generation"),
-      menuItem("Energy Equity", tabName = "equity"),
       menuItem("Emissions",tabName = "emissions"),
       hr(), 
       menuItem("Energy Efficiency Programs",tabName = "efficiency")
@@ -33,11 +32,8 @@ ui <- tagList(
       tabItem(tabName="summary",
               h1("Summary of Overall Progress"),
               fluidRow(
-                box(width = 3, plotlyOutput("renewable_progress_donut")),
-                box(width = 3, plotlyOutput("carbon_free_donut")),
-              # box(width = 3, title = "Energy efficiency goal donut. Data needed."),
-                box(width = 3, title = "Energy Storage goal donut. Data needed."),  # Plot still needed
-                box(width = 3, title = "Energy Equity goal donut. Data needed.") # Plot still needed# Plot still needed
+                box(width = 6, plotlyOutput("renewable_progress_donut")),
+                box(width = 6, plotlyOutput("carbon_free_donut")),
               ),
               h2("Production"),
               fluidRow(
@@ -79,29 +75,13 @@ ui <- tagList(
               ),
               fluidRow(
                 box(div(DT::dataTableOutput("gen_table"), style = "font-size: 90%"),width = 12)
-              ),
-              h1('Energy Storage'),
-              h2('Utility-Scale Solar'),
-              fluidRow(
-                box(title="utility scale over time")
-              ),
-              h2('Distributed Solar'),
-              fluidRow(
-                box(title="distributed over time")
               )
       ),
       tabItem(tabName="efficiency",
               h1("Energy Efficiency"),
-              fluidRow(
-                box(width=6, title = "Dominion Percent Efficiency Investments/Goal Met. Data Needed."),
-                box(width=6, title = "APCo Percent Efficiency Investments/Goal Met. Data Needed.")
-              ),
               h2("Electricity Consumption"),
               fluidRow(
                 box(title = "Energy Consumption by Sector",plotOutput("con_ts"))
-              ),
-              fluidRow(
-                box(title = "Timeseries of gap in energy consumption. ")
               ),
               fluidRow(
                 box(selectInput(inputId = "con_download", "Choose the content:",
@@ -111,25 +91,6 @@ ui <- tagList(
               fluidRow(
                 box(div(DT::dataTableOutput("con_table")),width = 9)
               )
-      ),
-      tabItem(tabName = "equity",
-              h1("Energy Equity in Virginia"),
-              
-              fluidRow(
-                box(selectInput(inputId = "equity_year","Select year:", choices = c("2019","2018","2017"))),
-                box(title = "Map of monthly households expenditures on electricity, in $ and as a % of income, shaded by country"
-              )),
-              h2("Electricity Expenditures"),
-              fluidRow(
-                box(title = "Time series of annual expenditures on electricity by income bracket"
-
-                )
-              ),
-              h2("Residential Solar Distribution"),
-              fluidRow(
-                box(title= "Interactive map of residential solar distribution, broken down by race, income bracket, and education level")
-              )
-              
       ),
       tabItem(tabName="emissions",
               h1("Greenhouse Gas Emissions in Virginia"),
