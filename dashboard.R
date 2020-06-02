@@ -9,7 +9,7 @@ library(DT)
 load('dashboard_plots_output.RData')
 
 title <- tags$a(href="https://ceps.coopercenter.org/", 
-                tags$img(src="logo.png", height = '40', width = '100'),
+                tags$img(src="logo.png", height = '40', width = '110'),
                 "Virginia Clean Economy Progress")
 
 ui <- tagList(
@@ -19,9 +19,10 @@ ui <- tagList(
     sidebarMenu(
       menuItem("Summary",tabName="summary",icon = icon("dashboard")),
       menuItem("Generation",tabName = "generation"),
-      menuItem("Energy Efficiency",tabName = "efficiency"),
       menuItem("Energy Equity", tabName = "equity"),
-      menuItem("Emissions",tabName = "emissions")
+      menuItem("Emissions",tabName = "emissions"),
+      hr(), 
+      menuItem("Energy Efficiency Programs",tabName = "efficiency")
     )
   ),
   dashboardBody(
