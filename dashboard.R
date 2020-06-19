@@ -120,16 +120,16 @@ ui <- tagList(
         ),
         tabItem(tabName = "equity",
                 h1("Energy Equity in Virginia"),
-                
                 fluidRow(
                   box(selectInput(inputId = "equity_year","Select year:", choices = c("2019","2018","2017"))),
                   box(title = "Map of monthly households expenditures on electricity, in $ and as a % of income, shaded by country"
                   )),
                 h2("Electricity Expenditures"),
                 fluidRow(
-                  box(title = "Time series of annual expenditures on electricity by income bracket"
-                      
-                  )
+                  box(title = "average energy expenditures by county",plotOutput("burden_map_expenditure"),width=9)
+                  ),
+                fluidRow(
+                  box(title = "average energy expenditures as percent of income by county",plotOutput("burden_map_expenditure_2"),width=9)
                 ),
                 h2("Residential Solar Distribution"),
                 fluidRow(
@@ -300,6 +300,10 @@ server <- function(input,output){
   output$wind_projected_gen<- renderPlotly(wind_projected_generation_time_series_line_p)
   
   output$wind_projected_capacity<- renderPlotly(wind_projected_capacity_line_p)
+  
+  output$burden_map_expenditure <- renderPlot(va_avg_annual_energy_cost,width = 600, height = 400)
+  
+  output$burden_map_expenditure_2 <- renderPlot(va_avg_annual_energy_percent_exp,width = 600, height = 400)
   
   
 }
