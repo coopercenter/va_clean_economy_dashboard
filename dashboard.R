@@ -73,7 +73,9 @@ ui <- tagList(
                 ),
                 h3("Offshore Wind"),
                 fluidRow(
-                  box(title="Projected Generation",width = 6,plotlyOutput("wind_projected"))
+                  box(title="Projected Generation",width = 6,plotlyOutput("wind_projected_gen")),
+                  box(title="Projected Capacity",width = 6,plotlyOutput("wind_projected_capacity"))
+                  
                 ),
                 h2("Full Data for Generation"),
                 fluidRow(
@@ -295,8 +297,9 @@ server <- function(input,output){
   
   output$solar_gen<- renderPlotly(solar_generation_time_series_line_p)
   
-  output$wind_projected<- renderPlotly(wind_projected_generation_time_series_line_p)
+  output$wind_projected_gen<- renderPlotly(wind_projected_generation_time_series_line_p)
   
+  output$wind_projected_capacity<- renderPlotly(wind_projected_capacity_line_p)
   
   
 }
