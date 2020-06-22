@@ -14,106 +14,151 @@ title <- tags$a(href="https://ceps.coopercenter.org/",
 
 ui <- tagList(
   dashboardPage(
-  dashboardHeader(title = title, titleWidth = 550),
-  dashboardSidebar(
-    sidebarMenu(
-      menuItem("Summary",tabName="summary",icon = icon("dashboard")),
-      menuItem("Generation",tabName = "generation"),
-      menuItem("Emissions",tabName = "emissions"),
-      hr(), 
-      menuItem("Energy Efficiency Programs",tabName = "efficiency")
-    )
-  ),
-  dashboardBody(
-    tags$head(
-      tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
+    dashboardHeader(title = title, titleWidth = 550),
+    dashboardSidebar(
+      sidebarMenu(
+        menuItem("Summary",tabName="summary",icon = icon("dashboard")),
+        menuItem("Generation",tabName = "generation"),
+        menuItem("Energy Equity", tabName = "equity"),
+        menuItem("Emissions",tabName = "emissions"),
+        hr(), 
+        menuItem("Energy Efficiency Programs",tabName = "efficiency")
+      )
     ),
-    tabItems(
-      tabItem(tabName="summary",
-              h1("Summary of Overall Progress"),
-              fluidRow(
-                box(width = 6, plotlyOutput("renewable_progress_donut")),
-                box(width = 6, plotlyOutput("carbon_free_donut")),
-              ),
-              h2("Production"),
-              fluidRow(
-                box(plotlyOutput("gen_pie")),
-                box(plotOutput("gen_area"))
-              ),
-              h2("Consumption"),
-              fluidRow(
-                box(plotlyOutput("con_pie")),
-                box(plotOutput("con_area")),
-              ),
-              h2("Emissions"),
-              fluidRow(
-                box(plotOutput("electric_emissions_plot")),
-              )
+    dashboardBody(
+      tags$head(
+        tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
       ),
-      tabItem(tabName="generation",
-              h1("Generation"),
-              h2("Goals"),
-              fluidRow(
-                box(width = 4,plotlyOutput("sw_donut")),
-                box(width = 4,plotlyOutput("gen_goal1")),
-                box(width = 4,plotlyOutput("gen_goal2"))),
-              h2("Progress on Renewable and Carbon-Free Generation"),
-              fluidRow(
-                box(title = "Percentage of Renewable and Carbon-Free Generation",plotOutput("rc_line"))
-              ),
-              h2("Breakdown"),
-              fluidRow(box(title = "Breakdown of Carbon-Free Generation by Fuel Type",plotOutput("rc_break_line"),align="center")),
-              fluidRow(
-                box(title="Solar Generation over Time",width = 6,plotOutput("solar_gen")),
-                box(title="Wood Generation over Time",width = 6,plotOutput("wood_gen"))
-              ),
-              h2("Full Data for Generation"),
-              fluidRow(
-                box(selectInput(inputId = "gen_download", "Choose the content:",
-                                choices = c("VA generation")),
-                    downloadButton("download_gen", "Download"))
-              ),
-              fluidRow(
-                box(div(DT::dataTableOutput("gen_table"), style = "font-size: 90%"),width = 12)
-              )
-      ),
-      tabItem(tabName="efficiency",
-              h1("Energy Efficiency"),
-              h2("Electricity Consumption"),
-              fluidRow(
-                box(title = "Energy Consumption by Sector",plotOutput("con_ts"))
-              ),
-              fluidRow(
-                box(selectInput(inputId = "con_download", "Choose the content:",
-                                choices = c("VA total consumption")),
-                    downloadButton("download_con", "Download"))
-              ),
-              fluidRow(
-                box(div(DT::dataTableOutput("con_table")),width = 9)
-              )
-      ),
-      tabItem(tabName="emissions",
-              h1("Greenhouse Gas Emissions in Virginia"),
-              fluidRow(
-                box(plotOutput('electric_emissions_plot2')),
-                box(plotOutput('co2_emissions_by_fuel')),
-                box(plotOutput('emissions_by_compound_plot'))
-              ),
-              fluidRow(
-                box(selectInput(inputId = "electric_emissions_download", "Choose the content:",
-                                choices = c("VA CO2 Emissions from Electricity Sector")),
-                    downloadButton("download_electric_emissions", "Download"))
-              ),
-              fluidRow(
-                box(div(DT::dataTableOutput("electric_emissions_table")),width = 9)
+      tabItems(
+        tabItem(tabName="summary",
+                h1("Summary of Overall Progress"),
+                fluidRow(
+                  box(width = 3, plotlyOutput("renewable_progress_donut")),
+                  box(width = 3, plotlyOutput("carbon_free_donut")),
+                  # box(width = 3, title = "Energy efficiency goal donut. Data needed."),
+                  box(width = 3, title = "Energy Storage goal donut. Data needed."),  # Plot still needed
+                  box(width = 3, title = "Energy Equity goal donut. Data needed.") # Plot still needed# Plot still needed
+                ),
+                h2("Production"),
+                fluidRow(
+                  box(plotlyOutput("gen_pie")),
+                  box(plotlyOutput("gen_area"))
+                ),
+                h2("Consumption"),
+                fluidRow(
+                  box(plotlyOutput("con_pie")),
+                  box(plotlyOutput("con_area")),
+                ),
+                h2("Emissions"),
+                fluidRow(
+                  box(plotlyOutput("electric_emissions_plot")),
+                )
+        ),
+        tabItem(tabName="generation",
+                h1("Generation"),
+                h2("Goals"),
+                fluidRow(
+                  box(width = 4,plotlyOutput("sw_donut")),
+                  box(width = 4,plotlyOutput("gen_goal1")),
+                  box(width = 4,plotlyOutput("gen_goal2"))),
+                h2("Progress on Renewable and Carbon-Free Generation"),
+                fluidRow(
+                  box(title = "Percentage of Renewable and Carbon-Free Generation",plotlyOutput("rc_line"))
+                ),
+                h2("Breakdown"),
+                fluidRow(box(title = "Breakdown of Carbon-Free Generation by Fuel Type",plotlyOutput("rc_break_line"),align="center")),
+                h3("Solar"),
+                fluidRow(
+                  box(title="Solar Generation over Time",width = 6,plotlyOutput("solar_gen")),
+                ),
+                h3("Offshore Wind"),
+                fluidRow(
+                  box(title="Projected Generation",width = 6,plotlyOutput("wind_projected_gen")),
+                  box(title="Projected Capacity",width = 6,plotlyOutput("wind_projected_capacity"))
+                  
+                ),
+                h2("Full Data for Generation"),
+                fluidRow(
+                  box(selectInput(inputId = "gen_download", "Choose the content:",
+                                  choices = c("VA generation")),
+                      downloadButton("download_gen", "Download"))
+                ),
+                fluidRow(
+                  box(div(DT::dataTableOutput("gen_table"), style = "font-size: 90%"),width = 12)
+                ),
+                h1('Energy Storage'),
+                h2('Utility-Scale Solar'),
+                fluidRow(
+                  box(title="utility scale over time")
+                ),
+                h2('Distributed Solar'),
+                fluidRow(
+                  box(title="distributed over time")
+                )
+        ),
+        tabItem(tabName="efficiency",
+                h1("Energy Efficiency"),
+                fluidRow(
+                  box(width=6, title = "Dominion Percent Efficiency Investments/Goal Met. Data Needed."),
+                  box(width=6, title = "APCo Percent Efficiency Investments/Goal Met. Data Needed.")
+                ),
+                h2("Electricity Consumption"),
+                fluidRow(
+                  box(title = "Energy Consumption by Sector",plotOutput("con_ts"))
+                ),
+                fluidRow(
+                  box(title = "Timeseries of gap in energy consumption. ")
+                ),
+                fluidRow(
+                  box(selectInput(inputId = "con_download", "Choose the content:",
+                                  choices = c("VA total consumption")),
+                      downloadButton("download_con", "Download"))
+                ),
+                fluidRow(
+                  box(div(DT::dataTableOutput("con_table")),width = 9)
+                )
+        ),
+        tabItem(tabName = "equity",
+                h1("Energy Equity in Virginia"),
+                fluidRow(
+                  box(selectInput(inputId = "equity_year","Select year:", choices = c("2019","2018","2017"))),
+                  box(title = "Map of monthly households expenditures on electricity, in $ and as a % of income, shaded by country"
+                  )),
+                h2("Electricity Expenditures"),
+                fluidRow(
+                  box(title = "average energy expenditures by county",plotOutput("burden_map_expenditure"),width=9)
+                ),
+                fluidRow(
+                  box(title = "average energy expenditures as percent of income by county",plotOutput("burden_map_expenditure_2"),width=9)
+                ),
+                h2("Residential Solar Distribution"),
+                fluidRow(
+                  box(title= "Interactive map of residential solar distribution, broken down by race, income bracket, and education level")
+                )
                 
-              ))
-    ))),
+        ),
+        tabItem(tabName="emissions",
+                h1("Greenhouse Gas Emissions in Virginia"),
+                fluidRow(
+                  box(plotlyOutput('electric_emissions_plot2')),
+                  box(plotlyOutput('co2_emissions_by_fuel')),
+                  box(plotlyOutput('emissions_by_compound_plot'))
+                ),
+                fluidRow(
+                  box(selectInput(inputId = "electric_emissions_download", "Choose the content:",
+                                  choices = c("VA CO2 Emissions from Electricity Sector")),
+                      downloadButton("download_electric_emissions", "Download"))
+                ),
+                fluidRow(
+                  box(div(DT::dataTableOutput("electric_emissions_table")),width = 9)
+                  
+                ))
+      ))),
   tags$footer(
     tags$p("Developed by the",
-    tags$a(href = "https://ceps.coopercenter.org/", "Weldon Cooper Center for Public Service Center for Economic Policy Studies"), "in conjunction with the Virginia Department of Mines, Minerals, and Energy"),
+           tags$a(href = "https://ceps.coopercenter.org/", "Weldon Cooper Center for Public Service Center for Economic Policy Studies"), "in conjunction with the Virginia Department of Mines, Minerals, and Energy"),
     align = "center", 
-      style = "
+    style = "
       position:relative;
       bottom:0;
       width:100%;
@@ -142,42 +187,42 @@ server <- function(input,output){
     single_ring_carbon_free_donut_p
   })
   
-  output$gen_area <- renderPlot({
-    va_annual_production_area
+  output$gen_area <- renderPlotly({
+    va_annual_production_area_p
   })
   
   output$gen_pie <- renderPlotly({
     va_annual_production_2019_pie_chart_p_with_legend
   })
   
-  output$electric_emissions_plot <- renderPlot({
-    co2_electric_emissions_line
+  output$electric_emissions_plot <- renderPlotly({
+    co2_combined_emissions_line_p
   })
   
-  output$electric_emissions_plot2 <- renderPlot({
-    co2_electric_emissions_line
+  output$electric_emissions_plot2 <- renderPlotly({
+    co2_combined_emissions_line_p
   })
   
-  output$co2_emissions_by_fuel <- renderPlot({
-    carbon_by_fuel_emissions_stacked
+  output$co2_emissions_by_fuel <- renderPlotly({
+    carbon_by_fuel_emissions_stacked_p
   })
   
-  output$emissions_by_compound_plot <- renderPlot({
-    emissions_line
+  output$emissions_by_compound_plot <- renderPlotly({
+    emissions_line_p
   })
   
-  output$con_area <- renderPlot({
-    va_annual_consumption_area
+  output$con_area <- renderPlotly({
+    va_annual_consumption_area_p
   })
-  output$con_ts <- renderPlot({
-    va_annual_consumption_area
+  output$con_ts <- renderPlotly({
+    va_annual_consumption_area_p
   })  
   output$con_pie <- renderPlotly({
     va_annual_consumption_2017_pie_chart_p_with_legend
   })
   
-  output$renewable_timeline_plot <- renderPlot({
-    percent_renewable_and_carbon_free_line
+  output$renewable_timeline_plot <- renderPlotly({
+    percent_renewable_and_carbon_free_line_p
     
   })
   
@@ -246,15 +291,20 @@ server <- function(input,output){
   )
   output$sw_donut<- renderPlotly(single_ring_sw_capacity_donut_p)
   
-  output$rc_line<- renderPlot(percent_renewable_and_carbon_free_line)
+  output$rc_line<- renderPlotly(percent_renewable_and_carbon_free_line_p)
   
-  output$rc_break_line<- renderPlot(annual_carbon_free_generation_by_type_line2)
+  output$rc_break_line<- renderPlotly(annual_carbon_free_generation_by_type_line_p)
   
-  output$solar_gen<- renderPlot(solar_generation_time_series_line)
+  output$solar_gen<- renderPlotly(solar_generation_time_series_line_p)
   
-  output$wood_gen<- renderPlot(wood_generation_time_series_line)
+  output$wind_projected_gen<- renderPlotly(wind_projected_generation_time_series_line_p)
   
-
+  output$wind_projected_capacity<- renderPlotly(wind_projected_capacity_line_p)
+  
+  output$burden_map_expenditure <- renderPlot(va_avg_annual_energy_cost,width = 600, height = 400)
+  
+  output$burden_map_expenditure_2 <- renderPlot(va_avg_annual_energy_percent_exp,width = 600, height = 400)
+  
   
 }
 
