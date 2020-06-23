@@ -135,8 +135,7 @@ ui <- tagList(
               h1("Greenhouse Gas Emissions in Virginia"),
               fluidRow(
                 box(plotOutput('electric_emissions_plot2')),
-                box(plotOutput('co2_emissions_by_fuel')),
-                box(plotOutput('emissions_by_compound_plot'))
+                box(plotOutput('co2_emissions_by_fuel'))
               ),
               fluidRow(
                 box(selectInput(inputId = "electric_emissions_download", "Choose the content:",
@@ -199,10 +198,6 @@ server <- function(input,output){
   
   output$co2_emissions_by_fuel <- renderPlot({
     carbon_by_fuel_emissions_stacked
-  })
-  
-  output$emissions_by_compound_plot <- renderPlot({
-    emissions_line
   })
   
   output$con_area <- renderPlot({
