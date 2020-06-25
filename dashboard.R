@@ -10,11 +10,11 @@ library(sf)
 load('dashboard_plots_output.RData')
 
 title <- tags$a(
-  href = "https://ceps.coopercenter.org/",
+  href = "https://www.dmme.virginia.gov/",
   tags$img(
-    src = "logo.png",
-    height = '40',
-    width = '160'
+    src = "DmmeLogo.png",
+    height = '30',
+    width = '100'
   ),
   "Virginia Clean Economy Progress"
 )
@@ -37,12 +37,12 @@ dbHeader <-
       )
       ),
     tags$li(a(
-      href = 'https://www.dmme.virginia.gov/',
+      href = 'https://ceps.coopercenter.org/',
       tags$img(
         
-        src = 'DmmeLogo.png',
+        src = 'logo.png',
         height = '30',
-        width = '100'
+        width = '110'
       )
     ), class = "dropdown"),
     titleWidth = 500
