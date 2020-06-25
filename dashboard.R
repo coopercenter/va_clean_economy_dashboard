@@ -39,6 +39,7 @@ dbHeader <-
     tags$li(a(
       href = 'https://www.dmme.virginia.gov/',
       tags$img(
+        
         src = 'DmmeLogo.png',
         height = '30',
         width = '100'
@@ -118,6 +119,9 @@ ui <- tagList(
             width = 6,
             plotlyOutput("solar_gen")
           )),
+          fluidRow(box(
+            div(DT::dataTableOutput("solar_table"), style = "font-size: 90%"), width = 12
+          )),
           h3("Offshore Wind"),
           fluidRow(
             box(
@@ -148,7 +152,11 @@ ui <- tagList(
           h2('Utility-Scale Solar'),
           fluidRow(box(title = "utility scale over time")),
           h2('Distributed Solar'),
-          fluidRow(box(title = "distributed over time"))
+          fluidRow(box(title = "distributed over time")),
+          fluidRow(box(
+            div(DT::dataTableOutput("storage_table"), style = "font-size: 90%"), width = 12
+          ))
+          
         ),
         tabItem(
           tabName = "efficiency",
@@ -397,8 +405,16 @@ server <- function(input, output) {
                width = 600,
                height = 400)
   
+  output$solar_table <- DT::renderDataTable(pjm_solar,
+                                            options = list(pageLength = 20),
+                                            rownames = FALSE)
+  
+  output$storage_table <- DT::renderDataTable(pjm_storage,
+                                              options = list(pageLength = 20),
+                                              rownames = FALSE)
   
 }
 
 
 shinyApp(ui = ui, server = server)
+
