@@ -86,11 +86,7 @@ ui <- tagList(
                    box(plotlyOutput("gen_area"))),
           h2("Consumption"),
           fluidRow(box(plotlyOutput("con_pie")),
-                   box(plotlyOutput("con_area"))),
-          h2("Emissions"),
-          fluidRow(box(
-            plotlyOutput("electric_emissions_plot")
-          ))
+                   box(plotlyOutput("con_area")))
         ),
         tabItem(
           tabName = "generation",
