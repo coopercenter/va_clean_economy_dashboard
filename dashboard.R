@@ -42,7 +42,7 @@ dbHeader <-
         
         src = 'logo.png',
         height = '30',
-        width = '110'
+        width = '115'
       )
     ), class = "dropdown"),
     titleWidth = 500
