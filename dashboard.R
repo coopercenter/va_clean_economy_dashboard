@@ -121,12 +121,10 @@ ui <- tagList(
           h3("Offshore Wind"),
           fluidRow(
             box(
-              title = "Projected Generation",
               width = 6,
               plotlyOutput("wind_projected_gen")
             ),
             box(
-              title = "Projected Capacity",
               width = 6,
               plotlyOutput("wind_projected_capacity")
             )
