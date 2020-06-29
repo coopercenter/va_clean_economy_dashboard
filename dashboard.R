@@ -77,7 +77,7 @@ ui <- tagList(
             box(width = 3, plotlyOutput("renewable_progress_donut")),
             box(width = 3, plotlyOutput("carbon_free_donut")),
             # box(width = 3, title = "Energy efficiency goal donut. Data needed."),
-            box(width = 3, title = "Energy Storage goal donut. Data needed."),
+            box(width = 3, plotlyOutput("energy_storage_donut")),
             # Plot still needed
             box(width = 3, title = "Energy Equity goal donut. Data needed.") # Plot still needed# Plot still needed
           ),
@@ -116,22 +116,22 @@ ui <- tagList(
             plotlyOutput("solar_gen")
           )),
           fluidRow(box(
-            div(DT::dataTableOutput("solar_table"), style = "font-size: 90%"), width = 12
+            div(DT::dataTableOutput("solar_table"), style = "font-size: 80%"),width=12
           )),
           h3("Offshore Wind"),
           fluidRow(
             box(
-              title = "Projected Generation",
               width = 6,
               plotlyOutput("wind_projected_gen")
             ),
             box(
-              title = "Projected Capacity",
               width = 6,
               plotlyOutput("wind_projected_capacity")
             )
-            
           ),
+          fluidRow(box(
+            div(DT::dataTableOutput("wind_table"), style = "font-size: 80%"),width=12
+          )),
           h2("Full Data for Generation"),
           fluidRow(box(
             selectInput(
@@ -162,7 +162,6 @@ ui <- tagList(
             box(width = 6, title = "APCo Percent Efficiency Investments/Goal Met. Data Needed.")
           ),
           h2("Electricity Consumption"),
-          fluidRow(box(title = "Energy Consumption by Sector", plotOutput("con_ts"))),
           fluidRow(box(title = "Timeseries of gap in energy consumption. ")),
           fluidRow(box(
             selectInput(
@@ -174,8 +173,18 @@ ui <- tagList(
           )),
           fluidRow(box(div(
             DT::dataTableOutput("con_table")
-          ), width = 9))
+          ), width = 9)),
+          fluidRow(
+            box(plotlyOutput("con_per_capita")),
+            box(plotlyOutput("con_per_gdp"))
+          ),
+          h2("Emissions"),
+          fluidRow(
+            box(plotlyOutput("emissions_per_capita")),
+            box(plotlyOutput("emissions_per_gdp"))
+          )
         ),
+        
         tabItem(
           tabName = "equity",
           h1("Energy Equity in Virginia"),
@@ -306,7 +315,7 @@ server <- function(input, output) {
     va_annual_consumption_area_p
   })
   output$con_pie <- renderPlotly({
-    va_annual_consumption_2017_pie_chart_p_with_legend
+    va_annual_consumption_2018_pie_chart_p_with_legend
   })
   
   output$renewable_timeline_plot <- renderPlotly({
@@ -407,6 +416,21 @@ server <- function(input, output) {
   output$storage_table <- DT::renderDataTable(pjm_storage,
                                               options = list(pageLength = 20),
                                               rownames = FALSE)
+  
+  output$energy_storage_donut <- renderPlotly(single_ring_storage_capacity_donut_p)
+  
+  output$con_per_capita <-renderPlotly(consumption_per_capita_line_p)
+  
+
+  output$con_per_gdp <-renderPlotly(consumption_per_gdp_line_p)
+  
+  output$emissions_per_capita <- renderPlotly(emissions_per_capita_line_p)
+  
+  output$emissions_per_gdp <- renderPlotly(emissions_per_gdp_line_p)
+  
+  output$wind_table <- DT::renderDataTable(pjm_wind,
+                                            options = list(pageLength = 20),
+                                            rownames = FALSE)
   
 }
 
