@@ -174,8 +174,13 @@ ui <- tagList(
           )),
           fluidRow(box(div(
             DT::dataTableOutput("con_table")
-          ), width = 9))
+          ), width = 9)),
+          fluidRow(
+            box(plotlyOutput("con_per_capita")),
+            box(plotlyOutput("con_per_gdp"))
+          )
         ),
+        
         tabItem(
           tabName = "equity",
           h1("Energy Equity in Virginia"),
@@ -410,6 +415,12 @@ server <- function(input, output) {
                                               rownames = FALSE)
   
   output$energy_storage_donut <- renderPlotly(single_ring_storage_capacity_donut_p)
+  
+  output$con_per_capita <-renderPlotly(consumption_per_capita_line_p)
+  
+
+  output$con_per_gdp <-renderPlotly(consumption_per_gdp_line_p)
+  
 }
 
 
