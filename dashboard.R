@@ -312,7 +312,7 @@ server <- function(input, output) {
     va_annual_consumption_area_p
   })
   output$con_pie <- renderPlotly({
-    va_annual_consumption_2017_pie_chart_p_with_legend
+    va_annual_consumption_2018_pie_chart_p_with_legend
   })
   
   output$renewable_timeline_plot <- renderPlotly({
