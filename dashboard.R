@@ -77,7 +77,7 @@ ui <- tagList(
             box(width = 3, plotlyOutput("renewable_progress_donut")),
             box(width = 3, plotlyOutput("carbon_free_donut")),
             # box(width = 3, title = "Energy efficiency goal donut. Data needed."),
-            box(width = 3, title = "Energy Storage goal donut. Data needed."),
+            box(width = 3, plotlyOutput("energy_storage_donut")),
             # Plot still needed
             box(width = 3, title = "Energy Equity goal donut. Data needed.") # Plot still needed# Plot still needed
           ),
@@ -409,6 +409,7 @@ server <- function(input, output) {
                                               options = list(pageLength = 20),
                                               rownames = FALSE)
   
+  output$energy_storage_donut <- renderPlotly(single_ring_storage_capacity_donut_p)
 }
 
 
