@@ -227,10 +227,7 @@ ui <- tagList(
           ),
           box(plotlyOutput(
             'co2_emissions_by_fuel'
-          )),
-          box(
-            plotlyOutput('emissions_by_compound_plot')
-          )),
+          ))),
           fluidRow(box(
             selectInput(
               inputId = "electric_emissions_download",
@@ -303,10 +300,6 @@ server <- function(input, output) {
   
   output$co2_emissions_by_fuel <- renderPlotly({
     carbon_by_fuel_emissions_stacked_p
-  })
-  
-  output$emissions_by_compound_plot <- renderPlotly({
-    emissions_line_p
   })
   
   output$con_area <- renderPlotly({
