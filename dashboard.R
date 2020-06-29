@@ -116,7 +116,7 @@ ui <- tagList(
             plotlyOutput("solar_gen")
           )),
           fluidRow(box(
-            div(DT::dataTableOutput("solar_table"), style = "font-size: 90%"), width = 12
+            div(DT::dataTableOutput("solar_table"), style = "font-size: 80%"),width=12
           )),
           h3("Offshore Wind"),
           fluidRow(
@@ -128,8 +128,10 @@ ui <- tagList(
               width = 6,
               plotlyOutput("wind_projected_capacity")
             )
-            
           ),
+          fluidRow(box(
+            div(DT::dataTableOutput("wind_table"), style = "font-size: 80%"),width=12
+          )),
           h2("Full Data for Generation"),
           fluidRow(box(
             selectInput(
@@ -429,6 +431,10 @@ server <- function(input, output) {
   output$emissions_per_capita <- renderPlotly(emissions_per_capita_line_p)
   
   output$emissions_per_gdp <- renderPlotly(emissions_per_gdp_line_p)
+  
+  output$wind_table <- DT::renderDataTable(pjm_wind,
+                                            options = list(pageLength = 20),
+                                            rownames = FALSE)
   
 }
 
