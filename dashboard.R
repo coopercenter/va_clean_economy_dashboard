@@ -162,7 +162,7 @@ ui <- tagList(
             box(width = 6, title = "APCo Percent Efficiency Investments/Goal Met. Data Needed.")
           ),
           h2("Electricity Consumption"),
-          fluidRow(box(title = "Energy Consumption by Sector", plotOutput("con_ts"))),
+          fluidRow(box(title = "Energy Consumption by Sector", plotlyOutput("con_ts"))),
           fluidRow(box(title = "Timeseries of gap in energy consumption. ")),
           fluidRow(box(
             selectInput(
@@ -421,6 +421,7 @@ server <- function(input, output) {
 
   output$con_per_gdp <-renderPlotly(consumption_per_gdp_line_p)
   
+  output$con_ts <- renderPlotly(va_annual_consumption_area_p)
 }
 
 
