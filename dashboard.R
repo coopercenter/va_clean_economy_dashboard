@@ -186,8 +186,7 @@ ui <- tagList(
                 "Select year:",
                 choices = c("2019", "2018", "2017")
               )
-            ),
-            box(title = "Map of monthly households expenditures on electricity, in $ and as a % of income, shaded by country")
+            )
           ),
           h2("Electricity Expenditures"),
           fluidRow(
