@@ -178,6 +178,11 @@ ui <- tagList(
           fluidRow(
             box(plotlyOutput("con_per_capita")),
             box(plotlyOutput("con_per_gdp"))
+          ),
+          h2("Emissions"),
+          fluidRow(
+            box(plotlyOutput("emissions_per_capita")),
+            box(plotlyOutput("emissions_per_gdp"))
           )
         ),
         
@@ -422,6 +427,11 @@ server <- function(input, output) {
   output$con_per_gdp <-renderPlotly(consumption_per_gdp_line_p)
   
   output$con_ts <- renderPlotly(va_annual_consumption_area_p)
+  
+  output$emissions_per_capita <- renderPlotly(emissions_per_capita_line_p)
+  
+  output$emissions_per_gdp <- renderPlotly(emissions_per_gdp_line_p)
+  
 }
 
 
