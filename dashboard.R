@@ -118,7 +118,11 @@ ui <- tagList(
           fluidRow(box(
             div(DT::dataTableOutput("solar_table"), style = "font-size: 80%"),width=12
           )),
-          h3("Offshore Wind"),
+          h3("Wind"),
+          fluidRow(box(
+            div(DT::dataTableOutput("wind_table"), style = "font-size: 80%"),width=12
+          )),
+          h4("Offshore Wind"),
           fluidRow(
             box(
               width = 6,
@@ -129,10 +133,7 @@ ui <- tagList(
               plotlyOutput("wind_projected_capacity")
             )
           ),
-          fluidRow(box(
-            div(DT::dataTableOutput("wind_table"), style = "font-size: 80%"),width=12
-          )),
-          h2("Full Data for Generation"),
+          h3("Full Data for Generation"),
           fluidRow(box(
             selectInput(
               inputId = "gen_download",
