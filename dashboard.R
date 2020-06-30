@@ -145,13 +145,12 @@ ui <- tagList(
             div(DT::dataTableOutput("gen_table"), style = "font-size: 90%"), width = 12
           )),
           h1('Energy Storage'),
-          h2('Utility-Scale Solar'),
-          fluidRow(box(title = "utility scale over time")),
-          h2('Distributed Solar'),
-          fluidRow(box(title = "distributed over time")),
+          h2('Utility-Scale'),
           fluidRow(box(
             div(DT::dataTableOutput("storage_table"), style = "font-size: 90%"), width = 12
-          ))
+          )),
+          h2('Distributed'),
+          fluidRow(box(title = "distributed over time"))
           
         ),
         tabItem(
