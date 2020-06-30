@@ -458,6 +458,7 @@ server <- function(input, output) {
                                             options = list(pageLength = 20),
                                             rownames = FALSE)
   
+
   output$storage_table <- DT::renderDataTable(pjm_storage,
                                               options = list(pageLength = 20),
                                               rownames = FALSE)
@@ -466,6 +467,7 @@ server <- function(input, output) {
   
   output$con_per_capita <-renderPlotly(consumption_per_capita_line_p)
   
+
 
   output$con_per_gdp <-renderPlotly(consumption_per_gdp_line_p)
   
