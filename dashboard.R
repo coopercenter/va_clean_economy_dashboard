@@ -62,7 +62,9 @@ ui <- tagList(
         menuItem("Energy Equity", tabName = "equity"),
         menuItem("Emissions", tabName = "emissions"),
         hr(),
-        menuItem("Energy Efficiency Programs", tabName = "efficiency")
+        menuItem("Energy Efficiency Programs", tabName = "efficiency"),
+        hr(),
+        menuItem("About Us", tabName = "about")
       )
     ),
     dashboardBody(
@@ -238,6 +240,62 @@ ui <- tagList(
           fluidRow(box(div(
             DT::dataTableOutput("electric_emissions_table")
           ), width = 9))
+        ),
+        tabItem(
+          tabName = 'about',
+          h1("About Us"),
+          fluidRow(
+            box(width=10,
+              h2("Credits"),
+              p("This dashboard was created by a team of researchers from the Weldon Cooper Center for Economic and Policy Studies under the direction of Dr. Arthur Small in collaboration with the Virginia Department of Mines, Minerals, and Energy."),
+              h3("Team Members"),
+              tags$p("Project Coordinator: Yiyun Zhong"),
+              h4("Dashboard creation, design, and publishing:"),
+              tags$ul(
+                tags$li("Jackson Brandberg"),
+                tags$li("Caleb Neale"),
+                tags$li("Ethan Novak"),
+                tags$li("Yiyun Zhong")
+              ),
+              h4("Data visualization:"),
+              tags$ul(
+                tags$li("Alexis Freitas, Lead"),
+                tags$li("Madeleine Alwine"),
+                tags$li("Neha Awasthi"),
+                tags$li("Lauren Coppins"),
+                tags$li("Aishvarya Pathange")
+              ),
+              h4("Data management and acquisition:"),
+              tags$ul(
+                tags$li("Jackson Brandberg, Lead"),
+                tags$li("Yiyun Zhong, Lead"),
+                tags$li("Chloe Fauvel"),
+                tags$li("Pyung Lee"),
+                tags$li("Mai Luu"),
+                tags$li("Jamison Stevens"),
+                tags$li("Emily Weidenfeller")
+              )
+            )
+          ),
+          fluidRow(
+            box(width=10,
+              h2("Overview"),
+              h4("Summary"),
+              p("Recent legislation, including the Virginia Governor’s Executive Order 43 (EO-43) “Expanding Access to Clean Energy and Growing the Clean Energy Jobs of the Future” and the Virginia Clean Economy Act, detail goals and pathways to ultimately transition to an entirely clean energy electric grid in Virginia. The Summary section provides an overview of progress towards this objective broadly characterized by generation, capacity, consumption, and emissions data. "),
+              br(),
+              h4("Generation and Capacity"),
+              p('The overarching targets for generation in realizing a clean energy electric grid in Virginia include 30% renewable energy generation by 2030 followed by 100% carbon-free energy generation by 2050. There are also specific targets that require certain levels of capacity from renewable sources, including wind and solar, as well as energy storage capacity targets.'),
+              br(),
+              h4('Energy Equity'),
+              p('In pursuing a clean energy electric grid, the subject of energy equity must be considered. While transitioning to clean energy is essential, it is also critical that we evaluate how this transition may affect access to or expenses of electricity. Here, we consider energy burdens for households below the federal poverty level in terms of total costs of energy as well as energy costs as a percent of income.'),
+              br(),
+              h4('Emissions'),
+              p('An ultimate goal of clean energy is to lower emissions and to eventually achieve net-zero emissions. This goal will be achieved with the integration of carbon free energy generation and negative emissions projects to sequester carbon from the atmosphere. The emissions section tracks emissions in Virginia both by fuel type and by sector to identify where efforts can best be focused to make these necessary reductions.'),
+              br(),
+              h4('Energy Efficiency'),
+              p('The purpose of energy efficiency is to reduce the amount of energy necessary to accomplish a certain task or function, thus reducing emissions. The Energy Efficiency section contains trends of consumption per capita and consumption per GDP in Virginia as a measure of energy efficiency. This tab also contains information about ongoing and planned investment by investor-owned public utilities in energy efficiency programs that is as current as 2019.')
+            )
+          )
         )
       )
     )
