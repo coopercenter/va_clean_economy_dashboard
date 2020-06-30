@@ -118,7 +118,11 @@ ui <- tagList(
           fluidRow(box(
             div(DT::dataTableOutput("solar_table"), style = "font-size: 80%"),width=12
           )),
-          h3("Offshore Wind"),
+          h3("Wind"),
+          fluidRow(box(
+            div(DT::dataTableOutput("wind_table"), style = "font-size: 80%"),width=12
+          )),
+          h4("Offshore Wind"),
           fluidRow(
             box(
               width = 6,
@@ -129,10 +133,7 @@ ui <- tagList(
               plotlyOutput("wind_projected_capacity")
             )
           ),
-          fluidRow(box(
-            div(DT::dataTableOutput("wind_table"), style = "font-size: 80%"),width=12
-          )),
-          h2("Full Data for Generation"),
+          h3("Full Data for Generation"),
           fluidRow(box(
             selectInput(
               inputId = "gen_download",
@@ -145,13 +146,12 @@ ui <- tagList(
             div(DT::dataTableOutput("gen_table"), style = "font-size: 90%"), width = 12
           )),
           h1('Energy Storage'),
-          h2('Utility-Scale Solar'),
-          fluidRow(box(title = "utility scale over time")),
-          h2('Distributed Solar'),
-          fluidRow(box(title = "distributed over time")),
+          h2('Utility-Scale'),
           fluidRow(box(
             div(DT::dataTableOutput("storage_table"), style = "font-size: 90%"), width = 12
-          ))
+          )),
+          h2('Distributed'),
+          fluidRow(box(title = "distributed over time"))
           
         ),
         tabItem(
@@ -226,10 +226,7 @@ ui <- tagList(
           ),
           box(plotlyOutput(
             'co2_emissions_by_fuel'
-          )),
-          box(
-            plotlyOutput('emissions_by_compound_plot')
-          )),
+          ))),
           fluidRow(box(
             selectInput(
               inputId = "electric_emissions_download",
@@ -302,10 +299,6 @@ server <- function(input, output) {
   
   output$co2_emissions_by_fuel <- renderPlotly({
     carbon_by_fuel_emissions_stacked_p
-  })
-  
-  output$emissions_by_compound_plot <- renderPlotly({
-    emissions_line_p
   })
   
   output$con_area <- renderPlotly({
