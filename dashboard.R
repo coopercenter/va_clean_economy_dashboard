@@ -39,7 +39,6 @@ dbHeader <-
     tags$li(a(
       href = 'https://ceps.coopercenter.org/',
       tags$img(
-        
         src = 'logo.png',
         height = '30',
         width = '115'
@@ -76,12 +75,9 @@ ui <- tagList(
           tabName = "summary",
           h1("Summary of Overall Progress"),
           fluidRow(
-            box(width = 3, plotlyOutput("renewable_progress_donut")),
-            box(width = 3, plotlyOutput("carbon_free_donut")),
-            # box(width = 3, title = "Energy efficiency goal donut. Data needed."),
-            box(width = 3, plotlyOutput("energy_storage_donut")),
-            # Plot still needed
-            box(width = 3, title = "Energy Equity goal donut. Data needed.") # Plot still needed# Plot still needed
+            box(width = 4, plotlyOutput("renewable_progress_donut")),
+            box(width = 4, plotlyOutput("carbon_free_donut")),
+            box(width = 4, plotlyOutput("energy_storage_donut")),
           ),
           h2("Production"),
           fluidRow(box(plotlyOutput("gen_pie")),
@@ -100,44 +96,37 @@ ui <- tagList(
             box(width = 4, plotlyOutput("gen_goal2"))
           ),
           h2("Progress on Renewable and Carbon-Free Generation"),
-          fluidRow(
-            box(plotlyOutput("rc_line"))
-          ),
+          fluidRow(box(plotlyOutput("rc_line"))),
           h2("Breakdown"),
-          fluidRow(
-            box(
-              plotlyOutput("rc_break_line"),
-              align = "center"
-            )
-          ),
+          fluidRow(box(plotlyOutput("rc_break_line"),
+                       align = "center")),
           h3("Solar"),
+          fluidRow(box(width = 6,
+                       plotlyOutput("solar_gen"))),
+          h4("Offshore Wind"),
           fluidRow(box(
             width = 6,
-            plotlyOutput("solar_gen")
+            plotlyOutput("wind_projected_gen")
+          ),
+          box(
+            width = 6,
+            plotlyOutput("wind_projected_capacity")
           )),
           fluidRow(box(
-            div(DT::dataTableOutput("solar_table"), style = "font-size: 80%"),width=12
+            div(DT::dataTableOutput("solar_table"), style = "font-size: 80%"), width =
+              12
           )),
           h3("Wind"),
           fluidRow(box(
-            div(DT::dataTableOutput("wind_table"), style = "font-size: 80%"),width=12
+            div(DT::dataTableOutput("wind_table"), style = "font-size: 80%"), width =
+              12
           )),
-          h4("Offshore Wind"),
-          fluidRow(
-            box(
-              width = 6,
-              plotlyOutput("wind_projected_gen")
-            ),
-            box(
-              width = 6,
-              plotlyOutput("wind_projected_capacity")
-            )
-          ),
+          
           h3("Full Data for Generation"),
           fluidRow(box(
             selectInput(
               inputId = "gen_download",
-              "Choose the content:",
+              "Content:",
               choices = c("VA generation")
             ),
             downloadButton("download_gen", "Download")
@@ -149,20 +138,21 @@ ui <- tagList(
           h2('Utility-Scale'),
           fluidRow(box(
             div(DT::dataTableOutput("storage_table"), style = "font-size: 90%"), width = 12
-          )),
-          h2('Distributed'),
-          fluidRow(box(title = "distributed over time"))
+          ))
           
         ),
         tabItem(
           tabName = "efficiency",
           h1("Energy Efficiency"),
-          fluidRow(
-            box(width = 6, title = "Dominion Percent Efficiency Investments/Goal Met. Data Needed."),
-            box(width = 6, title = "APCo Percent Efficiency Investments/Goal Met. Data Needed.")
-          ),
-          h2("Electricity Consumption"),
-          fluidRow(box(title = "Timeseries of gap in energy consumption. ")),
+          fluidRow(box(plotlyOutput("con_per_capita")),
+                   box(plotlyOutput("con_per_gdp"))),
+          h2("Emissions"),
+          fluidRow(box(plotlyOutput(
+            "emissions_per_capita"
+          )),
+          box(plotlyOutput(
+            "emissions_per_gdp"
+          ))),
           fluidRow(box(
             selectInput(
               inputId = "con_download",
@@ -173,46 +163,23 @@ ui <- tagList(
           )),
           fluidRow(box(div(
             DT::dataTableOutput("con_table")
-          ), width = 9)),
-          fluidRow(
-            box(plotlyOutput("con_per_capita")),
-            box(plotlyOutput("con_per_gdp"))
-          ),
-          h2("Emissions"),
-          fluidRow(
-            box(plotlyOutput("emissions_per_capita")),
-            box(plotlyOutput("emissions_per_gdp"))
-          )
+          ), width = 9))
         ),
         
         tabItem(
           tabName = "equity",
           h1("Energy Equity in Virginia"),
-          fluidRow(
-            box(
-              selectInput(
-                inputId = "equity_year",
-                "Select year:",
-                choices = c("2019", "2018", "2017")
-              )
-            )
-          ),
           h2("Electricity Expenditures"),
           fluidRow(
             box(
-              plotOutput("burden_map_expenditure")
+              plotOutput(
+            "burden_map_expenditure"
+              )
             )
           ),
-          fluidRow(
-            box(
-              plotOutput("burden_map_expenditure_2")
-            )
-          ),
-          h2("Residential Solar Distribution"),
-          fluidRow(
-            box(title = "Interactive map of residential solar distribution, broken down by race, income bracket, and education level")
-          )
-          
+          fluidRow(box(plotOutput(
+            "burden_map_expenditure_2"
+          )))
         ),
         tabItem(
           tabName = "emissions",
@@ -235,62 +202,74 @@ ui <- tagList(
             DT::dataTableOutput("electric_emissions_table")
           ), width = 9))
         ),
-        tabItem(
-          tabName = 'about',
-          h1("About Us"),
-          fluidRow(
-            box(width=9,
-              h2("Credits"),
-              p("This dashboard was created by a team of researchers from the Weldon Cooper Center for Economic and Policy Studies under the direction of Dr. Arthur Small in collaboration with the Virginia Department of Mines, Minerals, and Energy."),
-              h3("Team Members"),
-              tags$p("Project Coordinator: Yiyun Zhong"),
-              h4("Dashboard creation, design, and publishing:"),
-              tags$ul(
-                tags$li("Jackson Brandberg"),
-                tags$li("Caleb Neale"),
-                tags$li("Ethan Novak"),
-                tags$li("Yiyun Zhong")
-              ),
-              h4("Data visualization:"),
-              tags$ul(
-                tags$li("Alexis Freitas, Lead"),
-                tags$li("Madeleine Alwine"),
-                tags$li("Neha Awasthi"),
-                tags$li("Lauren Coppins"),
-                tags$li("Aishvarya Pathange")
-              ),
-              h4("Data management and acquisition:"),
-              tags$ul(
-                tags$li("Jackson Brandberg, Lead"),
-                tags$li("Yiyun Zhong, Lead"),
-                tags$li("Chloe Fauvel"),
-                tags$li("Pyung Lee"),
-                tags$li("Mai Luu"),
-                tags$li("Jamison Stevens"),
-                tags$li("Emily Weidenfeller")
-              )
-            )
-          ),
-          fluidRow(
-            box(width=9,
-              h2("Overview"),
-              h4("Summary"),
-              p("Recent legislation, including the Virginia Governor’s Executive Order 43 (EO-43) “Expanding Access to Clean Energy and Growing the Clean Energy Jobs of the Future” and the Virginia Clean Economy Act, detail goals and pathways to ultimately transition to an entirely clean energy electric grid in Virginia. The Summary section provides an overview of progress towards this objective broadly characterized by generation, capacity, consumption, and emissions data. "),
-              br(),
-              h4("Generation and Capacity"),
-              p('The overarching targets for generation in realizing a clean energy electric grid in Virginia include 30% renewable energy generation by 2030 followed by 100% carbon-free energy generation by 2050. There are also specific targets that require certain levels of capacity from renewable sources, including wind and solar, as well as energy storage capacity targets.'),
-              br(),
-              h4('Energy Equity'),
-              p('In pursuing a clean energy electric grid, the subject of energy equity must be considered. While transitioning to clean energy is essential, it is also critical that we evaluate how this transition may affect access to or expenses of electricity. Here, we consider energy burdens for households below the federal poverty level in terms of total costs of energy as well as energy costs as a percent of income.'),
-              br(),
-              h4('Emissions'),
-              p('An ultimate goal of clean energy is to lower emissions and to eventually achieve net-zero emissions. This goal will be achieved with the integration of carbon free energy generation and negative emissions projects to sequester carbon from the atmosphere. The emissions section tracks emissions in Virginia both by fuel type and by sector to identify where efforts can best be focused to make these necessary reductions.'),
-              br(),
-              h4('Energy Efficiency'),
-              p('The purpose of energy efficiency is to reduce the amount of energy necessary to accomplish a certain task or function, thus reducing emissions. The Energy Efficiency section contains trends of consumption per capita and consumption per GDP in Virginia as a measure of energy efficiency. This tab also contains information about ongoing and planned investment by investor-owned public utilities in energy efficiency programs that is as current as 2019.')
-            )
-          )
-        )
+        tabItem(tabName = 'about',
+                h1("About Us"),
+                fluidRow(
+                  box(
+                    width = 9,
+                    h2("Credits"),
+                    p(
+                      "This dashboard was created by a team of researchers from the Weldon Cooper Center for Economic and Policy Studies under the direction of Dr. Arthur Small in collaboration with the Virginia Department of Mines, Minerals, and Energy."
+                    ),
+                    h3("Team Members"),
+                    tags$p("Project Coordinator: Yiyun Zhong"),
+                    h4("Dashboard creation, design, and publishing:"),
+                    tags$ul(
+                      tags$li("Jackson Brandberg"),
+                      tags$li("Caleb Neale"),
+                      tags$li("Ethan Novak"),
+                      tags$li("Yiyun Zhong")
+                    ),
+                    h4("Data visualization:"),
+                    tags$ul(
+                      tags$li("Alexis Freitas, Lead"),
+                      tags$li("Madeleine Alwine"),
+                      tags$li("Neha Awasthi"),
+                      tags$li("Lauren Coppins"),
+                      tags$li("Aishvarya Pathange")
+                    ),
+                    h4("Data management and acquisition:"),
+                    tags$ul(
+                      tags$li("Jackson Brandberg, Lead"),
+                      tags$li("Yiyun Zhong, Lead"),
+                      tags$li("Chloe Fauvel"),
+                      tags$li("Pyung Lee"),
+                      tags$li("Mai Luu"),
+                      tags$li("Jamison Stevens"),
+                      tags$li("Emily Weidenfeller")
+                    )
+                  )
+                ),
+                fluidRow(
+                  box(
+                    width = 9,
+                    h2("Overview"),
+                    h4("Summary"),
+                    p(
+                      "Recent legislation, including the Virginia Governor’s Executive Order 43 (EO-43) “Expanding Access to Clean Energy and Growing the Clean Energy Jobs of the Future” and the Virginia Clean Economy Act, detail goals and pathways to ultimately transition to an entirely clean energy electric grid in Virginia. The Summary section provides an overview of progress towards this objective broadly characterized by generation, capacity, consumption, and emissions data. "
+                    ),
+                    br(),
+                    h4("Generation and Capacity"),
+                    p(
+                      'The overarching targets for generation in realizing a clean energy electric grid in Virginia include 30% renewable energy generation by 2030 followed by 100% carbon-free energy generation by 2050. There are also specific targets that require certain levels of capacity from renewable sources, including wind and solar, as well as energy storage capacity targets.'
+                    ),
+                    br(),
+                    h4('Energy Equity'),
+                    p(
+                      'In pursuing a clean energy electric grid, the subject of energy equity must be considered. While transitioning to clean energy is essential, it is also critical that we evaluate how this transition may affect access to or expenses of electricity. Here, we consider energy burdens for households below the federal poverty level in terms of total costs of energy as well as energy costs as a percent of income.'
+                    ),
+                    br(),
+                    h4('Emissions'),
+                    p(
+                      'An ultimate goal of clean energy is to lower emissions and to eventually achieve net-zero emissions. This goal will be achieved with the integration of carbon free energy generation and negative emissions projects to sequester carbon from the atmosphere. The emissions section tracks emissions in Virginia both by fuel type and by sector to identify where efforts can best be focused to make these necessary reductions.'
+                    ),
+                    br(),
+                    h4('Energy Efficiency'),
+                    p(
+                      'The purpose of energy efficiency is to reduce the amount of energy necessary to accomplish a certain task or function, thus reducing emissions. The Energy Efficiency section contains trends of consumption per capita and consumption per GDP in Virginia as a measure of energy efficiency. This tab also contains information about ongoing and planned investment by investor-owned public utilities in energy efficiency programs that is as current as 2019.'
+                    )
+                  )
+                ))
       )
     )
   ),
@@ -458,29 +437,31 @@ server <- function(input, output) {
                                             options = list(pageLength = 20),
                                             rownames = FALSE)
   
-
+  
   output$storage_table <- DT::renderDataTable(pjm_storage,
                                               options = list(pageLength = 20),
                                               rownames = FALSE)
   
-  output$energy_storage_donut <- renderPlotly(single_ring_storage_capacity_donut_p)
+  output$energy_storage_donut <-
+    renderPlotly(single_ring_storage_capacity_donut_p)
   
-  output$con_per_capita <-renderPlotly(consumption_per_capita_line_p)
+  output$con_per_capita <-
+    renderPlotly(consumption_per_capita_line_p)
   
-
-
-  output$con_per_gdp <-renderPlotly(consumption_per_gdp_line_p)
   
-  output$emissions_per_capita <- renderPlotly(emissions_per_capita_line_p)
+  
+  output$con_per_gdp <- renderPlotly(consumption_per_gdp_line_p)
+  
+  output$emissions_per_capita <-
+    renderPlotly(emissions_per_capita_line_p)
   
   output$emissions_per_gdp <- renderPlotly(emissions_per_gdp_line_p)
   
   output$wind_table <- DT::renderDataTable(pjm_wind,
-                                            options = list(pageLength = 20),
-                                            rownames = FALSE)
+                                           options = list(pageLength = 20),
+                                           rownames = FALSE)
   
 }
 
 
 shinyApp(ui = ui, server = server)
-
