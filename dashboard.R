@@ -103,7 +103,7 @@ ui <- tagList(
           h3("Solar"),
           fluidRow(box(width = 6,
                        plotlyOutput("solar_gen"))),
-          h4("Offshore Wind"),
+          h3("Offshore Wind"),
           fluidRow(box(
             width = 6,
             plotlyOutput("wind_projected_gen")
@@ -144,6 +144,7 @@ ui <- tagList(
         tabItem(
           tabName = "efficiency",
           h1("Energy Efficiency"),
+          h2("Consumption"),
           fluidRow(box(plotlyOutput("con_per_capita")),
                    box(plotlyOutput("con_per_gdp"))),
           h2("Emissions"),
@@ -153,6 +154,11 @@ ui <- tagList(
           box(plotlyOutput(
             "emissions_per_gdp"
           ))),
+          h2("Annual Savings"),
+          fluidRow(box(plotlyOutput("annual_savings_2022_pie_chart_p_with_legend")),
+                   box(plotlyOutput("annual_savings_2020_pie_chart_p_with_legend"))),
+          fluidRow(box(plotlyOutput("annual_savings_2022_pie_chart_p")),
+                   box(plotlyOutput("annual_savings_2020_pie_chart_p"))),
           fluidRow(box(
             selectInput(
               inputId = "con_download",
@@ -460,6 +466,14 @@ server <- function(input, output) {
   output$wind_table <- DT::renderDataTable(pjm_wind,
                                            options = list(pageLength = 20),
                                            rownames = FALSE)
+  
+  output$annual_savings_2022_pie_chart_p <- renderPlotly(annual_savings_2022_pie_chart_p)
+  
+  output$annual_savings_2020_pie_chart_p <- renderPlotly(annual_savings_2020_pie_chart_p)
+  
+  output$annual_savings_2022_pie_chart_p_with_legend <- renderPlotly(annual_savings_2022_pie_chart_p_with_legend)
+  
+  output$annual_savings_2020_pie_chart_p_with_legend <- renderPlotly(annual_savings_2020_pie_chart_p_with_legend)
   
 }
 
