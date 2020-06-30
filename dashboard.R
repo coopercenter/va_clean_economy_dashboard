@@ -58,7 +58,7 @@ ui <- tagList(
       tags$style(".left-side, .main-sidebar {padding-top: 60px}"),
       sidebarMenu(
         menuItem("Summary", tabName = "summary", icon = icon("dashboard")),
-        menuItem("Generation", tabName = "generation"),
+        menuItem("Generation and Capacity", tabName = "generation"),
         menuItem("Energy Equity", tabName = "equity"),
         menuItem("Emissions", tabName = "emissions"),
         hr(),
@@ -101,19 +101,17 @@ ui <- tagList(
           ),
           h2("Progress on Renewable and Carbon-Free Generation"),
           fluidRow(
-            box(title = "Percentage of Renewable and Carbon-Free Generation", plotlyOutput("rc_line"))
+            box(plotlyOutput("rc_line"))
           ),
           h2("Breakdown"),
           fluidRow(
             box(
-              title = "Breakdown of Carbon-Free Generation by Fuel Type",
               plotlyOutput("rc_break_line"),
               align = "center"
             )
           ),
           h3("Solar"),
           fluidRow(box(
-            title = "Solar Generation over Time",
             width = 6,
             plotlyOutput("solar_gen")
           )),
@@ -202,16 +200,12 @@ ui <- tagList(
           h2("Electricity Expenditures"),
           fluidRow(
             box(
-              title = "average energy expenditures by county",
-              plotOutput("burden_map_expenditure"),
-              width = 9
+              plotOutput("burden_map_expenditure")
             )
           ),
           fluidRow(
             box(
-              title = "average energy expenditures as percent of income by county",
-              plotOutput("burden_map_expenditure_2"),
-              width = 9
+              plotOutput("burden_map_expenditure_2")
             )
           ),
           h2("Residential Solar Distribution"),
@@ -245,7 +239,7 @@ ui <- tagList(
           tabName = 'about',
           h1("About Us"),
           fluidRow(
-            box(width=10,
+            box(width=9,
               h2("Credits"),
               p("This dashboard was created by a team of researchers from the Weldon Cooper Center for Economic and Policy Studies under the direction of Dr. Arthur Small in collaboration with the Virginia Department of Mines, Minerals, and Energy."),
               h3("Team Members"),
@@ -278,7 +272,7 @@ ui <- tagList(
             )
           ),
           fluidRow(
-            box(width=10,
+            box(width=9,
               h2("Overview"),
               h4("Summary"),
               p("Recent legislation, including the Virginia Governor’s Executive Order 43 (EO-43) “Expanding Access to Clean Energy and Growing the Clean Energy Jobs of the Future” and the Virginia Clean Economy Act, detail goals and pathways to ultimately transition to an entirely clean energy electric grid in Virginia. The Summary section provides an overview of progress towards this objective broadly characterized by generation, capacity, consumption, and emissions data. "),
