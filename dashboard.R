@@ -7,7 +7,7 @@ library(dplyr, warn.conflicts = FALSE)
 library(DT)
 library(sf)
 
-load('dashboard_plots_output.RData')
+load('dashboard_plot_outputs.RData')
 
 title <- tags$a(
   href = "https://www.dmme.virginia.gov/",
@@ -147,18 +147,6 @@ ui <- tagList(
           h2("Consumption"),
           fluidRow(box(plotlyOutput("con_per_capita")),
                    box(plotlyOutput("con_per_gdp"))),
-          h2("Emissions"),
-          fluidRow(box(plotlyOutput(
-            "emissions_per_capita"
-          )),
-          box(plotlyOutput(
-            "emissions_per_gdp"
-          ))),
-          h2("Annual Savings"),
-          fluidRow(box(plotlyOutput("annual_savings_2022_pie_chart_p_with_legend")),
-                   box(plotlyOutput("annual_savings_2020_pie_chart_p_with_legend"))),
-          fluidRow(box(plotlyOutput("annual_savings_2022_pie_chart_p")),
-                   box(plotlyOutput("annual_savings_2020_pie_chart_p"))),
           fluidRow(box(
             selectInput(
               inputId = "con_download",
@@ -169,7 +157,23 @@ ui <- tagList(
           )),
           fluidRow(box(div(
             DT::dataTableOutput("con_table")
-          ), width = 9))
+          ), width = 9)),
+          h2("Emissions"),
+          fluidRow(box(plotlyOutput(
+            "emissions_per_capita"
+          )),
+          box(plotlyOutput(
+            "emissions_per_gdp"
+          ))),
+          h2("Annual Savings"),
+          fluidRow(box(plotlyOutput("annual_savings_2022_pie_chart")),
+                   box(plotlyOutput("annual_savings_2020_pie_chart"))),
+          h2("Investment by IOUs"),
+          fluidRow(box(
+            div(DT::dataTableOutput("investment_table"), style = "font-size: 80%"), width =
+              12
+          ))
+
         ),
         
         tabItem(
@@ -443,6 +447,10 @@ server <- function(input, output) {
                                             options = list(pageLength = 20),
                                             rownames = FALSE)
   
+  output$investment_table <- DT::renderDataTable(investment_by_IOUs,
+                                            options = list(pageLength = 20),
+                                            rownames = FALSE)
+  
   
   output$storage_table <- DT::renderDataTable(pjm_storage,
                                               options = list(pageLength = 20),
@@ -467,13 +475,9 @@ server <- function(input, output) {
                                            options = list(pageLength = 20),
                                            rownames = FALSE)
   
-  output$annual_savings_2022_pie_chart_p <- renderPlotly(annual_savings_2022_pie_chart_p)
+  output$annual_savings_2022_pie_chart <- renderPlotly(annual_savings_2022_pie_chart_p)
   
-  output$annual_savings_2020_pie_chart_p <- renderPlotly(annual_savings_2020_pie_chart_p)
-  
-  output$annual_savings_2022_pie_chart_p_with_legend <- renderPlotly(annual_savings_2022_pie_chart_p_with_legend)
-  
-  output$annual_savings_2020_pie_chart_p_with_legend <- renderPlotly(annual_savings_2020_pie_chart_p_with_legend)
+  output$annual_savings_2020_pie_chart <- renderPlotly(annual_savings_2020_pie_chart_p)
   
 }
 
