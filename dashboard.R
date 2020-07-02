@@ -74,7 +74,8 @@ ui <- tagList(
       tabItems(
         tabItem(
           tabName = "summary",
-          h1("Summary of Overall Progress"),
+          h1("Summary of Electric Grid Progress"),
+          h2("Goals"),
           fluidRow(
             box(width = 4, plotlyOutput("renewable_progress_donut")),
             box(width = 4, plotlyOutput("carbon_free_donut")),
