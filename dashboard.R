@@ -63,7 +63,8 @@ ui <- tagList(
         hr(),
         menuItem("Energy Efficiency Programs", tabName = "efficiency"),
         hr(),
-        menuItem("About Us", tabName = "about")
+        menuItem("About", tabName = "about"),
+        menuItem("Credits", tabName = "credits")
       )
     ),
     dashboardBody(
@@ -212,12 +213,12 @@ ui <- tagList(
             DT::dataTableOutput("electric_emissions_table")
           ), width = 9))
         ),
+        
         tabItem(tabName = 'about',
-                h1("About Us"),
+                h1("Dashboard Overview and Background"),
                 fluidRow(
                   box(
                     width = 9,
-                    h2("Overview"),
                     h4("Summary"),
                     p(
                       "Recent legislation, including the Virginia Governor’s Executive Order 43 (EO-43) “Expanding Access to Clean Energy and Growing the Clean Energy Jobs of the Future” and the Virginia Clean Economy Act, detail goals and pathways to ultimately transition to an entirely clean energy electric grid in Virginia. The Summary section provides an overview of progress towards this objective broadly characterized by generation, capacity, consumption, and emissions data. "
@@ -243,11 +244,13 @@ ui <- tagList(
                       'The purpose of energy efficiency is to reduce the amount of energy necessary to accomplish a certain task or function, thus reducing emissions. The Energy Efficiency section contains trends of consumption per capita and consumption per GDP in Virginia as a measure of energy efficiency. This tab also contains information about ongoing and planned investment by investor-owned public utilities in energy efficiency programs that is as current as 2019.'
                     )
                   )
-                ),
+                )),
+        
+        tabItem(tabName = 'credits',
+                h1("Credits"),
                 fluidRow(
                   box(
                     width = 9,
-                    h2("Credits"),
                     p(
                       "This dashboard was created by a team of researchers from the Weldon Cooper Center for Economic and Policy Studies under the direction of Dr. Arthur Small in collaboration with the Virginia Department of Mines, Minerals, and Energy."
                     ),
