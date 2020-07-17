@@ -70,7 +70,7 @@ ui <- tagList(
     dashboardBody(
       tags$head(
         tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
-      ),
+      ), 
       tabItems(
         tabItem(
           tabName = "summary",
@@ -113,7 +113,13 @@ ui <- tagList(
           box(
             width = 6,
             plotlyOutput("wind_projected_capacity")
+          ),
+          box(
+            width = 6,
+            plotlyOutput("offshore_wind_progress")
           )),
+          
+          
           fluidRow(box(
             div(DT::dataTableOutput("solar_table"), style = "font-size: 80%"), width =
               12
@@ -256,7 +262,7 @@ ui <- tagList(
                       "This dashboard was created by a team of researchers from the Weldon Cooper Center for Economic and Policy Studies under the direction of Dr. Arthur Small in collaboration with the Virginia Department of Mines, Minerals, and Energy."
                     ),
                     h3("Team Members"),
-                    tags$p("Project Coordinator: Yiyun Zhong"),
+                    tags$p("Project Coordinators: Arthur Small, Yiyun Zhong"),
                     h4("Dashboard creation, design, and publishing:"),
                     tags$ul(
                       tags$li("Jackson Brandberg"),
@@ -424,7 +430,7 @@ server <- function(input, output) {
   output$sw_donut <- renderPlotly(single_ring_sw_capacity_donut_p)
   
   output$rc_line <-
-    renderPlotly(percent_renewable_and_carbon_free_line_p)
+    renderPlotly(percent_renewable_and_carbon_free_goal_combined_line_p)
   
   output$rc_break_line <-
     renderPlotly(annual_carbon_free_generation_by_type_line_p)
@@ -437,14 +443,17 @@ server <- function(input, output) {
   
   output$wind_projected_capacity <-
     renderPlotly(wind_projected_capacity_line_p)
+  #############################
+  output$offshore_wind_progress <-
+    renderPlotly(single_ring_offshore_wind_capacity_donut_p)
   
   output$burden_map_expenditure <-
-    renderPlot(va_avg_annual_energy_cost,
+    renderPlot(va_avg_annual_energy_cost_p,
                width = 600,
                height = 400)
   
   output$burden_map_expenditure_2 <-
-    renderPlot(va_avg_annual_energy_percent_exp,
+    renderPlot(va_avg_annual_energy_percent_exp_p,
                width = 600,
                height = 400)
   
