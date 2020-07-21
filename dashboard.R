@@ -7,7 +7,7 @@ library(dplyr, warn.conflicts = FALSE)
 library(DT)
 library(sf)
 
-load('dashboard_plot_outputs_new.RData')
+load('dashboard_output_test.RData')
 
 title <- tags$a(
   href = "https://www.dmme.virginia.gov/",
@@ -60,8 +60,7 @@ ui <- tagList(
         menuItem("Generation and Capacity", tabName = "generation"),
         menuItem("Energy Equity", tabName = "equity"),
         menuItem("Emissions", tabName = "emissions"),
-        hr(),
-        menuItem("Energy Efficiency Programs", tabName = "efficiency"),
+        menuItem("Energy Efficiency", tabName = "efficiency"),
         hr(),
         menuItem("About", tabName = "about"),
         menuItem("Credits", tabName = "credits")
@@ -74,23 +73,23 @@ ui <- tagList(
       tabItems(
         tabItem(
           tabName = "summary",
-          h1("Summary of Electric Grid Progress"),
+          h1("Virginia's Progress Toward Clean Economy Goal: Summary"),
           h2("Goals"),
           fluidRow(
             box(width = 4, plotlyOutput("renewable_progress_donut")),
             box(width = 4, plotlyOutput("carbon_free_donut")),
             box(width = 4, plotlyOutput("energy_storage_donut")),
           ),
-          h2("Production"),
+          h2("Production by Fuel Type"),
           fluidRow(box(plotlyOutput("gen_pie")),
                    box(plotlyOutput("gen_area"))),
-          h2("Consumption"),
+          h2("Consumption by Sector"),
           fluidRow(box(plotlyOutput("con_pie")),
                    box(plotlyOutput("con_area")))
         ),
         tabItem(
           tabName = "generation",
-          h1("Generation"),
+          h1("Electricity Capacity and Generation"),
           h2("Goals"),
           fluidRow(
             box(width = 4, plotlyOutput("sw_donut")),
@@ -99,10 +98,10 @@ ui <- tagList(
           ),
           h2("Progress on Renewable and Carbon-Free Generation"),
           fluidRow(box(plotlyOutput("rc_line"))),
-          h2("Breakdown"),
+          h2("Breakdown of Carbon Free Generation by Source"),
           fluidRow(box(plotlyOutput("rc_break_line"),
                        align = "center")),
-          h3("Solar"),
+          h3("Virginia Solar Electric Generation: Utility Scale and Distributed"),
           fluidRow(box(width = 6,
                        plotlyOutput("solar_gen"))),
           h3("Offshore Wind"),
@@ -152,6 +151,13 @@ ui <- tagList(
         tabItem(
           tabName = "efficiency",
           h1("Energy Efficiency"),
+          h2("Energy Efficiency Mandates for Appalchian Power and Dominion Power Company"), #This the new visualization we want, place holder
+          fluidRow(box(plotlyOutput(""))),
+                   
+          
+          h2("Annual Savings from Energy Efficiency Programs"), #This the new visualization we want,place holder
+          fluidRow(box(plotlyOutput("")),
+                   box(plotlyOutput(""))),
           h2("Consumption"),
           fluidRow(box(plotlyOutput("con_per_capita")),
                    box(plotlyOutput("con_per_gdp"))),
@@ -166,17 +172,9 @@ ui <- tagList(
           fluidRow(box(div(
             DT::dataTableOutput("con_table")
           ), width = 9)),
-          h2("Emissions"),
-          fluidRow(box(plotlyOutput(
-            "emissions_per_capita"
-          )),
-          box(plotlyOutput(
-            "emissions_per_gdp"
-          ))),
-          h2("Annual Savings"),
-          fluidRow(box(plotlyOutput("annual_savings_2022_pie_chart")),
-                   box(plotlyOutput("annual_savings_2020_pie_chart"))),
-          h2("Investment by IOUs"),
+         
+          
+          h2("Programs by Investor Owned Utilities"),
           fluidRow(box(
             div(DT::dataTableOutput("investment_table"), style = "font-size: 80%"), width =
               12
@@ -201,12 +199,20 @@ ui <- tagList(
         ),
         tabItem(
           tabName = "emissions",
-          h1("Greenhouse Gas Emissions in Virginia"),
+          h1("Virginia Greenhouse Gas Emissions From Power Productions"),
           fluidRow(box(
             plotlyOutput('electric_emissions_plot2')
           ),
           box(plotlyOutput(
             'co2_emissions_by_fuel'
+          ))),
+          br(),
+          h2("Emissions"), 
+          fluidRow(box(
+            plotlyOutput('emissions_per_capita') 
+          ),
+          box(plotlyOutput(
+            'emissions_per_gdp'
           ))),
           fluidRow(box(
             selectInput(
@@ -233,7 +239,7 @@ ui <- tagList(
                     br(),
                     h4("Generation and Capacity"),
                     p(
-                      'The overarching targets for generation in realizing a clean energy electric grid in Virginia include 30% renewable energy generation by 2030 followed by 100% carbon-free energy generation by 2050. There are also specific targets that require certain levels of capacity from renewable sources, including wind and solar, as well as energy storage capacity targets.'
+                      'The overarching targets for generation in realizing a clean energy electric grid in Virginia include 30% renewable energy generation by 2030 followed by 100% carbon-free energy generation by 2050. There are also specific targets that require certain levels of capacity from renewable sources, including wind and solar, as well as energy storage capacity targets. Other biomass includes agricultural byproducts, landfill gas, and biogenic municipal solid waste. Other energy sources includes nonbiogenetic municpial solid waste, batteries, chemicals, hydrogen, and pump-hydro storage.'
                     ),
                     br(),
                     h4('Energy Equity'),
@@ -249,7 +255,23 @@ ui <- tagList(
                     h4('Energy Efficiency'),
                     p(
                       'The purpose of energy efficiency is to reduce the amount of energy necessary to accomplish a certain task or function, thus reducing emissions. The Energy Efficiency section contains trends of consumption per capita and consumption per GDP in Virginia as a measure of energy efficiency. This tab also contains information about ongoing and planned investment by investor-owned public utilities in energy efficiency programs that is as current as 2019.'
+                    ),
+                    
+                    
+                    br(),
+                    h4('Links'),
+                    p(
+                      tags$a(
+                        href = "https://ceps.coopercenter.org/",
+                        "Weldon Cooper Center for Public Service Center for Economic Policy Studies \n"
+                      ),
+                      br(),
+                      tags$a(
+                        href = "google.com",
+                        "Place holder for team site."
+                      ),
                     )
+                    
                   )
                 )),
         
@@ -448,13 +470,13 @@ server <- function(input, output) {
     renderPlotly(single_ring_offshore_wind_capacity_donut_p)
   
   output$burden_map_expenditure <-
-    renderPlot(va_avg_annual_energy_cost_p,
-               width = 600,
+    renderPlot(va_avg_annual_energy_cost,
+               width = 850,
                height = 400)
   
   output$burden_map_expenditure_2 <-
-    renderPlot(va_avg_annual_energy_percent_exp_p,
-               width = 600,
+    renderPlot(va_avg_annual_energy_percent_exp,
+               width = 850,
                height = 400)
   
   output$solar_table <- DT::renderDataTable(pjm_solar,
@@ -489,9 +511,9 @@ server <- function(input, output) {
                                            options = list(pageLength = 20),
                                            rownames = FALSE)
   
-  output$annual_savings_2022_pie_chart <- renderPlotly(annual_savings_2022_pie_chart_p)
+  output$annual_savings_2022_pie_chart <- renderPlotly(annual_savings_2022_pie_chart_p_with_legend)
   
-  output$annual_savings_2020_pie_chart <- renderPlotly(annual_savings_2020_pie_chart_p)
+  output$annual_savings_2020_pie_chart <- renderPlotly(annual_savings_2020_pie_chart_p_with_legend)
   
 }
 
