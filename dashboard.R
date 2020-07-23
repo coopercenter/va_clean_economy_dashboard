@@ -73,7 +73,7 @@ ui <- tagList(
       tabItems(
         tabItem(
           tabName = "summary",
-          h1("Virginia's Progress Toward Clean Economy Goal: Summary"),
+          h1("Virginia's Progress Towards Cleaner Electric Grid"),
           h2("Goals"),
           fluidRow(
             box(width = 4, plotlyOutput("renewable_progress_donut")),
@@ -152,12 +152,12 @@ ui <- tagList(
           tabName = "efficiency",
           h1("Energy Efficiency"),
           h2("Energy Efficiency Mandates for Appalchian Power and Dominion Power Company"), #This the new visualization we want, place holder
-          fluidRow(box(plotlyOutput(""))),
+          fluidRow(box(plotlyOutput("apco_dom_historic_goals"))),
                    
           
           h2("Annual Savings from Energy Efficiency Programs"), #This the new visualization we want,place holder
-          fluidRow(box(plotlyOutput("")),
-                   box(plotlyOutput(""))),
+          fluidRow(box(plotlyOutput("annual_savings_2020_2022"))),
+                   
           h2("Consumption"),
           fluidRow(box(plotlyOutput("con_per_capita")),
                    box(plotlyOutput("con_per_gdp"))),
@@ -188,14 +188,21 @@ ui <- tagList(
           h2("Electricity Expenditures"),
           fluidRow(
             box(
-              plotOutput(
+              plotlyOutput(
             "burden_map_expenditure"
+              )
+            ),
+            box(
+              plotlyOutput(
+                "dollar_reference_figure"
               )
             )
           ),
-          fluidRow(box(plotOutput(
+          fluidRow(box(plotlyOutput(
             "burden_map_expenditure_2"
-          )))
+          )),(box(plotlyOutput(
+            "percent_income_reference_figure"
+          ))))
         ),
         tabItem(
           tabName = "emissions",
@@ -253,9 +260,10 @@ ui <- tagList(
                     ),
                     br(),
                     h4('Energy Efficiency'),
-                    p(
-                      'The purpose of energy efficiency is to reduce the amount of energy necessary to accomplish a certain task or function, thus reducing emissions. The Energy Efficiency section contains trends of consumption per capita and consumption per GDP in Virginia as a measure of energy efficiency. This tab also contains information about ongoing and planned investment by investor-owned public utilities in energy efficiency programs that is as current as 2019.'
+                    p('The purpose of energy efficiency is to reduce the amount of energy necessary to accomplish a certain task or function, thus reducing emissions. The Energy Efficiency section contains trends of consumption per capita and consumption per GDP in Virginia as a measure of energy efficiency. This tab also contains information about ongoing and planned investment by investor-owned public utilities in energy efficiency programs that is as current as 2019. The Virgina Clean Economy Act created energy efficiency targets for both Dominion Power and Appalachian Power Company. The targets are as a percentage of 2019 jurisdictional retail sales. Dominion Power must reach 5% by 2025 and Appalachian Power must reach 2% by 2025.' 
                     ),
+                    p("Acronyms include:", br(), "APCO: Appalachian Power Company" ,br(), "C-PACE: Commercial Property Assessed Clean Energy ",br(),"DMME:Department of Mines and Mineral and Energy",br(),"IECC: International Energy Conservation Code",br(),"ESPCs: Energy Savings Performance Costs ",br(),"MUSH: Municipalities, Universities, Schools, and Hospitals"),
+                    
                     
                     
                     br(),
@@ -263,13 +271,18 @@ ui <- tagList(
                     p(
                       tags$a(
                         href = "https://ceps.coopercenter.org/",
-                        "Weldon Cooper Center for Public Service Center for Economic Policy Studies \n"
+                        "Weldon Cooper Center for Public Service Center for Economic Policy Studies"
                       ),
                       br(),
                       tags$a(
-                        href = "google.com",
+                        href = "https://www.google.com",
                         "Place holder for team site."
                       ),
+                      br(),
+                      tags$a(
+                        href = "https://www.dmme.virginia.gov/",
+                        "Department of Mine, Minerals, and Energy"
+                      )
                     )
                     
                   )
@@ -469,15 +482,12 @@ server <- function(input, output) {
   output$offshore_wind_progress <-
     renderPlotly(single_ring_offshore_wind_capacity_donut_p)
   
+  ###########
   output$burden_map_expenditure <-
-    renderPlot(va_avg_annual_energy_cost,
-               width = 850,
-               height = 400)
+    renderPlotly(va_avg_annual_energy_cost_p)
   
   output$burden_map_expenditure_2 <-
-    renderPlot(va_avg_annual_energy_percent_exp,
-               width = 850,
-               height = 400)
+    renderPlotly(va_avg_annual_energy_percent_exp_p)
   
   output$solar_table <- DT::renderDataTable(pjm_solar,
                                             options = list(pageLength = 20),
@@ -511,10 +521,12 @@ server <- function(input, output) {
                                            options = list(pageLength = 20),
                                            rownames = FALSE)
   
-  output$annual_savings_2022_pie_chart <- renderPlotly(annual_savings_2022_pie_chart_p_with_legend)
+  output$annual_savings_2020_2022 <- renderPlotly(annual_savings_2020_2022_stacked_bar_chart_p)
+ 
+  output$apco_dom_historic_goals <- renderPlotly(apco_dom_historic_goal_sales_combined_line_p)
   
-  output$annual_savings_2020_pie_chart <- renderPlotly(annual_savings_2020_pie_chart_p_with_legend)
-  
+  output$dollar_reference_figure <- renderPlotly(dollar_reference_figure_p)
+  output$percent_income_reference_figure <- renderPlotly(percent_income_reference_figure_p)
 }
 
 
