@@ -39,9 +39,9 @@ dbHeader <-
     tags$li(a(
       href = 'https://ceps.coopercenter.org/',
       tags$img(
-        src = 'logo.png',
+        src = 'CCPS-Logo_Horiz_White.png',
         height = '30',
-        width = '115'
+        width = '200'
       )
     ), class = "dropdown"),
     titleWidth = 500
@@ -63,6 +63,7 @@ ui <- tagList(
         menuItem("Energy Efficiency", tabName = "efficiency"),
         hr(),
         menuItem("About", tabName = "about"),
+        menuItem("Downloadable Data Tables", tabName = "tables"),
         menuItem("Credits", tabName = "credits")
       )
     ),
@@ -116,69 +117,72 @@ ui <- tagList(
           box(
             width = 6,
             plotlyOutput("offshore_wind_progress")
-          )),
-          
-          
-          fluidRow(box(
-            div(DT::dataTableOutput("solar_table"), style = "font-size: 80%"), width =
-              12
-          )),
-          h3("Wind"),
-          fluidRow(box(
-            div(DT::dataTableOutput("wind_table"), style = "font-size: 80%"), width =
-              12
-          )),
-          
-          h3("Full Data for Generation"),
-          fluidRow(box(
-            selectInput(
-              inputId = "gen_download",
-              "Content:",
-              choices = c("VA generation")
-            ),
-            downloadButton("download_gen", "Download")
-          )),
-          fluidRow(box(
-            div(DT::dataTableOutput("gen_table"), style = "font-size: 90%"), width = 12
-          )),
-          h1('Energy Storage'),
-          h2('Utility-Scale'),
-          fluidRow(box(
-            div(DT::dataTableOutput("storage_table"), style = "font-size: 90%"), width = 12
           ))
           
+          # ,
+          # 
+          # 
+          # fluidRow(box(
+          #   div(DT::dataTableOutput("solar_table"), style = "font-size: 80%"), width =
+          #     12
+          # )),
+          # h3("Wind"),
+          # fluidRow(box(
+          #   div(DT::dataTableOutput("wind_table"), style = "font-size: 80%"), width =
+          #     12
+          # )),
+          # 
+          # h3("Full Data for Generation"),
+          # fluidRow(box(
+          #   selectInput(
+          #     inputId = "gen_download",
+          #     "Content:",
+          #     choices = c("VA generation")
+          #   ),
+          #   downloadButton("download_gen", "Download")
+          # )),
+          # fluidRow(box(
+          #   div(DT::dataTableOutput("gen_table"), style = "font-size: 90%"), width = 12
+          # )),
+          # h1('Energy Storage'),
+          # h2('Utility-Scale'),
+          # fluidRow(box(
+          #   div(DT::dataTableOutput("storage_table"), style = "font-size: 90%"), width = 12
+          # ))
+          # 
         ),
         tabItem(
           tabName = "efficiency",
           h1("Energy Efficiency"),
-          h2("Energy Efficiency Mandates for Appalchian Power and Dominion Power Company"), #This the new visualization we want, place holder
+          h2("Energy Efficiency Mandates for Appalachian Power and Dominion Energy"), #This the new visualization we want, place holder
           fluidRow(box(plotlyOutput("apco_dom_historic_goals"))),
                    
           
-          h2("Annual Savings from Energy Efficiency Programs"), #This the new visualization we want,place holder
-          fluidRow(box(plotlyOutput("annual_savings_2020_2022"))),
+          h2("Projected Future Savings From Energy Efficiency Programs"), #This the new visualization we want,place holder
+          fluidRow(box(plotlyOutput("annual_savings_2020_2022"), width = "100%")),
                    
           h2("Consumption"),
           fluidRow(box(plotlyOutput("con_per_capita")),
-                   box(plotlyOutput("con_per_gdp"))),
-          fluidRow(box(
-            selectInput(
-              inputId = "con_download",
-              "Choose the content:",
-              choices = c("VA total consumption")
-            ),
-            downloadButton("download_con", "Download")
-          )),
-          fluidRow(box(div(
-            DT::dataTableOutput("con_table")
-          ), width = 9)),
-         
-          
-          h2("Programs by Investor Owned Utilities"),
-          fluidRow(box(
-            div(DT::dataTableOutput("investment_table"), style = "font-size: 80%"), width =
-              12
-          ))
+                   box(plotlyOutput("con_per_gdp")))
+          # ,
+          # fluidRow(box(
+          #   selectInput(
+          #     inputId = "con_download",
+          #     "Choose the content:",
+          #     choices = c("VA total consumption")
+          #   ),
+          #   downloadButton("download_con", "Download")
+          # )),
+          # fluidRow(box(div(
+          #   DT::dataTableOutput("con_table")
+          # ), width = 9)),
+          # 
+          # 
+          # h2("Programs by Investor Owned Utilities"),
+          # fluidRow(box(
+          #   div(DT::dataTableOutput("investment_table"), style = "font-size: 80%"), width =
+          #     12
+          # ))
 
         ),
         
@@ -206,7 +210,7 @@ ui <- tagList(
         ),
         tabItem(
           tabName = "emissions",
-          h1("Virginia Greenhouse Gas Emissions From Power Productions"),
+          h1("Virginia Greenhouse Gas Emissions From Power Production"),
           fluidRow(box(
             plotlyOutput('electric_emissions_plot2')
           ),
@@ -220,7 +224,58 @@ ui <- tagList(
           ),
           box(plotlyOutput(
             'emissions_per_gdp'
-          ))),
+          )))
+          # ,
+          # fluidRow(box(
+          #   selectInput(
+          #     inputId = "electric_emissions_download",
+          #     "Choose the content:",
+          #     choices = c("VA CO2 Emissions from Electricity Sector")
+          #   ),
+          #   downloadButton("download_electric_emissions", "Download")
+          # )),
+          # fluidRow(box(div(
+          #   DT::dataTableOutput("electric_emissions_table")
+          # ), width = 9))
+        ),
+        #######
+        tabItem(
+          tabName = "tables",
+          h1("Datasets"),
+
+          ####From Generation and Capacity Tab
+          h2("From generation and Capacity Tab"),
+          fluidRow(box(
+            div(DT::dataTableOutput("solar_table"), style = "font-size: 80%"), width =
+              12
+          )),
+          h3("Wind"),
+          fluidRow(box(
+            div(DT::dataTableOutput("wind_table"), style = "font-size: 80%"), width =
+              12
+          )),
+
+          h3("Full Data for Generation"),
+          fluidRow(box(
+            selectInput(
+              inputId = "gen_download",
+              "Content:",
+              choices = c("VA generation")
+            ),
+            downloadButton("download_gen", "Download")
+          )),
+          fluidRow(box(
+            div(DT::dataTableOutput("gen_table"), style = "font-size: 90%"), width = 12
+          )),
+          h1('Energy Storage'),
+          h2('Utility-Scale'),
+          fluidRow(box(
+            div(DT::dataTableOutput("storage_table"), style = "font-size: 90%"), width = 12
+          ))
+          
+          ###FROM EMISSIONS TAB
+          ,
+          h2("From emissions Tab"),
           fluidRow(box(
             selectInput(
               inputId = "electric_emissions_download",
@@ -232,7 +287,34 @@ ui <- tagList(
           fluidRow(box(div(
             DT::dataTableOutput("electric_emissions_table")
           ), width = 9))
-        ),
+          
+          
+          
+          ,
+          h2("From Energy Effciency Tab"),
+          fluidRow(box(
+            selectInput(
+              inputId = "con_download",
+              "Choose the content:",
+              choices = c("VA total consumption")
+            ),
+            downloadButton("download_con", "Download")
+          )),
+          fluidRow(box(div(
+            DT::dataTableOutput("con_table")
+          ), width = 9)),
+          
+          
+          h2("Programs by Investor Owned Utilities"),
+          fluidRow(box(
+            div(DT::dataTableOutput("investment_table"), style = "font-size: 80%"), width =
+              12
+          ))
+          
+          
+
+          
+        ),######
         
         tabItem(tabName = 'about',
                 h1("Dashboard Overview and Background"),
@@ -245,6 +327,7 @@ ui <- tagList(
                     p(
                       "This dashboard is designed to enable state policy makers, other stakeholders, and the general public to track Virginia's progress towards the realization of these clean energy goals. For each of several quantitative measures, the dashboard displays data on current progress, in the context of historic experience and legislated future targets. The dashboard is designed to be updated as new data become available. It is hoped that the dashboard will assist all stakeholders by providing accountability towards realization of Virginia's clean economy goals."
                     ),
+                    br(),
                     h4("Summary"),
                     p(
                       "The Summary section provides an overview of Virginia's progress towards realization of its clean economy targets, broadly characterized by generation, capacity, consumption, and emissions data."
@@ -252,7 +335,7 @@ ui <- tagList(
                     br(),
                     h4("Generation and Capacity"),
                     p(
-                      "Targets include 30% renewable energy generation by 2030 followed by 100% carbon-free energy generation by 2050. To realize these targets, mandates are imposed on investor-owned utilities that require building specified levels of renewable generation capacity for on-shore wind and solar, and off-shore wind, as well as energy storage capacity. Other biomass includes: agricultural byproducts, landfill gas, and biogenic municipal solid waste. Other energy sources includes nonbiogenetic municpial solid waste, batteries, chemicals, hydrogen, and pump-hydro storage."
+                      "Targets include 30% renewable energy generation by 2030 followed by 100% carbon-free energy generation by 2050. To realize these targets, mandates are imposed on investor-owned utilities that require building specified levels of renewable generation capacity for on-shore wind and solar, and off-shore wind, as well as energy storage capacity. 'Other biomass' includes agricultural byproducts, landfill gas, and biogenic municipal solid waste. 'Other energy sources' includes nonbiogenetic municpial solid waste, batteries, chemicals, hydrogen, and pump-hydro storage."
                     ),
                     br(),
                     h4('Energy Equity'),
@@ -279,11 +362,7 @@ ui <- tagList(
                         href = "https://ceps.coopercenter.org/",
                         "Weldon Cooper Center for Public Service, University of Virginia"
                       ),
-                      # br(),
-                      # tags$a(
-                      #  href = "https://www.google.com",
-                      #  "Place holder for team site."
-                      # ),
+
                       br(),
                       tags$a(
                         href = "https://www.dmme.virginia.gov/",
