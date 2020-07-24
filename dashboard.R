@@ -73,7 +73,7 @@ ui <- tagList(
       tabItems(
         tabItem(
           tabName = "summary",
-          h1("Virginia's Progress Towards Cleaner Electric Grid"),
+          h1("Virginia's Progress Towards a Cleaner Electric Grid"),
           h2("Goals"),
           fluidRow(
             box(width = 4, plotlyOutput("renewable_progress_donut")),
@@ -239,28 +239,34 @@ ui <- tagList(
                 fluidRow(
                   box(
                     width = 9,
+                    p(
+                      "Recent legislation including the Virginia Clean Economy Act details steps to transition Virginia's electric grid to 100% carbon-free generation by 2050, while improving energy equity. The legislation includes mandates to increase generation from renewable energy, improve energy efficiency, reduce carbon emissions, and increase access to affordable energy to lower-income communities and communities of color. The legislation imposes mandates on investor-owned power utilities, state agencies, and others to achieve specific quantitative targets on specific schedules."
+                    ),
+                    p(
+                      "This dashboard is designed to enable state policy makers, other stakeholders, and the general public to track Virginia's progress towards the realization of these clean energy goals. For each of several quantitative measures, the dashboard displays data on current progress, in the context of historic experience and legislated future targets. The dashboard is designed to be updated as new data become available. It is hoped that the dashboard will assist all stakeholders by providing accountability towards realization of Virginia's clean economy goals."
+                    ),
                     h4("Summary"),
                     p(
-                      "Recent legislation, including the Virginia Governor’s Executive Order 43 (EO-43) “Expanding Access to Clean Energy and Growing the Clean Energy Jobs of the Future” and the Virginia Clean Economy Act, detail goals and pathways to ultimately transition to an entirely clean energy electric grid in Virginia. The Summary section provides an overview of progress towards this objective broadly characterized by generation, capacity, consumption, and emissions data. "
+                      "The Summary section provides an overview of Virginia's progress towards realization of its clean economy targets, broadly characterized by generation, capacity, consumption, and emissions data."
                     ),
                     br(),
                     h4("Generation and Capacity"),
                     p(
-                      'The overarching targets for generation in realizing a clean energy electric grid in Virginia include 30% renewable energy generation by 2030 followed by 100% carbon-free energy generation by 2050. There are also specific targets that require certain levels of capacity from renewable sources, including wind and solar, as well as energy storage capacity targets. Other biomass includes agricultural byproducts, landfill gas, and biogenic municipal solid waste. Other energy sources includes nonbiogenetic municpial solid waste, batteries, chemicals, hydrogen, and pump-hydro storage.'
+                      "Targets include 30% renewable energy generation by 2030 followed by 100% carbon-free energy generation by 2050. To realize these targets, mandates are imposed on investor-owned utilities that require building specified levels of renewable generation capacity for on-shore wind and solar, and off-shore wind, as well as energy storage capacity. Other biomass includes: agricultural byproducts, landfill gas, and biogenic municipal solid waste. Other energy sources includes nonbiogenetic municpial solid waste, batteries, chemicals, hydrogen, and pump-hydro storage."
                     ),
                     br(),
                     h4('Energy Equity'),
                     p(
-                      'In pursuing a clean energy electric grid, the subject of energy equity must be considered. While transitioning to clean energy is essential, it is also critical that we evaluate how this transition may affect access to or expenses of electricity. Here, we consider energy burdens for households below the federal poverty level in terms of total costs of energy as well as energy costs as a percent of income.'
+                      'Figures in this tab display information about energy burdens for households below the federal poverty level. Data are displayed in terms of total costs of energy as well as energy costs as a percent of income.'
                     ),
                     br(),
                     h4('Emissions'),
                     p(
-                      'An ultimate goal of clean energy is to lower emissions and to eventually achieve net-zero emissions. This goal will be achieved with the integration of carbon free energy generation and negative emissions projects to sequester carbon from the atmosphere. The emissions section tracks emissions in Virginia both by fuel type and by sector to identify where efforts can best be focused to make these necessary reductions.'
+                      'This section tracks emissions in Virginia both by fuel type and by sector.'
                     ),
                     br(),
                     h4('Energy Efficiency'),
-                    p('The purpose of energy efficiency is to reduce the amount of energy necessary to accomplish a certain task or function, thus reducing emissions. The Energy Efficiency section contains trends of consumption per capita and consumption per GDP in Virginia as a measure of energy efficiency. This tab also contains information about ongoing and planned investment by investor-owned public utilities in energy efficiency programs that is as current as 2019. The Virgina Clean Economy Act created energy efficiency targets for both Dominion Power and Appalachian Power Company. The targets are as a percentage of 2019 jurisdictional retail sales. Dominion Power must reach 5% by 2025 and Appalachian Power must reach 2% by 2025.' 
+                    p('The Virgina Clean Economy Act imposes energy efficiency targets on both Dominion Power and Appalachian Power Company. These targets are expressed as required percentage reductions in total retail sales, from a 2019 baseline. Dominion Power must reduce sales by 5% by 2025. Appalachian Power must reduce sales by 2% by 2025. For context, the Energy Efficiency section also displays trends on consumption per capita and consumption per GDP in Virginia. Data tables at bottom contain information about ongoing and planned investment by investor-owned public utilities in energy efficiency programs.' 
                     ),
                     p("Acronyms include:", br(), "APCO: Appalachian Power Company" ,br(), "C-PACE: Commercial Property Assessed Clean Energy ",br(),"DMME:Department of Mines and Mineral and Energy",br(),"IECC: International Energy Conservation Code",br(),"ESPCs: Energy Savings Performance Costs ",br(),"MUSH: Municipalities, Universities, Schools, and Hospitals"),
                     
@@ -271,17 +277,17 @@ ui <- tagList(
                     p(
                       tags$a(
                         href = "https://ceps.coopercenter.org/",
-                        "Weldon Cooper Center for Public Service Center for Economic Policy Studies"
+                        "Weldon Cooper Center for Public Service, University of Virginia"
                       ),
-                      br(),
-                      tags$a(
-                        href = "https://www.google.com",
-                        "Place holder for team site."
-                      ),
+                      # br(),
+                      # tags$a(
+                      #  href = "https://www.google.com",
+                      #  "Place holder for team site."
+                      # ),
                       br(),
                       tags$a(
                         href = "https://www.dmme.virginia.gov/",
-                        "Department of Mine, Minerals, and Energy"
+                        "Virginia Department of Mines, Minerals, and Energy"
                       )
                     )
                     
@@ -294,7 +300,7 @@ ui <- tagList(
                   box(
                     width = 9,
                     p(
-                      "This dashboard was created by a team of researchers from the Weldon Cooper Center for Economic and Policy Studies under the direction of Dr. Arthur Small in collaboration with the Virginia Department of Mines, Minerals, and Energy."
+                      "This dashboard was created by a team of researchers from the Weldon Cooper Center for Public Service at the University of Virginia under the direction of Dr. Arthur Small in collaboration with the Virginia Department of Mines, Minerals, and Energy."
                     ),
                     h3("Team Members"),
                     tags$p("Project Coordinators: Arthur Small, Yiyun Zhong"),
@@ -334,7 +340,7 @@ ui <- tagList(
       "Developed by the",
       tags$a(
         href = "https://ceps.coopercenter.org/",
-        "Weldon Cooper Center for Public Service Center for Economic Policy Studies"
+        "Weldon Cooper Center for Public Service, Center for Economic Policy Studies"
       ),
       "in conjunction with the Virginia Department of Mines, Minerals, and Energy"
     ),
