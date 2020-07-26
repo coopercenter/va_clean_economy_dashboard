@@ -117,6 +117,11 @@ ui <- tagList(
           box(
             width = 6,
             plotlyOutput("offshore_wind_progress")
+          )),
+          h3("Virginia's Net Electricity Imports"),
+          fluidRow(box(
+            width = 6,
+            plotlyOutput("va_elec_net_imports_line_p")
           ))
 
         ),
@@ -455,6 +460,8 @@ server <- function(input, output) {
   output$dollar_reference_figure <- renderPlotly(dollar_reference_figure_p)
   
   output$percent_income_reference_figure <- renderPlotly(percent_income_reference_figure_p)
+  
+  output$va_elec_net_imports_line_p <- renderPlotly(va_elec_net_imports_line_p)
   
 
   output$solar_table <- DT::renderDataTable(pjm_solar,
