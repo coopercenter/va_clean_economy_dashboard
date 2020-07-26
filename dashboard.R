@@ -98,7 +98,7 @@ ui <- tagList(
             box(width = 4, plotlyOutput("gen_goal2"))
           ),
           h2("Progress on Renewable and Carbon-Free Generation"),
-          fluidRow(box(plotlyOutput("rc_line"))),
+          fluidRow(box(plotlyOutput("rc_line"), width = "100%")),
           h2("Breakdown of Carbon Free Generation by Source"),
           fluidRow(box(plotlyOutput("rc_break_line"),
                        align = "center")),
@@ -118,72 +118,21 @@ ui <- tagList(
             width = 6,
             plotlyOutput("offshore_wind_progress")
           ))
-          
-          # ,
-          # 
-          # 
-          # fluidRow(box(
-          #   div(DT::dataTableOutput("solar_table"), style = "font-size: 80%"), width =
-          #     12
-          # )),
-          # h3("Wind"),
-          # fluidRow(box(
-          #   div(DT::dataTableOutput("wind_table"), style = "font-size: 80%"), width =
-          #     12
-          # )),
-          # 
-          # h3("Full Data for Generation"),
-          # fluidRow(box(
-          #   selectInput(
-          #     inputId = "gen_download",
-          #     "Content:",
-          #     choices = c("VA generation")
-          #   ),
-          #   downloadButton("download_gen", "Download")
-          # )),
-          # fluidRow(box(
-          #   div(DT::dataTableOutput("gen_table"), style = "font-size: 90%"), width = 12
-          # )),
-          # h1('Energy Storage'),
-          # h2('Utility-Scale'),
-          # fluidRow(box(
-          #   div(DT::dataTableOutput("storage_table"), style = "font-size: 90%"), width = 12
-          # ))
-          # 
+
         ),
         tabItem(
           tabName = "efficiency",
           h1("Energy Efficiency"),
-          h2("Energy Efficiency Mandates for Appalachian Power and Dominion Energy"), #This the new visualization we want, place holder
+          h2("Energy Efficiency Mandates for Appalachian Power and Dominion Energy"),
           fluidRow(box(plotlyOutput("apco_dom_historic_goals"))),
                    
           
-          h2("Projected Future Savings From Energy Efficiency Programs"), #This the new visualization we want,place holder
+          h2("Projected Future Savings From Energy Efficiency Programs"), 
           fluidRow(box(plotlyOutput("annual_savings_2020_2022"), width = "100%")),
                    
           h2("Consumption"),
           fluidRow(box(plotlyOutput("con_per_capita")),
                    box(plotlyOutput("con_per_gdp")))
-          # ,
-          # fluidRow(box(
-          #   selectInput(
-          #     inputId = "con_download",
-          #     "Choose the content:",
-          #     choices = c("VA total consumption")
-          #   ),
-          #   downloadButton("download_con", "Download")
-          # )),
-          # fluidRow(box(div(
-          #   DT::dataTableOutput("con_table")
-          # ), width = 9)),
-          # 
-          # 
-          # h2("Programs by Investor Owned Utilities"),
-          # fluidRow(box(
-          #   div(DT::dataTableOutput("investment_table"), style = "font-size: 80%"), width =
-          #     12
-          # ))
-
         ),
         
         tabItem(
@@ -225,81 +174,54 @@ ui <- tagList(
           box(plotlyOutput(
             'emissions_per_gdp'
           )))
-          # ,
-          # fluidRow(box(
-          #   selectInput(
-          #     inputId = "electric_emissions_download",
-          #     "Choose the content:",
-          #     choices = c("VA CO2 Emissions from Electricity Sector")
-          #   ),
-          #   downloadButton("download_electric_emissions", "Download")
-          # )),
-          # fluidRow(box(div(
-          #   DT::dataTableOutput("electric_emissions_table")
-          # ), width = 9))
+
         ),
-        #######
+      
         tabItem(
           tabName = "tables",
           h1("Datasets"),
 
-          ####From Generation and Capacity Tab
-          h2("From generation and Capacity Tab"),
+
+          fluidRow(box(
+            selectInput(
+              "check", "Choose a dataset:",
+              choices = c("Solar Generation", "Wind Generation", "Generation By Source", "Utility-Scale Storage","Electricy Sector Emissions", "Consumption by Sector","Programs by Investor Owned Utilities")
+            ),
+            downloadButton("downloadData", "Download") 
+          )),
+          
+          
+          h2("Solar Generation"),
           fluidRow(box(
             div(DT::dataTableOutput("solar_table"), style = "font-size: 80%"), width =
               12
           )),
-          h3("Wind"),
+          
+          
+          h2("Wind Generation"),
           fluidRow(box(
             div(DT::dataTableOutput("wind_table"), style = "font-size: 80%"), width =
               12
           )),
 
-          h3("Full Data for Generation"),
-          fluidRow(box(
-            selectInput(
-              inputId = "gen_download",
-              "Content:",
-              choices = c("VA generation")
-            ),
-            downloadButton("download_gen", "Download")
-          )),
+          h2("Generation By Source"),
           fluidRow(box(
             div(DT::dataTableOutput("gen_table"), style = "font-size: 90%"), width = 12
           )),
-          h1('Energy Storage'),
-          h2('Utility-Scale'),
+          
+          
+          h2('Utility-Scale Storage'),
           fluidRow(box(
             div(DT::dataTableOutput("storage_table"), style = "font-size: 90%"), width = 12
-          ))
-          
-          ###FROM EMISSIONS TAB
-          ,
-          h2("From emissions Tab"),
-          fluidRow(box(
-            selectInput(
-              inputId = "electric_emissions_download",
-              "Choose the content:",
-              choices = c("VA CO2 Emissions from Electricity Sector")
-            ),
-            downloadButton("download_electric_emissions", "Download")
           )),
+          
+          h2("Electricy Sector Emissions"),
           fluidRow(box(div(
             DT::dataTableOutput("electric_emissions_table")
-          ), width = 9))
+          ), width = 9)),
           
           
-          
-          ,
-          h2("From Energy Effciency Tab"),
-          fluidRow(box(
-            selectInput(
-              inputId = "con_download",
-              "Choose the content:",
-              choices = c("VA total consumption")
-            ),
-            downloadButton("download_con", "Download")
-          )),
+          h2("Consumption by Sector"),
           fluidRow(box(div(
             DT::dataTableOutput("con_table")
           ), width = 9)),
@@ -310,11 +232,7 @@ ui <- tagList(
             div(DT::dataTableOutput("investment_table"), style = "font-size: 80%"), width =
               12
           ))
-          
-          
-
-          
-        ),######
+        ),
         
         tabItem(tabName = 'about',
                 h1("Dashboard Overview and Background"),
@@ -335,7 +253,7 @@ ui <- tagList(
                     br(),
                     h4("Generation and Capacity"),
                     p(
-                      "Targets include 30% renewable energy generation by 2030 followed by 100% carbon-free energy generation by 2050. To realize these targets, mandates are imposed on investor-owned utilities that require building specified levels of renewable generation capacity for on-shore wind and solar, and off-shore wind, as well as energy storage capacity. 'Other biomass' includes agricultural byproducts, landfill gas, and biogenic municipal solid waste. 'Other energy sources' includes nonbiogenetic municpial solid waste, batteries, chemicals, hydrogen, and pump-hydro storage."
+                      "Targets include 30% renewable energy generation by 2030 followed by 100% carbon-free energy generation by 2050. To realize these targets, mandates are imposed on investor-owned utilities that require building specified levels of renewable generation capacity for on-shore wind and solar, and off-shore wind, as well as energy storage capacity. 'Other biomass' includes agricultural byproducts, landfill gas, and biogenic municipal solid waste. 'Other energy sources' includes nonbiogenetic municpial solid waste, batteries, chemicals, hydrogen, and pump-hydro storage. The definition of 'renewables' as defined in the VCEA follows the Va. Code § 56-576 definition of renewables but explicitly excludes 'waste heat from fossil-fired facilities' and 'electricity generated from pumped storage'. "
                     ),
                     br(),
                     h4('Energy Equity'),
@@ -487,66 +405,7 @@ server <- function(input, output) {
     percent_renewable_and_carbon_free_line_p
     
   })
-  
-  gen_table <- DT::renderDataTable(va_gen_w_commas,
-                                   options = list(pageLength = 19),
-                                   rownames = FALSE)
-  
-  electric_emissions_table <- DT::renderDataTable(
-    virginia_emissions_electric_commas,
-    options = list(pageLength = 19),
-    rownames = FALSE
-  )
-  
-  output$electric_emissions_table <- electric_emissions_table
-  
-  output$gen_table <- gen_table
-  
-  electric_emissions_download_input <- reactive({
-    switch(input$electric_emissions_download,
-           "VA CO2 Emissions Electricity Sector" = electric_emissions_table)
-  })
-  
-  output$download_electric_emissions <- downloadHandler(
-    filename = function() {
-      paste(input$electric_emissions_download, ".csv", sep = "")
-    },
-    content = function(file) {
-      write.csv(electric_emissions_download_input(), file, row.names = FALSE)
-    }
-  )
-  
-  gen_download_Input <- reactive({
-    switch(input$gen_download,
-           "VA generation" = gen_table)
-  })
-  
-  output$download_gen <- downloadHandler(
-    filename = function() {
-      paste(input$gen_download, ".csv", sep = "")
-    },
-    content = function(file) {
-      write.csv(gen_download_Input(), file, row.names = FALSE)
-    }
-  )
-  
-  output$con_table <- DT::renderDataTable(va_con_w_commas,
-                                          options = list(pageLength = 20),
-                                          rownames = FALSE)
-  
-  con_download_Input <- reactive({
-    switch(input$con_download,
-           "VA total consumption" = consumption)
-  })
-  
-  output$download_con <- downloadHandler(
-    filename = function() {
-      paste(input$con_download, ".csv", sep = "")
-    },
-    content = function(file) {
-      write.csv(con_download_Input(), file, row.names = FALSE)
-    }
-  )
+ 
   output$sw_donut <- renderPlotly(single_ring_sw_capacity_donut_p)
   
   output$rc_line <-
@@ -563,36 +422,22 @@ server <- function(input, output) {
   
   output$wind_projected_capacity <-
     renderPlotly(wind_projected_capacity_line_p)
-  #############################
+
   output$offshore_wind_progress <-
     renderPlotly(single_ring_offshore_wind_capacity_donut_p)
   
-  ###########
   output$burden_map_expenditure <-
     renderPlotly(va_avg_annual_energy_cost_p)
   
   output$burden_map_expenditure_2 <-
     renderPlotly(va_avg_annual_energy_percent_exp_p)
   
-  output$solar_table <- DT::renderDataTable(pjm_solar,
-                                            options = list(pageLength = 20),
-                                            rownames = FALSE)
-  
-  output$investment_table <- DT::renderDataTable(investment_by_IOUs,
-                                            options = list(pageLength = 20),
-                                            rownames = FALSE)
-  
-  
-  output$storage_table <- DT::renderDataTable(pjm_storage,
-                                              options = list(pageLength = 20),
-                                              rownames = FALSE)
   
   output$energy_storage_donut <-
     renderPlotly(single_ring_storage_capacity_donut_p)
   
   output$con_per_capita <-
     renderPlotly(consumption_per_capita_line_p)
-  
   
   
   output$con_per_gdp <- renderPlotly(consumption_per_gdp_line_p)
@@ -602,17 +447,66 @@ server <- function(input, output) {
   
   output$emissions_per_gdp <- renderPlotly(emissions_per_gdp_line_p)
   
-  output$wind_table <- DT::renderDataTable(pjm_wind,
-                                           options = list(pageLength = 20),
-                                           rownames = FALSE)
   
-  output$annual_savings_2020_2022 <- renderPlotly(annual_savings_2020_2022_stacked_bar_chart_p)
+  output$annual_savings_2020_2022 <- renderPlotly(annual_savings_2020_2022_stacked_bar_chart)
  
   output$apco_dom_historic_goals <- renderPlotly(apco_dom_historic_goal_sales_combined_line_p)
   
   output$dollar_reference_figure <- renderPlotly(dollar_reference_figure_p)
+  
   output$percent_income_reference_figure <- renderPlotly(percent_income_reference_figure_p)
-}
+  
 
+  output$solar_table <- DT::renderDataTable(pjm_solar,
+                                            options = list(pageLength = 20),
+                                            rownames = FALSE)
+  
+  
+  output$wind_table <- DT::renderDataTable(pjm_wind,
+                                           options = list(pageLength = 20),
+                                           rownames = FALSE)
+  
+  output$gen_table <- DT::renderDataTable(va_gen_w_commas,
+                                          options = list(pageLength = 19),
+                                          rownames = FALSE)
+  
+  output$storage_table <- DT::renderDataTable(pjm_storage,
+                                              options = list(pageLength = 20),
+                                              rownames = FALSE)
+  
+  
+  output$electric_emissions_table <- electric_emissions_table <- DT::renderDataTable(
+                                                                     virginia_emissions_electric_commas,
+                                                                     options = list(pageLength = 19),
+                                                                     rownames = FALSE)
+  output$con_table <- DT::renderDataTable(va_con_w_commas,
+                                          options = list(pageLength = 20),
+                                          rownames = FALSE)
+  
+  output$investment_table <- DT::renderDataTable(investment_by_IOUs,
+                                                 options = list(pageLength = 20),
+                                                 rownames = FALSE)
+  datasetInput <- reactive({
+    switch(input$check,
+           "Solar Generation" = pjm_solar,
+           "Wind Generation" = pjm_wind,
+           "Generation By Source" = va_gen_w_commas,
+           "Utility-Scale Storage" = pjm_storage,
+           "Electricy Sector Emissions" = virginia_emissions_electric_commas,
+           "Consumption by Sector" = va_con_w_commas,
+           "Programs by Investor Owned Utilities" = investment_by_IOUs)
+  })
+  
+  
+  output$downloadData <- downloadHandler(
+    filename = function() {
+      paste(input$check, ".csv", sep = "")
+    },
+    content = function(file) {
+      write.csv(datasetInput(), file,  row.names = FALSE)
+    }
+  )
+  
+}
 
 shinyApp(ui = ui, server = server)
