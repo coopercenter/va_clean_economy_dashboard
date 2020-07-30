@@ -75,6 +75,7 @@ ui <- tagList(
         tabItem(
           tabName = "summary",
           h1("Virginia's Progress Towards a Cleaner Electric Grid"),
+          h4("All plots in this dashboard are interactive. More information in the about tab."),
           h2("Goals"),
           fluidRow(
             box(width = 4, plotlyOutput("renewable_progress_donut")),
@@ -251,6 +252,9 @@ ui <- tagList(
                     ),
                     p(
                       "This dashboard is designed to enable state policy makers, other stakeholders, and the general public to track Virginia's progress towards the realization of these clean energy goals. For each of several quantitative measures, the dashboard displays data on current progress, in the context of historic experience and legislated future targets. The dashboard is designed to be updated as new data become available. It is hoped that the dashboard will assist all stakeholders by providing accountability towards realization of Virginia's clean economy goals."
+                    ),
+                    p(
+                      "All plots in this dashboard are interactive. As the mouse hovers over the plots additional information describing specific data points will appear."
                     ),
                     br(),
                     h4("Summary"),
