@@ -75,7 +75,7 @@ ui <- tagList(
         tabItem(
           tabName = "summary",
           h1("Virginia's Progress Towards a Cleaner Electric Grid"),
-          h4("All plots in this dashboard are interactive. More information in the about tab."),
+          h4("This dashboard includes interactive elements. Move your mouse around to discover them. For more information, click on the 'About' tab."),
           h2("Goals"),
           fluidRow(
             box(width = 4, plotlyOutput("renewable_progress_donut")),
@@ -146,24 +146,15 @@ ui <- tagList(
         tabItem(
           tabName = "equity",
           h1("Energy Equity in Virginia"),
-          h2("Electricity Expenditures"),
+          h2("Average Annual Energy Cost for All Electricity"),
           fluidRow(
-            box(
-              plotlyOutput(
-            "burden_map_expenditure"
-              )
+            box(plotlyOutput( "burden_map_expenditure")),
+            box(plotlyOutput("dollar_reference_figure" ))
             ),
-            box(
-              plotlyOutput(
-                "dollar_reference_figure"
-              )
+          fluidRow(
+            box(plotlyOutput("burden_map_expenditure_2")),
+            box(plotlyOutput("percent_income_reference_figure"))
             )
-          ),
-          fluidRow(box(plotlyOutput(
-            "burden_map_expenditure_2"
-          )),(box(plotlyOutput(
-            "percent_income_reference_figure"
-          ))))
         ),
         tabItem(
           tabName = "emissions",
@@ -254,7 +245,9 @@ ui <- tagList(
                       "This dashboard is designed to enable state policy makers, other stakeholders, and the general public to track Virginia's progress towards the realization of these clean energy goals. For each of several quantitative measures, the dashboard displays data on current progress, in the context of historic experience and legislated future targets. The dashboard is designed to be updated as new data become available. It is hoped that the dashboard will assist all stakeholders by providing accountability towards realization of Virginia's clean economy goals."
                     ),
                     p(
-                      "All plots in this dashboard are interactive. As the mouse hovers over the plots additional information describing specific data points will appear."
+                      "All plots in this dashboard are interactive. As the mouse hovers over the plots additional information describing specific data points will appear.
+                       If the plots have legends, click on the individual legend items turn their visibility on the plot on or off. This is true for all plots with legends, including line plots, bar plots, and stacked plots. 
+                       For all plots exlcuding the circle plots, left click and drag across the interactive plot to 'zoom in' on the plot. This allows the user to examine specific portions of the graph. Double click on the plot to return to normal scaling."
                     ),
                     br(),
                     h4("Summary"),
@@ -269,7 +262,7 @@ ui <- tagList(
                     br(),
                     h4('Energy Equity'),
                     p(
-                      'Figures in this tab display information about energy burdens for households below the federal poverty level. Data are displayed in terms of total costs of energy as well as energy costs as a percent of income.'
+                      'Figures in this tab display information about energy burdens for households in Virginia. Data are displayed in terms of total costs of energy as well as energy costs as a percent of income.'
                     ),
                     br(),
                     h4('Emissions'),
@@ -459,7 +452,7 @@ server <- function(input, output) {
   output$emissions_per_gdp <- renderPlotly(emissions_per_gdp_line_p)
   
   
-  output$annual_savings_2020_2022 <- renderPlotly(annual_savings_2020_2022_stacked_bar_chart)
+  output$annual_savings_2020_2022 <- renderPlotly(annual_savings_2020_2022_stacked_bar_chart_p)
  
   output$apco_dom_historic_goals <- renderPlotly(apco_dom_historic_goal_sales_combined_line_p)
   
