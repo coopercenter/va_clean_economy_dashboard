@@ -283,14 +283,19 @@ ui <- tagList(
                     h4('Links'),
                     p(
                       tags$a(
-                        href = "https://ceps.coopercenter.org/",
-                        "Weldon Cooper Center for Public Service, University of Virginia"
+                        href = "https://www.dmme.virginia.gov/de/LinkDocuments/VCEA%20Summary.pdf",
+                        "VCEA Reference Summary"
                       ),
 
                       br(),
                       tags$a(
                         href = "https://www.dmme.virginia.gov/",
                         "Virginia Department of Mines, Minerals, and Energy"
+                      ),
+                      br(),
+                      tags$a(
+                        href = "https://ceps.coopercenter.org/",
+                        "Weldon Cooper Center for Public Service, University of Virginia"
                       )
                     )
                     
