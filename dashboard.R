@@ -148,12 +148,14 @@ ui <- tagList(
           h1("Energy Equity in Virginia"),
           h2("Average Annual Energy Cost for All Electricity"),
           fluidRow(
-            box(plotlyOutput( "burden_map_expenditure")),
-            box(plotlyOutput("dollar_reference_figure" ))
+            box(plotlyOutput("burden_map_expenditure"), width = 7)
+            ,
+            box(plotlyOutput("dollar_reference_figure" ), width = 5)
             ),
           fluidRow(
-            box(plotlyOutput("burden_map_expenditure_2")),
-            box(plotlyOutput("percent_income_reference_figure"))
+            box(plotlyOutput("burden_map_expenditure_2"), width = 7)
+            ,
+            box(plotlyOutput("percent_income_reference_figure"), width = 5)
             )
         ),
         tabItem(
