@@ -7,7 +7,7 @@ library(dplyr, warn.conflicts = FALSE)
 library(DT)
 library(sf)
 
-load('dashboard_output_test.RData')
+load('dashboard_outputs_test.RData')
 
 title <- tags$a(
   href = "https://www.dmme.virginia.gov/",
@@ -99,7 +99,14 @@ ui <- tagList(
             box(width = 4, plotlyOutput("gen_goal2"))
           ),
           h2("Progress on Renewable and Carbon-Free Generation"),
-          fluidRow(box(plotlyOutput("rc_line"), width = "100%")),
+          fluidRow(box(
+            width = 6,
+            plotlyOutput("rc_line")
+          ),
+          box(
+            width = 6,
+            plotlyOutput("cf_line")
+          )),
           
           h3("Virginia's Net Electricity Imports"),
           fluidRow(box(
@@ -420,7 +427,10 @@ server <- function(input, output) {
   output$sw_donut <- renderPlotly(single_ring_sw_capacity_donut_p)
   
   output$rc_line <-
-    renderPlotly(percent_renewable_and_carbon_free_goal_combined_line_p)
+    renderPlotly(percent_renewable_and_schedule_goal_combined_line_p)
+  
+  output$cf_line <- 
+    renderPlotly(percent_carbon_free_line_p)
   
   output$rc_break_line <-
     renderPlotly(annual_carbon_free_generation_by_type_line_p)
