@@ -7,7 +7,7 @@ library(dplyr, warn.conflicts = FALSE)
 library(DT)
 library(sf)
 
-load('dashboard_outputs_test.RData')
+load('dashboard_output_test.RData')
 
 title <- tags$a(
   href = "https://www.dmme.virginia.gov/",
@@ -99,13 +99,14 @@ ui <- tagList(
             box(width = 4, plotlyOutput("gen_goal2"))
           ),
           h2("Progress on Renewable and Carbon-Free Generation"),
+          h4("The renewable portfolio standard (RPS) is a mandate from the Virginia Clean Economy Act that requires Dominion Power and APCO to have a percentage of its energy production from the existing definition of 'renewable energy' as defined in Va. Code 56-576. More information in the 'About Tab'."),
           fluidRow(box(
             width = 6,
-            plotlyOutput("rc_line")
+            plotlyOutput("renewable_timeline_plot")
           ),
           box(
             width = 6,
-            plotlyOutput("cf_line")
+            plotlyOutput("rps_renewable_line_p")
           )),
           
           h3("Virginia's Net Electricity Imports"),
@@ -255,7 +256,7 @@ ui <- tagList(
                     ),
                     p(
                       "All plots in this dashboard are interactive. As the mouse hovers over the plots additional information describing specific data points will appear.
-                       If the plots have legends, click on the individual legend items turn their visibility on the plot on or off. This is true for all plots with legends, including line plots, bar plots, and stacked plots. 
+                      If the plots have legends, click on the individual legend items to turn their visibility on the plot on or off. This is true for all plots with legends, including line plots, bar plots, and stacked plots. 
                        For all plots exlcuding the circle plots, left click and drag across the interactive plot to 'zoom in' on the plot. This allows the user to examine specific portions of the graph. Double click on the plot to return to normal scaling."
                     ),
                     br(),
@@ -266,7 +267,9 @@ ui <- tagList(
                     br(),
                     h4("Generation and Capacity"),
                     p(
-                      "Targets include 30% renewable energy generation by 2030 followed by 100% carbon-free energy generation by 2050. To realize these targets, mandates are imposed on investor-owned utilities that require building specified levels of renewable generation capacity for on-shore wind and solar, and off-shore wind, as well as energy storage capacity. 'Other biomass' includes agricultural byproducts, landfill gas, and biogenic municipal solid waste. 'Other energy sources' includes nonbiogenetic municpial solid waste, batteries, chemicals, hydrogen, and pump-hydro storage. The definition of 'renewables' as defined in the VCEA follows the Va. Code § 56-576 definition of renewables but explicitly excludes 'waste heat from fossil-fired facilities' and 'electricity generated from pumped storage'. "
+                      "Targets include 30% renewable energy generation by 2030 followed by 100% carbon-free energy generation by 2050. To realize these targets, mandates are imposed on investor-owned utilities that require building specified levels of renewable generation capacity for on-shore wind and solar, and off-shore wind, as well as energy storage capacity. 'Other biomass' includes agricultural byproducts, landfill gas, and biogenic municipal solid waste. 'Other energy sources' includes nonbiogenetic municpial solid waste, batteries, chemicals, hydrogen, and pump-hydro storage. The definition of 'renewables' as defined in the VCEA follows the Va. Code § 56-576 definition of renewables but explicitly excludes 'waste heat from fossil-fired facilities' and 'electricity generated from pumped storage'. 
+                      ", br(),
+                      "The renewable portfolio standard follows the definition of 'renewable energy' defined in the Va. Code § 56-576, but explicitly excludes 'waste heat from fossil-fired facilities' and 'electricity generated from pumped storage'. This excludes nuclear energy."
                     ),
                     br(),
                     h4('Energy Equity'),
@@ -478,6 +481,11 @@ server <- function(input, output) {
   output$percent_income_reference_figure <- renderPlotly(percent_income_reference_figure_p)
   
   output$va_elec_net_imports_line_p <- renderPlotly(va_elec_net_imports_line_p)
+  
+  ## New edits 
+  output$rps_renewable_line_p <- renderPlotly(rps_renewable_line_p)
+  
+  
   
 
   output$solar_table <- DT::renderDataTable(pjm_solar,
