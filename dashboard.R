@@ -58,9 +58,9 @@ ui <- tagList(
       sidebarMenu(
         menuItem("Summary", tabName = "summary", icon = icon("dashboard")),
         menuItem("Generation and Capacity", tabName = "generation"),
-        menuItem("Energy Equity", tabName = "equity"),
-        menuItem("Emissions", tabName = "emissions"),
         menuItem("Energy Efficiency", tabName = "efficiency"),
+        #menuItem("Energy Equity", tabName = "equity"),
+        menuItem("Emissions", tabName = "emissions"),
         hr(),
         menuItem("About", tabName = "about"),
         menuItem("Downloadable Data Tables", tabName = "tables"),
@@ -78,9 +78,9 @@ ui <- tagList(
           h4("This dashboard includes interactive elements. Move your mouse around to discover them. For more information, click on the 'About' tab."),
           h2("Goals"),
           fluidRow(
-            box(width = 4, plotlyOutput("renewable_progress_donut")),
-            box(width = 4, plotlyOutput("carbon_free_donut")),
-            box(width = 4, plotlyOutput("energy_storage_donut")),
+            box(width = 4, plotlyOutput("renewable_progress_donut"), align = "center"),
+            box(width = 4, plotlyOutput("carbon_free_donut"), align = "center"),
+            box(width = 4, plotlyOutput("energy_storage_donut"), align = "center"),
           ),
           h2("Production by Fuel Type"),
           fluidRow(box(plotlyOutput("gen_pie")),
@@ -94,9 +94,9 @@ ui <- tagList(
           h1("Electricity Capacity and Generation"),
           h2("Goals"),
           fluidRow(
-            box(width = 4, plotlyOutput("sw_donut")),
-            box(width = 4, plotlyOutput("gen_goal1")),
-            box(width = 4, plotlyOutput("gen_goal2"))
+            box(width = 4, plotlyOutput("sw_donut"), align = "center"),
+            box(width = 4, plotlyOutput("gen_goal1"), align = "center"),
+            box(width = 4, plotlyOutput("offshore_wind_progress"), align = "center")
           ),
           h2("Progress on Renewable and Carbon-Free Generation"),
           h4("The renewable portfolio standard (RPS) is a mandate from the Virginia Clean Economy Act that requires Dominion Power and APCO to have a percentage of its energy production from the existing definition of 'renewable energy' as defined in Va. Code 56-576. More information in the 'About Tab'."),
@@ -127,12 +127,13 @@ ui <- tagList(
           ),
           box(
             width = 6,
-            plotlyOutput("wind_projected_capacity")
+            plotlyOutput("wind_projected_capacity") )
           ),
-          box(
+          h3("Carbon-Free Generation Progress"),
+          fluidRow(box(
             width = 6,
-            plotlyOutput("offshore_wind_progress")
-          )),
+            plotlyOutput("gen_goal2") 
+          ), align = "center")
           
 
         ),
@@ -151,21 +152,23 @@ ui <- tagList(
                    box(plotlyOutput("con_per_gdp")))
         ),
         
-        tabItem(
-          tabName = "equity",
-          h1("Energy Equity in Virginia"),
-          h2("Average Annual Energy Cost for All Electricity"),
-          fluidRow(
-            box(plotlyOutput("burden_map_expenditure"), width = 7)
-            ,
-            box(plotlyOutput("dollar_reference_figure" ), width = 5)
-            ),
-          fluidRow(
-            box(plotlyOutput("burden_map_expenditure_2"), width = 7)
-            ,
-            box(plotlyOutput("percent_income_reference_figure"), width = 5)
-            )
-        ),
+        # tabItem(
+        #   tabName = "equity",
+        #   h1("Energy Equity in Virginia"),
+        #   h2("Average Annual Energy Cost for All Electricity"),
+        #   fluidRow(
+        #     box(plotlyOutput("burden_map_expenditure"), width = 7)
+        #     ,
+        #     box(plotlyOutput("dollar_reference_figure" ), width = 5)
+        #     ),
+        #   fluidRow(
+        #     box(plotlyOutput("burden_map_expenditure_2"), width = 7)
+        #     ,
+        #     box(plotlyOutput("percent_income_reference_figure"), width = 5)
+        #     )
+        # ),
+        
+        
         tabItem(
           tabName = "emissions",
           h1("Virginia Greenhouse Gas Emissions From Power Production"),
@@ -272,11 +275,11 @@ ui <- tagList(
                       "The renewable portfolio standard follows the definition of 'renewable energy' defined in the Va. Code § 56-576, but explicitly excludes 'waste heat from fossil-fired facilities' and 'electricity generated from pumped storage'. This excludes nuclear energy."
                     ),
                     br(),
-                    h4('Energy Equity'),
-                    p(
-                      'Figures in this tab display information about energy burdens for households in Virginia. Data are displayed in terms of total costs of energy as well as energy costs as a percent of income.'
-                    ),
-                    br(),
+                    # h4('Energy Equity'),
+                    # p(
+                    #   'Figures in this tab display information about energy burdens for households in Virginia. Data are displayed in terms of total costs of energy as well as energy costs as a percent of income.'
+                    # ),
+                    # br(),
                     h4('Emissions'),
                     p(
                       'This section tracks emissions in Virginia both by fuel type and by sector.'
