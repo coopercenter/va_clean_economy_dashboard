@@ -60,7 +60,7 @@ ui <- tagList(
         menuItem("Generation and Capacity", tabName = "generation"),
         menuItem("Energy Efficiency", tabName = "efficiency"),
         #menuItem("Energy Equity", tabName = "equity"),
-        menuItem("Emissions", tabName = "emissions"),
+        #menuItem("Emissions", tabName = "emissions"),
         hr(),
         menuItem("About", tabName = "about"),
         menuItem("Downloadable Data Tables", tabName = "tables"),
