@@ -5,9 +5,9 @@ account: cleanenergyva
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 2488436
-bundleId: 4007627
+bundleId: 4062311
 url: https://cleanenergyva.shinyapps.io/va_clean_economy_dashboard_production/
-when: 1608333397.43835
+when: 1609887186.96879
 asMultiple: FALSE
 asStatic: FALSE
 ignoredFiles: backend_options.md|dashboard_plot_outputs.RData|dashboard_testing.R|dashboard_with_map.R|deploy_dashboard_vm.R|my_postgres_credentials.R
