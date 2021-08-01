@@ -7,7 +7,7 @@ library(dplyr, warn.conflicts = FALSE)
 library(DT)
 library(sf)
 
-load('dashboard_output_test.RData')
+load('dashboard_output.RData')
 
 title <- tags$a(
   href = "https://www.dmme.virginia.gov/",
