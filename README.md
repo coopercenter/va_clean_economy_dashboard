@@ -1,4 +1,4 @@
-# Testing
+# VA Clean Economy Dashboard
 
 This is a document tutorial to run the dashboard on your local computer. This will be updated over time as new updates are created. 
 LAST UPDATED: 7/24/2020
