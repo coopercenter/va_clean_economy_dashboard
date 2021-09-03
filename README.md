@@ -30,3 +30,17 @@ This is a document tutorial to run the dashboard on your local computer. This wi
 	1. dashboard_output.RData
 	2. www
 	3. dashboard.R
+
+## Groundhog for R and Package Reliability
+https://groundhogr.com/
+At the beginning of every script in this repo, there should be a block of code which looks something like this:
+
+```
+library(groundhog)				 # attaching the groundhog library
+groundhog.day = "2021-09-01"			 # the day the code was written/the day packages will be pulled from 
+pkgs = c("lubridate", "devtools", "here")	 # the packages to be installed/loaded
+groundhog.library(pkgs, groundhog.day)		 # loading the actual packages
+```
+
+The above block ensures that updates to packages over time will not affect the functionality of the code and should therefore be used in place of the traditional method of loading packages using `library(package)` in all projects with a significant expected lifespan. 
+
