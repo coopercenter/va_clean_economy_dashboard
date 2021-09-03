@@ -1,11 +1,8 @@
-library(here)
-library(ggplot2)
-library(shiny)
-library(shinydashboard)
-library(plotly)
-library(dplyr, warn.conflicts = FALSE)
-library(DT)
-library(sf)
+library(groundhog)
+groundhog.day = "2021-09-01"
+pkgs = c("here", "ggplot2", "shiny", 'shinydashboard', "plotly", "dplyr", "DT", "sf")
+groundhog.library(pkgs, groundhog.day)
+
 
 load('dashboard_output.RData')
 

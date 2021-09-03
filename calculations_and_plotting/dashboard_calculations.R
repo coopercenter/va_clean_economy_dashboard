@@ -1,19 +1,9 @@
-library(data.table)
-library(RPostgreSQL)
-library(scales)
-library("maps") #contains state & county data
-library(sf)
-library(tidyr)
-library(dplyr)
-library(tools)
-library("rnaturalearth")
-library("rnaturalearthdata")
-library("rgeos")
-library(ggplot2)
-library(zoo)
-library(lubridate)
-library("Hmisc")
-library(here)
+library(groundhog)
+groundhog.day = "2021-09-01"
+pkgs = c("data.table", "RPostgreSQL", "scales", 'maps', "tidyr", "dplyr",
+         "tools", "sf", "tools", "rnaturalearth", "rnaturalearthdata", "rgeos",
+         "ggplot2", "zoo", "lubridate", "Hmisc", "here")
+groundhog.library(pkgs, groundhog.day)
 
 db_driver = dbDriver("PostgreSQL")
 source(here::here("my_postgres_credentials.R"))

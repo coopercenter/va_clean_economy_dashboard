@@ -1,0 +1,106 @@
+"Plants for multiple sectors,Virginia,multiple fuel types"
+"https://www.eia.gov/beta/electricity/data/browser/#/topic/1?agg=2,0,1&fuel=vtvv&pt=&pm=&sec=vvo&geo=00000001&wd=&ws=&wsn=&wt=&freq=A&datecode=2018&tab=annual_emissions&pin=&rse=0&maptype=0&ltype=pin&ctype=linechart&end=201710&start=200101"
+"Fri Mar 06 2020 11:20:35 GMT-0500 (Eastern Standard Time)"
+"Source: U.S. Energy Information Administration"
+"Plant Name","State","CO2 Emissions (tons)","SO2 Emissions (tons)","NOX Emissions (tons)"
+"Altavista Power Station","VA",948,10,212
+"Amelia","VA",2309,4,562
+"Ameresco Stafford","VA","--",0,120
+"Bayview","VA",2086,4,42
+"Bear Garden","VA",1451432,8,89
+"Belle Haven Diesel Generation Facility","VA",172,0,3
+"Bellmeade Power Station","VA",25244,16,6
+"Birchwood Power","VA",553995,241,249
+"Boydton Plank Road Cogen Plant","VA",344,1,7
+"Bremo Bluff","VA",8763,0,10
+"Bristol Plant","VA",390,1,120
+"Brunswick County Power Station","VA",3117479,16,157
+"Brunswick Landfill Gas","VA",2056,4,604
+"Buchanan Generation LLC","VA",103461,1,68
+"Celanese Acetate LLC","VA",445112,2,53
+"Charles City","VA",3226,5,830
+"Chesapeake","VA",1546,3,9
+"Chesterfield Landfill Gas","VA",3315,6,879
+"Church Street Plant","VA",37,0,1
+"Clinch River","VA",349981,158,411
+"Clover","VA",2785729,854,4248
+"Commonwealth Chesapeake","VA",75539,18,72
+"Covanta Alexandria/Arlington Energy","VA",139813,3,164
+"Covanta Fairfax Energy","VA",488964,75,1413
+"Covington Facility","VA",830257,5812,1119
+"Danville Westover Plant","VA",126,0,3
+"Darbytown","VA",64327,41,109
+"Dean Drive Area Electric Generators","VA",37,0,1
+"Dominion/Lo Mar","VA",149,0,2
+"Doswell Energy Center","VA",2353418,16,771
+"Downtown","VA",38,0,1
+"Electric Avenue Facility","VA",81,0,2
+"Elizabeth River Power Station","VA",167153,21,189
+"Elkton","VA",45217,1,118
+"Frederick County LFGTE Facility","VA","--",0,113
+"Gateway Gen","VA",26,0,1
+"Georgia-Pacific Big Island","VA",11843,28,4
+"Godwin Drive Plant","VA",73,0,1
+"Gordonsville Energy LP","VA",362423,6,91
+"Gravel Neck","VA",67848,33,108
+"Greensville County Power Station","VA",294438,1,14
+"HP Hood CT","VA",50017,0,135
+"Halifax County Biomass","VA","--",48,42
+"Henrico","VA",674,1,205
+"Hopewell Cogeneration","VA",717446,20,636
+"Hopewell Mill","VA",119916,1518,595
+"Hopewell Power Station","VA",59,12,240
+"I 95 Landfill Phase II","VA","--",0,223
+"I 95 Municipal Landfill Phase I","VA","--",0,168
+"International Paper Franklin Mill","VA",27352,1420,269
+"James River Genco LLC","VA",462133,1414,855
+"King & Queen","VA",3076,5,759
+"Ladysmith","VA",379895,8,124
+"Louisa Generation Facility","VA",344125,3,87
+"Low Moor","VA",3361,6,19
+"MM Prince William Energy","VA","--",0,612
+"Marsh Run Generation Facility","VA",330852,2,105
+"Martinsville LFG Generator","VA",1064,0,51
+"Mecklenburg Power Station","VA",64950,33,97
+"MillerCoors Shenandoah Brewery","VA","--",0,10
+"Monterey Diesel Generation Facility","VA",173,0,3
+"Mount Clinton","VA",226,0,3
+"Multitrade of Pittsylvania LP","VA","--",21,83
+"New River","VA",813,1,234
+"Northern Neck","VA",2873,5,16
+"Nottoway Diesel Generating Facility","VA",179,0,4
+"Onancock Diesel Generation Facility","VA",134,0,3
+"Park 500 Philip Morris USA","VA",45560,0,45
+"Perdue Diesel Generation Facility","VA",143,0,3
+"Pleasant Valley (VA)","VA",223,0,2
+"Ponton Diesel Generating Facility","VA",116,0,2
+"Possum Point","VA",1463846,158,234
+"Pretlow","VA",26,0,1
+"Radford Army Ammunition Plant","VA",145825,1,174
+"Remington","VA",475230,6,153
+"Richmond Energy","VA","--",0,679
+"Rockville 1 & 2","VA",463,1,9
+"Salem Electric Department","VA",58,0,1
+"Salem Street Dept","VA",90,0,2
+"Salem Water Plant","VA",81,0,2
+"Southampton Power Station","VA",1349,13,251
+"Spruance Operating Services LLC","VA",718019,257,1060
+"Stonewall","VA",1776426,2,64
+"Suffolk Energy Partners LP","VA","--",0,270
+"Tangier","VA",133,0,3
+"Tasley","VA",812,0,10
+"Tenaska Virginia Generating Station","VA",2192908,11,172
+"VMEA 1 Credit Gen","VA",108,0,2
+"VMEA Peaking Gen","VA",54,0,1
+"Virginia Beach","VA",564,1,23
+"Virginia City Hybrid Energy Center","VA",2571065,86,893
+"Virginia Tech Power Plant","VA",81563,141,188
+"Warren County","VA",2987284,16,148
+"Waste Management Bethel LFGTE","VA","--",0,494
+"Waste Management King George LFGTE","VA","--",1,187
+"Waste Management Middle Peninsula LFGTE","VA","--",0,612
+"Water Treatment Plant Generators","VA",4,0,0
+"WestRock-West Point Mill","VA",315432,70,134
+"Wheelabrator Portsmouth","VA",359858,272,1137
+"Wolf Hills Energy","VA",65317,0,103
+"Yorktown","VA",594808,3730,1046
