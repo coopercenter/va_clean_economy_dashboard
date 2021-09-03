@@ -1,12 +1,14 @@
 #compilation of all figures relevant to dashboard
 
-library(here)
-library(devtools)
+library(groundhog)
+groundhog.day = "2021-09-01"
+pkgs = c("lubridate", "devtools", "here")
+groundhog.library(pkgs, groundhog.day)
+
 install_github("coopercenter/cepsvizfunctions")
 library(cepsvizfunctions)
-library(lubridate)
 
-source(here::here("derived_values", "dashboard_calculations.R")) #sourcing in data and reformatted data tables & calculations ready to serve as input to viz functions
+source(here::here("calculations_and_plotting", "dashboard_calculations.R")) #sourcing in data and reformatted data tables & calculations ready to serve as input to viz functions
 
 #----------------------------------------------PLOTTING DONUT FIGURES------------------------------------------------------------------------------
 

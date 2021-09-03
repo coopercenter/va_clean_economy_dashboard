@@ -1,0 +1,22 @@
+"Table 14. Capacity and usage factors by month, 2018",,,,,,,,,,,,,,,
+Virginia,,,,,,,,,,,,,,,
+Technology,Year end capacity (MW),Time adjusted capacity (MW),Annual,January,February,March,April,May,June,July,August,September,October,November,December
+Capacity Factors,,,,,,,,,,,,,,,
+Nuclear,3568,3568,93.6,105,103.4,84.7,79,78.5,100.8,98.9,100.1,100.6,94,79.6,98.9
+Natural Gas - CC,7648.4,7648.4,65.6,67.4,77.4,64.3,42.5,54.6,78.3,77.1,80.3,74.9,42.3,64.6,64.2
+"Other, Biomass",314.3,314.3,61.9,58.1,61.5,63.5,63.1,62.6,68.1,64.7,65.5,44.9,61.9,63.1,66
+Wood,578.1,578.1,61.7,68.9,62.1,62.5,50.7,68.6,70.3,69.5,67.5,61.6,52.5,56.3,50
+Coal,3780,3780,29.1,52.6,18.6,30.9,27,28.5,24.8,37,40.9,23.9,8.7,27.4,27.2
+Hydroelectric,866,866,23.3,17.4,22.3,18.7,25.3,24.9,15,18.6,25,26.5,26.4,26.8,32
+Solar - PV,392.5,373.4,23.2,17.6,18.1,25.2,29.6,26,30,27.7,28.3,22.2,23.3,16.8,14.3
+Natural Gas - IC,1.3,1.3,13.9,13.5,15.2,12.2,10.6,12.6,16.2,16.2,16.9,16.2,11.1,13.6,12.6
+Natural Gas - GT,4245.3,4150.4,11.8,15.4,9,7.3,7.9,12.9,12.7,14.5,16,16,11.9,10.1,7.5
+Natural Gas - ST,1072,1072,10,5.9,2.9,10.6,14.5,12.9,13.7,18.5,10.9,14,9,3,3.2
+Petroleum - ST,1576,1576,2.3,12.1,0,0,0,2.8,12.2,0,0,0,0,0,0
+Petroleum - GT,624.5,624.5,2.2,8.3,0.2,0.3,1.1,1,0.4,0.3,0.6,1.9,4.2,4.1,4.1
+Petroleum - IC,142.4,144.3,0.6,2.5,0.1,0.1,0.3,0.3,0.3,0.3,0.3,0.4,0.6,0.7,0.6
+Usage Factors,,,,,,,,,,,,,,,
+Pumped Storage,3241,3241,14.8,10.7,10,11.1,13.1,15.7,22.2,23.7,24.7,18,11.4,9.6,7.6
+All Sources,28049.8,27937.8, , , , , , , , , , , , , 
+"Time adjusted capacity for the month is the summer capacity of generators in operation for the entire month; units that began operation during the month or that retired during the month are excluded. Time adjusted capacity is the capacity of all the generators that were included in the time period covered by the capacity factor calculation.
+Sources: U.S. Energy Information Administration, Form EIA-860, Annual Electric Generator Report. and U.S. Energy Information Administration, Form EIA-923, Power Plant Operations Report",,,,,,,,,,,,,,,

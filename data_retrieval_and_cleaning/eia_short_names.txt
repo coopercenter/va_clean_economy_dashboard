@@ -1,0 +1,74 @@
+Total energy consumption
+Total energy production
+Total energy consumed by the residential sector
+Total energy consumed by the commercial sector
+Total energy consumed by the industrial sector
+Total energy consumed by the transportation sector
+Annual net interstate flow of electricity
+Annual retail sales
+Monthly retail sales
+Annual retail sales for residential sector
+Annual retail sales for commercial sector
+Annual retail sales for industrial sector
+Annual retail sales for transportation sector
+Annual retail sales for other sectors
+Monthly retail sales for residential sector
+Monthly retail sales for commercial sector
+Monthly retail sales for industrial sector
+Monthly retail sales for transportation sector
+Monthly retail sales for other sectors
+Total monthly average retail price
+Commercial monthly average retail price
+Residential monthly average retail price
+Industrial monthly average retail price
+Transportation monthly average retial price
+Total monthly number of customer accounts
+Total annual generation
+Total monthly generation
+Total monthly solar generation
+Total monthly conventional hydroelectric generation
+Total monthly nuclear generation
+Total monthly coal generation
+Total monthly natural gas generation
+Total monthly other renewables generation
+Total monthly petroleum liquids generation
+Total monthly utility scale solar generation
+Total monthly small scale solar generation
+Total monthly utility scale solar generation non cogen
+Total monthly coal electric power generation
+Total monthly utility scale photovoltaic generation
+Total monthly wood and wood derived fuels generation
+Total monthly other biomass generation
+Total monthly hydro electric pumped sotrage
+Total monthly other generation
+Annual coal generation
+Annual petroleum generation
+Annual natural gas generation
+Annual nuclear generation
+Annual utility scale solar generation
+Annual small scale solar generation
+Annual hydroelectric generation
+Annual wood derived fuel generation
+Annual other biomass generation
+Total co2 emission
+Total carbon dioxide emissions, all sectors
+Total coal carbon dioxide emissions, all sectors
+Total natural gas carbon dioxide emissions, all sectors
+Total petroleum carbon dioxide emissions, all sectors
+Annual hydro-electric pumped storage generation
+Annual other renewables generation
+Annual other generation
+Annual utility-scale photovoltaic generation
+Annual total solar generation
+Annual electric utility generation, all fuels
+Annual electric utility generation, coal
+Annual electric utility generation, conventional hydroelectric
+Annual electric utility generation, natural gas
+Annual electric utility generation, nuclear
+Annual electric utility generation, other biomass
+Annual electric utility generation, petroleum
+Annual electric utility generation, hydroelectric pumped storage
+Annual electric utility generation, all solar
+Annual electric utility generation, all utility scale solar
+Annual electric utility generation, utility scale photovoltaic
+Annual electric utility generation, wood and wood derived fuels
