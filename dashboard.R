@@ -7,11 +7,11 @@ groundhog.library(pkgs, groundhog.day)
 load('dashboard_output.RData')
 
 title <- tags$a(
-  href = "https://www.dmme.virginia.gov/",
+  href = "https://www.energy.virginia.gov/index.shtml",
   tags$img(
-    src = "DmmeLogo.png",
-    height = '30',
-    #width = '50'
+    src = "delogo.png",
+    height = '65',
+    #width = '150'
   ),
   "Virginia Clean Economy Progress"
 )
@@ -32,7 +32,7 @@ dbHeader <-
         line-height: 55px !important;
         padding: 0 20px;}"
       )
-      ),
+    ),
     tags$li(a(
       href = 'https://ceps.coopercenter.org/',
       tags$img(
@@ -42,7 +42,7 @@ dbHeader <-
       )
     ), class = "dropdown"),
     titleWidth = 500
-      )
+  )
 
 
 
@@ -112,7 +112,7 @@ ui <- tagList(
             plotlyOutput("va_elec_net_imports_line_p")
           )),
           
-
+          
           h2("Breakdown of Carbon Free Generation by Source"),
           fluidRow(box(plotlyOutput("rc_break_line"),align = "center")),
           h3("Virginia Solar Electric Generation: Utility Scale and Distributed"),
@@ -132,18 +132,18 @@ ui <- tagList(
             plotlyOutput("gen_goal2") 
           ), align = "center")
           
-
+          
         ),
         tabItem(
           tabName = "efficiency",
           h1("Energy Efficiency"),
           h2("Energy Efficiency Mandates for Appalachian Power and Dominion Energy"),
           fluidRow(box(plotlyOutput("apco_dom_historic_goals"))),
-                   
+          
           
           h2("Projected Future Savings From Energy Efficiency Programs"), 
           fluidRow(box(plotlyOutput("annual_savings_2020_2022"), width = "100%")),
-                   
+          
           h2("Consumption"),
           fluidRow(box(plotlyOutput("con_per_capita")),
                    box(plotlyOutput("con_per_gdp")))
@@ -183,14 +183,14 @@ ui <- tagList(
           box(plotlyOutput(
             'emissions_per_gdp'
           )))
-
+          
         ),
-      
+        
         tabItem(
           tabName = "tables",
           h1("Datasets"),
-
-
+          
+          
           fluidRow(box(
             selectInput(
               "check", "Choose a dataset:",
@@ -212,7 +212,7 @@ ui <- tagList(
             div(DT::dataTableOutput("wind_table"), style = "font-size: 80%"), width =
               12
           )),
-
+          
           h2("Generation By Source"),
           fluidRow(box(
             div(DT::dataTableOutput("gen_table"), style = "font-size: 90%"), width = 12
@@ -285,7 +285,7 @@ ui <- tagList(
                     h4('Energy Efficiency'),
                     p('The Virgina Clean Economy Act imposes energy efficiency targets on both Dominion Power and Appalachian Power Company. These targets are expressed as required percentage reductions in total retail sales, from a 2019 baseline. Dominion Power must reduce sales by 5% by 2025. Appalachian Power must reduce sales by 2% by 2025. For context, the Energy Efficiency section also displays trends on consumption per capita and consumption per GDP in Virginia. Data tables at bottom contain information about ongoing and planned investment by investor-owned public utilities in energy efficiency programs.' 
                     ),
-                    p("Acronyms include:", br(), "APCO: Appalachian Power Company" ,br(), "C-PACE: Commercial Property Assessed Clean Energy ",br(),"DMME:Department of Mines and Mineral and Energy",br(),"IECC: International Energy Conservation Code",br(),"ESPCs: Energy Savings Performance Costs ",br(),"MUSH: Municipalities, Universities, Schools, and Hospitals"),
+                    p("Acronyms include:", br(), "APCO: Appalachian Power Company" ,br(), "C-PACE: Commercial Property Assessed Clean Energy ",br(),"VE:Virginia Energy",br(),"IECC: International Energy Conservation Code",br(),"ESPCs: Energy Savings Performance Costs ",br(),"MUSH: Municipalities, Universities, Schools, and Hospitals"),
                     
                     
                     
@@ -293,14 +293,14 @@ ui <- tagList(
                     h4('Links'),
                     p(
                       tags$a(
-                        href = "https://www.dmme.virginia.gov/de/LinkDocuments/VCEA%20Summary.pdf",
+                        href = "https://www.energy.virginia.gov/renewable-energy/documents/VCEASummary.pdf",
                         "VCEA Reference Summary"
                       ),
-
+                      
                       br(),
                       tags$a(
-                        href = "https://www.dmme.virginia.gov/",
-                        "Virginia Department of Mines, Minerals, and Energy"
+                        href = "https://www.energy.virginia.gov/index.shtml",
+                        "Virginia Department of Energy"
                       ),
                       br(),
                       tags$a(
@@ -318,7 +318,7 @@ ui <- tagList(
                   box(
                     width = 9,
                     p(
-                      "This dashboard was created by a team of researchers from the Weldon Cooper Center for Public Service at the University of Virginia under the direction of Dr. Arthur Small in collaboration with the Virginia Department of Mines, Minerals, and Energy."
+                      "This dashboard was created by a team of researchers from the Weldon Cooper Center for Public Service at the University of Virginia under the direction of Dr. Arthur Small in collaboration with the Virginia Department of Energy."
                     ),
                     h3("Team Members"),
                     tags$p("Project Coordinators: Arthur Small, Yiyun Zhong"),
@@ -349,7 +349,7 @@ ui <- tagList(
                     )
                   )
                 )
-                )
+        )
       )
     )
   ),
@@ -360,7 +360,7 @@ ui <- tagList(
         href = "https://ceps.coopercenter.org/",
         "Weldon Cooper Center for Public Service, Center for Economic Policy Studies"
       ),
-      "in conjunction with the Virginia Department of Mines, Minerals, and Energy"
+      "in conjunction with the Virginia Department of Energy"
     ),
     align = "center",
     style = "
@@ -373,7 +373,7 @@ ui <- tagList(
     background-color: grey;
     z-index: 1000;"
   )
-  )
+)
 
 server <- function(input, output) {
   output$renewable_progress_donut <- renderPlotly({
@@ -426,7 +426,7 @@ server <- function(input, output) {
     percent_renewable_and_carbon_free_line_p
     
   })
- 
+  
   output$sw_donut <- renderPlotly(single_ring_sw_capacity_donut_p)
   
   output$rc_line <-
@@ -446,7 +446,7 @@ server <- function(input, output) {
   
   output$wind_projected_capacity <-
     renderPlotly(wind_projected_capacity_line_p)
-
+  
   output$offshore_wind_progress <-
     renderPlotly(single_ring_offshore_wind_capacity_donut_p)
   
@@ -473,7 +473,7 @@ server <- function(input, output) {
   
   
   output$annual_savings_2020_2022 <- renderPlotly(annual_savings_2020_2022_stacked_bar_chart_p)
- 
+  
   output$apco_dom_historic_goals <- renderPlotly(apco_dom_historic_goal_sales_combined_line_p)
   
   output$dollar_reference_figure <- renderPlotly(dollar_reference_figure_p)
@@ -487,7 +487,7 @@ server <- function(input, output) {
   
   
   
-
+  
   output$solar_table <- DT::renderDataTable(pjm_solar,
                                             options = list(pageLength = 20),
                                             rownames = FALSE)
@@ -507,9 +507,9 @@ server <- function(input, output) {
   
   
   output$electric_emissions_table <- electric_emissions_table <- DT::renderDataTable(
-                                                                     virginia_emissions_electric_commas,
-                                                                     options = list(pageLength = 19),
-                                                                     rownames = FALSE)
+    virginia_emissions_electric_commas,
+    options = list(pageLength = 19),
+    rownames = FALSE)
   output$con_table <- DT::renderDataTable(va_con_w_commas,
                                           options = list(pageLength = 20),
                                           rownames = FALSE)
