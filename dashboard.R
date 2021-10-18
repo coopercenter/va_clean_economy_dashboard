@@ -17,9 +17,9 @@ load('dashboard_output.RData')
 title <- tags$a(
   href = "https://www.energy.virginia.gov/index.shtml",
   tags$img(
-    src = "DE_logo_white_and_clear.png",
+    src = "DE_logo_white_and_clear_spaced.png",
     height = '45',
-    #width = '150'
+    width = '180'
   ),
   "Virginia Clean Economy Progress"
 )
