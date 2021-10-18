@@ -1,7 +1,7 @@
 library(groundhog)
 groundhog.day = "2021-09-01"
 pkgs = c("data.table", "RPostgreSQL", "scales", 'maps', "tidyr", "dplyr",
-         "tools", "sf", "tools", "rnaturalearth", "rnaturalearthdata", "rgeos",
+        "tools", "sf", "tools", "rnaturalearth", "rnaturalearthdata", "rgeos",
          "ggplot2", "zoo", "lubridate", "Hmisc", "here")
 groundhog.library(pkgs, groundhog.day)
 
@@ -473,7 +473,9 @@ virginia_annual_savings_through_2022_2 <-virginia_annual_savings_through_2022 %>
   filter(variable!=c("Total Needed"))
 virginia_annual_savings_through_2022_2[6,1]="Dominion (Gross savings)"
 virginia_annual_savings_2020_2022<-rbind(virginia_annual_savings_through_2020_2,virginia_annual_savings_through_2022_2)
-virginia_annual_savings_2020_2022$variable <- factor(virginia_annual_savings_2020_2022$variable,levels=c("Remaining Needed","APCO","C-PACE","DMME programs","Dominion (Gross savings)","Energy Codes (modeled, adoption of 2015 IECC)","ESPCs  (modeled, MUSH and private)"))
+virginia_annual_savings_2020_2022$variable <- replace(virginia_annual_savings_2020_2022$variable,virginia_annual_savings_2020_2022$variable=="DMME programs","Virginia Energy programs")
+virginia_annual_savings_2020_2022$variable <- factor(virginia_annual_savings_2020_2022$variable,levels=c("Remaining Needed","APCO","C-PACE", "Virginia Energy programs","Dominion (Gross savings)","Energy Codes (modeled, adoption of 2015 IECC)","ESPCs  (modeled, MUSH and private)"))
+
 
 #-----------------------------------------REFORMATTING DATASETS--------------------------------------------------------------------
 
