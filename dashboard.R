@@ -1,16 +1,24 @@
-library(groundhog)
-groundhog.day = "2021-09-01"
-pkgs = c("here", "ggplot2", "shiny", 'shinydashboard', "plotly", "dplyr", "DT", "sf")
-groundhog.library(pkgs, groundhog.day)
+#library(groundhog)
+#groundhog.day = "2021-09-01"
+#pkgs = c("here", "ggplot2", "shiny", 'shinydashboard', "plotly", "dplyr", "DT", "sf")
+#groundhog.library(pkgs, groundhog.day)
 
+library(here)
+library(ggplot2)
+library(shiny)
+library(shinydashboard)
+library(plotly)
+library(dplyr)
+library(DT)
+library(sf)
 
 load('dashboard_output.RData')
 
 title <- tags$a(
   href = "https://www.energy.virginia.gov/index.shtml",
   tags$img(
-    src = "delogo.png",
-    height = '65',
+    src = "DE_logo_white_and_clear.png",
+    height = '45',
     #width = '150'
   ),
   "Virginia Clean Economy Progress"
