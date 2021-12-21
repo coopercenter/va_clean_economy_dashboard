@@ -24,12 +24,12 @@ renewable_percent_gen_2050_goal = 100
 
 renewable_ring = data.frame(
   category = c(
-    "additional progress necessary to reach goal (%)",
-    paste(recent_year, "RPS generation progress (%)")
+    paste(recent_year, "RPS generation progress (%)"),
+    "additional progress necessary to reach goal (%)"
   ),
   value = c(
-    renewable_percent_gen_2050_goal - renewable_percent_gen_recent,
-    renewable_percent_gen_recent
+    renewable_percent_gen_recent,
+    renewable_percent_gen_2050_goal - renewable_percent_gen_recent
   )
 )
 
@@ -44,8 +44,8 @@ single_ring_renewable_donut_p <-
     ),
     "Goal: 100% of Generation from<br>RPS Eligible Sources by 2050",
     "label+value",
-    c("#3C5488B2", "#5868AC"),
-    list("eia_elec_gen_sun_va_99_a", "VCEA_storage")
+    c("#5868AC","#3C5488B2"),
+    list("eia_elec_gen_sun_va_99_a","VCEA_storage")
   )
 single_ring_renewable_donut_p
 
@@ -60,12 +60,12 @@ carbon_free_percent_gen_2050_goal = 100 #100% of Virginia’s electricity from c
 
 carbon_free_ring = data.frame(
   category = c(
-    "additional progress necessary to reach goal (%)",
-    "2019 carbon free generation (%)"
+    "2019 carbon free generation (%)",
+    "additional progress necessary to reach goal (%)"
   ),
   value = c(
-    carbon_free_percent_gen_2050_goal - carbon_free_percent_gen_recent,
-    carbon_free_percent_gen_recent
+    carbon_free_percent_gen_recent,
+    carbon_free_percent_gen_2050_goal - carbon_free_percent_gen_recent
   )
 )
 
@@ -80,7 +80,7 @@ single_ring_carbon_free_donut_p <-
     ),
     "Goal: 100% of Generation from<br>Carbon-Free Sources by 2050",
     "label+value",
-    c("#CEA5AC", "#BE7E8A"),
+    c("#BE7E8A","#CEA5AC"),
     list("eia_elec_gen_nuc_va_99_a", "VCEA_storage")
   )
 single_ring_carbon_free_donut_p
@@ -98,10 +98,10 @@ onshore_wind_capacity_current_mw = pjm_wind_working[fuel == "Wind" &
 sw_capacity_2035_mw_goal = 16100 #16,100 MW of solar and onshore wind by January 1, 2024 (from VCEA Summary 3.0)
 
 sw_ring = data.frame(
-  category = c("additional capacity necessary to reach goal", paste0(recent_year, " capacity")),
+  category = c(paste0(recent_year, " capacity"),"additional capacity necessary to reach goal"),
   value = c(
-    sw_capacity_2035_mw_goal - (solar_capacity_current_mw + onshore_wind_capacity_current_mw),
-    solar_capacity_current_mw + onshore_wind_capacity_current_mw
+    solar_capacity_current_mw + onshore_wind_capacity_current_mw,
+    sw_capacity_2035_mw_goal - (solar_capacity_current_mw + onshore_wind_capacity_current_mw)
   )
 )
 
@@ -130,7 +130,7 @@ single_ring_sw_capacity_donut_p <-
       "MW of Onshore Wind & Solar<br>Capacity in Operation by 2035"
     ),
     "label+value",
-    c("#91D1C2B2", "#00A087B2"),
+    c("#00A087B2","#91D1C2B2"),
     list("pjm_solar", "pjm_wind", "VCEA_storage")
   )
 single_ring_sw_capacity_donut_p
@@ -146,10 +146,10 @@ storage_capacity_2035_mw_goal = 3100
 
 
 storage_ring = data.frame(
-  category = c("additional capacity necessary to reach goal", paste(recent_year, "capacity")),
+  category = c(paste(recent_year, "capacity"),"additional capacity necessary to reach goal"),
   value = c(
-    storage_capacity_2035_mw_goal - storage_capacity_current_mw,
-    storage_capacity_current_mw
+    storage_capacity_current_mw,
+    storage_capacity_2035_mw_goal - storage_capacity_current_mw
   )
 )
 
@@ -178,7 +178,7 @@ single_ring_storage_capacity_donut_p <-
       "MW of Storage Capacity<br>in Operation by 2035"
     ),
     "label+value",
-    c("#B0DEFA", "#6FB3D9"),
+    c("#6FB3D9","#B0DEFA"),
     list("pjm_solar", "VCEA_storage")
   )
 single_ring_storage_capacity_donut_p
@@ -195,10 +195,10 @@ offshore_wind_current_mw = pjm_wind_working[fuel == "Offshore Wind" &
 offshore_wind_2034_mw_goal = 5200 #Requires Dominion to develop 5,200 MW of offshore wind by Jan. 1, 2034 (from VCEA Summary 3.0)
 
 offshore_wind_ring = data.frame(
-  category = c("additional capacity necessary to reach goal", paste(recent_year, "capacity")),
+  category = c(paste(recent_year, "capacity"),"additional capacity necessary to reach goal"),
   value = c(
-    offshore_wind_2034_mw_goal - offshore_wind_current_mw,
-    offshore_wind_current_mw
+    offshore_wind_current_mw,
+    offshore_wind_2034_mw_goal - offshore_wind_current_mw
   )
 )
 
@@ -227,7 +227,7 @@ single_ring_offshore_wind_capacity_donut_p <-
       "MW of Offshore Wind<br>Capacity in Operation by 2034"
     ),
     "label+value",
-    c("#8491B4B2", "#99A9E2"),
+    c("#99A9E2","#8491B4B2"),
     list("pjm_solar", "VCEA_storage")
   )
 single_ring_offshore_wind_capacity_donut_p
@@ -1642,8 +1642,8 @@ save(
   va_elec_net_imports_line_p,
   rps_renewable_line_p,
   
-  va_avg_annual_energy_cost_p,
-  va_avg_annual_energy_percent_exp_p,
+  #va_avg_annual_energy_cost_p,
+  #va_avg_annual_energy_percent_exp_p,
   va_avg_annual_energy_cost,
   va_avg_annual_energy_percent_exp,
   
