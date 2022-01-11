@@ -5,19 +5,23 @@
 # The script used to upload the metadata corresponding to the EIA datasets are 
 # stored in the metadata folder named metadata.R
 #----------------------------------------------------------------------------------------
-library(groundhog)
-groundhog.day = "2021-09-01"
-pkgs = c("httr", "here", "dplyr", 'tibble', "readr", "RPostgreSQL",
-         "eia", "stringr")
-groundhog.library(pkgs, groundhog.day)
-
+# library(groundhog)
+# groundhog.day = "2021-09-01"
+# pkgs = c("httr", "here", "dplyr", 'tibble', "readr", "RPostgreSQL",
+#          "eia", "stringr")
+# groundhog.library(pkgs, groundhog.day)
+library(httr);library(here);library(dplyr);library(tibble);library(readr)
+library(eia);library(RPostgreSQL);library(stringr);library(data.table)
 # Make a list of series ids
 # If you have a large number of datasets, create a txt file storing the series ids
 ## reads in a txt file containing the series ids of the datasets we need
-series_id_vec <- read_file(here("api_data_code","series_ids.txt"))
+series_id_vec <- read_file(here("data_retrieval_and_cleaning","series_ids.txt"))
 
 ## transform the content to a list that we can later feed into the fetch function
-series_id_list <- unlist(strsplit(series_id_vec,'\r\n'))
+# On a PC, use this one
+#series_id_list <- unlist(strsplit(series_id_vec,'\r\n'))
+#On a Mac, use this one
+series_id_list <- unlist(strsplit(series_id_vec,'\n'))
 
 #---------------------------------------------------------------------------
 # If you only have a few datasets, here is an example
@@ -32,12 +36,12 @@ url_root <- "http://api.eia.gov/series/"
 ## if you don't have one, apply for one at EIA's website and save it in a separate 
 ## R script in the etl folder with the exact script name and variable name specified below
 
-source(here("api_data_code","my_eia_api_key.R"))
+source(here("data_retrieval_and_cleaning","my_eia_api_key.R"))
 eia_set_key(eiaKey)
 
 # function used to fetch the eia series given the series id
 fetch_eia_series <- function(series_id){
-  
+  print(series_id)
   data_series <- eia_series(series_id)
   
   return(data_series)
@@ -91,8 +95,14 @@ db_table_names <- lapply(series_id_list,get_name)
 
 for (i in 1:length(all_data_series)){
   dbWriteTable(db, db_table_names[[i]], value = all_tables[[i]], append = FALSE, overwrite = TRUE, row.names = FALSE)
-  dbGetQuery(db, paste("SELECT * from",db_table_names[[i]])) %>% as_tibble() -> df_postgres
+  #dbGetQuery(db, paste("SELECT * from",db_table_names[[i]])) %>% as_tibble() -> df_postgres
 }
+#
+# Since EIA does not have annual wind data for Virginia yet, we need to calculate annual data from the monthly series
+#
+dt_eia_elec_gen_wnd_va_99_m = data.table(dbGetQuery(db,"SELECT * from eia_elec_gen_wnd_va_99_m"))
+dt_eia_elec_gen_wnd_va_99_a = dt_eia_elec_gen_wnd_va_99_m[,.(value=sum(value),date=first(date)),by=year]
+dbWriteTable(db, "eia_elec_gen_wnd_va_99_m", value = dt_eia_elec_gen_wnd_va_99_a, append = FALSE, overwrite = TRUE, row.names = FALSE)
 
 # Close connection
 dbDisconnect(db)
