@@ -9,7 +9,7 @@ lbry<-c("data.table", "RPostgreSQL", "scales", 'maps', "tidyr", "dplyr",
         "ggplot2", "zoo", "lubridate", "Hmisc", "here")
 test <- suppressMessages(lapply(lbry, require, character.only=TRUE, warn.conflicts = FALSE, quietly = TRUE))
 rm(test,lbry)
-
+max_eia_annual_data_year = 2020
 db_driver = dbDriver("PostgreSQL")
 source(here::here("my_postgres_credentials.R"))
 db <- dbConnect(db_driver,user=db_user, password=ra_pwd,dbname="postgres", host=db_host)
@@ -68,9 +68,7 @@ rps_mandate_schedule <- data.table(dbGetQuery(db,"select * from clean_energy_ren
 
 #function to fetch data from a specified db table; return as a data table & rename 'value' column with descriptive name
 fetch_time_series_from_db <- function(db_table_name, value_description, con){
-  library(RPostgreSQL)
-  library(data.table)
-  sql_script  <- paste0("select value, date from ",db_table_name," ;")
+  sql_script  <- paste0("select value, date from ",db_table_name," where year <= ",max_eia_annual_data_year," ;")
   print(sql_script)
   dt <- data.table(dbGetQuery(con, sql_script))
   dt <- dt[,.(year=year(date),value)]

@@ -87,10 +87,10 @@ ui <- tagList(
             box(width = 4, plotlyOutput("carbon_free_donut"), align = "center"),
             box(width = 4, plotlyOutput("energy_storage_donut"), align = "center"),
           ),
-          h2("Production by Fuel Type"),
+          h2("Electricity Production by Fuel Type"),
           fluidRow(box(plotlyOutput("gen_pie")),
                    box(plotlyOutput("gen_area"))),
-          h2("Consumption by Sector"),
+          h2("Energy Consumption by Sector"),
           fluidRow(box(plotlyOutput("con_pie")),
                    box(plotlyOutput("con_area")))
         ),
@@ -238,7 +238,7 @@ ui <- tagList(
           ), width = 9)),
           
           
-          h2("Consumption by Sector"),
+          h2("Energy Consumption by Sector"),
           fluidRow(box(div(
             DT::dataTableOutput("con_table")
           ), width = 9)),
@@ -405,7 +405,7 @@ server <- function(input, output) {
   })
   
   output$gen_pie <- renderPlotly({
-    va_annual_production_2019_pie_chart_p_with_legend
+    va_annual_production_pie_chart_p_with_legend
   })
   
   output$electric_emissions_plot <- renderPlotly({
@@ -427,7 +427,7 @@ server <- function(input, output) {
     va_annual_consumption_area_p
   })
   output$con_pie <- renderPlotly({
-    va_annual_consumption_2018_pie_chart_p_with_legend
+    va_annual_consumption_pie_chart_p_with_legend
   })
   
   output$renewable_timeline_plot <- renderPlotly({
