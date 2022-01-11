@@ -102,9 +102,9 @@ for (i in 1:length(all_data_series)){
 #
 dt_eia_elec_gen_wnd_va_99_m = data.table(dbGetQuery(db,"SELECT * from eia_elec_gen_wnd_va_99_m"))
 dt_eia_elec_gen_wnd_va_99_a = dt_eia_elec_gen_wnd_va_99_m[,.(value=sum(value),date=first(date)),by=year]
-dbWriteTable(db, "eia_elec_gen_wnd_va_99_m", value = dt_eia_elec_gen_wnd_va_99_a, append = FALSE, overwrite = TRUE, row.names = FALSE)
+dbWriteTable(db, "eia_elec_gen_wnd_va_99_a", value = dt_eia_elec_gen_wnd_va_99_a, append = FALSE, overwrite = TRUE, row.names = FALSE)
 
 # Close connection
 dbDisconnect(db)
-dbUnloadDriver(db_driver)
+#dbUnloadDriver(db_driver)
 

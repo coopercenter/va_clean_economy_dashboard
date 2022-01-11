@@ -1,9 +1,14 @@
-library(groundhog)
-groundhog.day = "2021-09-01"
-pkgs = c("data.table", "RPostgreSQL", "scales", 'maps', "tidyr", "dplyr",
+# library(groundhog)
+# groundhog.day = "2021-09-01"
+# pkgs = c("data.table", "RPostgreSQL", "scales", 'maps', "tidyr", "dplyr",
+#         "tools", "sf", "tools", "rnaturalearth", "rnaturalearthdata", "rgeos",
+#          "ggplot2", "zoo", "lubridate", "Hmisc", "here")
+# groundhog.library(pkgs, groundhog.day)
+lbry<-c("data.table", "RPostgreSQL", "scales", 'maps', "tidyr", "dplyr",
         "tools", "sf", "tools", "rnaturalearth", "rnaturalearthdata", "rgeos",
-         "ggplot2", "zoo", "lubridate", "Hmisc", "here")
-groundhog.library(pkgs, groundhog.day)
+        "ggplot2", "zoo", "lubridate", "Hmisc", "here")
+test <- suppressMessages(lapply(lbry, require, character.only=TRUE, warn.conflicts = FALSE, quietly = TRUE))
+rm(test,lbry)
 
 db_driver = dbDriver("PostgreSQL")
 source(here::here("my_postgres_credentials.R"))
@@ -65,8 +70,8 @@ rps_mandate_schedule <- data.table(dbGetQuery(db,"select * from clean_energy_ren
 fetch_time_series_from_db <- function(db_table_name, value_description, con){
   library(RPostgreSQL)
   library(data.table)
-  
   sql_script  <- paste0("select value, date from ",db_table_name," ;")
+  print(sql_script)
   dt <- data.table(dbGetQuery(con, sql_script))
   dt <- dt[,.(year=year(date),value)]
   setnames(dt, "value", value_description)
@@ -75,6 +80,7 @@ fetch_time_series_from_db <- function(db_table_name, value_description, con){
 }
 
 #custom color palette
+# need a new color for wind.
 ceps_pal <- c("#00A087B2", "#3C5488B2", "#CEA5AC", "#BE7E8A", "#4DBBD5B2", "#91D1C2B2","#D9C6C9","#8491B4B2","#5868AC","#6FB3D9","#56BD96","#99A9E2","#A94F64","#B0DEFA","#99EEBB","#8FD3FE")
 
 # Creating a data frame called `table_list` that includes two columns:
@@ -88,6 +94,7 @@ table_list = data.frame(
                "eia_elec_gen_sun_va_99_a",
                "eia_elec_gen_dpv_va_99_a",
                "eia_elec_gen_hyc_va_99_a",
+               "eia_elec_gen_wnd_va_99_a",
                "eia_elec_gen_www_va_99_a",
                "eia_elec_gen_was_va_99_a",
                "eia_elec_gen_all_va_99_a",
@@ -104,6 +111,7 @@ table_list = data.frame(
                "solar_utility", 
                "solar_distributed",
                "hydropower",
+               "wind",
                "wood",
                "other_biomass",
                "total",
@@ -116,6 +124,9 @@ table_list = data.frame(
 )
 table_list$value_name <- as.character(table_list$value_name)
 table_list$table_name <- as.character(table_list$table_name)
+# sql_script  <- paste0("select value, date from eia_elec_gen_wnd_va_99_a ;")
+# print(sql_script)
+# dt <- data.table(dbGetQuery(con, sql_script))
 
 #loading in data from database that is listed in table_list
 for(row in 1:nrow(table_list)){
@@ -135,6 +146,7 @@ renewable_and_carbon_free_list <- list(eia_elec_gen_nuc_va_99_a,
                                        eia_elec_gen_sun_va_99_a,
                                        eia_elec_gen_dpv_va_99_a,
                                        eia_elec_gen_hyc_va_99_a,
+                                       eia_elec_gen_wnd_va_99_a,
                                        eia_elec_gen_all_va_99_a)
 
 va_annual_renewable_and_carbon_free_gen <- NULL
@@ -149,7 +161,7 @@ for(table in renewable_and_carbon_free_list){
 va_annual_renewable_and_carbon_free_gen[is.na(va_annual_renewable_and_carbon_free_gen)]=0
 va_annual_renewable_and_carbon_free_gen[,all_solar:=solar_distributed+solar_utility]
 
-# Creating 'other' generation measure by combining all by fuel type generation and total generation in a table to caluclate other generation over time
+# Creating 'other' generation measure by combining all by fuel type generation and total generation in a table to calculate other generation over time
 gen_by_fuel_type_list <- list(eia_elec_gen_cow_va_99_a,
                               eia_elec_gen_pel_va_99_a,
                               eia_elec_gen_ng_va_99_a,
@@ -157,6 +169,7 @@ gen_by_fuel_type_list <- list(eia_elec_gen_cow_va_99_a,
                               eia_elec_gen_sun_va_99_a,
                               eia_elec_gen_dpv_va_99_a,
                               eia_elec_gen_hyc_va_99_a,
+                              eia_elec_gen_wnd_va_99_a,
                               eia_elec_gen_www_va_99_a,
                               eia_elec_gen_was_va_99_a,
                               eia_elec_gen_all_va_99_a)
@@ -171,17 +184,17 @@ for(table in gen_by_fuel_type_list){
 }
 
 va_annual_generation[is.na(va_annual_generation)]=0
-va_annual_generation[,other:=total-(coal+oil+gas+nuclear+solar_utility+solar_distributed+hydropower+wood+other_biomass)]
+va_annual_generation[,other:=total-(coal+oil+gas+nuclear+solar_utility+solar_distributed+hydropower+wind+wood+other_biomass)]
 other_annual_generation <- va_annual_generation[,.(year,other)]
 
 # Finding sum of total annual renewable generation----------------------------------------------------------------
-va_annual_renewable_and_carbon_free_gen[,renewable:=all_solar+hydropower]
+va_annual_renewable_and_carbon_free_gen[,renewable:=wind+all_solar+hydropower]
 
 # Finding total annual renewable generation as a percent of total energy generation--------------------------------
 va_annual_renewable_and_carbon_free_gen[,percent_renewable:=(renewable/(total-nuclear))*100]
 
 # Finding sum of total annual carbon-free generation--------------------------------------------------------------
-va_annual_renewable_and_carbon_free_gen[,carbon_free:=hydropower+all_solar+nuclear]
+va_annual_renewable_and_carbon_free_gen[,carbon_free:=wind+hydropower+all_solar+nuclear]
 
 # Finding total annual carbon-free generation as a percent of total energy generation--------------------------------------
 va_annual_renewable_and_carbon_free_gen[,percent_carbon_free:=(carbon_free/total)*100]
