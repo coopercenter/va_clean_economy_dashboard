@@ -1148,37 +1148,37 @@ emissions_per_capita_line_p <-
 emissions_per_capita_line_p
 
 #APCO and Dominion historic sales vs goals
-apco_dom_historic_sales_line <-
-  line_figure(
-    list(lf_apco_dom_historic_sales),
-    "year",
-    "Sales (GWh)",
-    "APCO and Dominion Historic Sales",
-    return_static = F,
-    source_citation = "Source: U.S. Energy Information Administration, Virgina Clean Economy Act"
-  )
-apco_dom_historic_sales_line
+# apco_dom_historic_sales_line <-
+#   line_figure(
+#     list(lf_apco_dom_historic_sales),
+#     "year",
+#     "Sales (GWh)",
+#     "APCO and Dominion Historic Sales",
+#     return_static = F,
+#     source_citation = "Source: U.S. Energy Information Administration, Virgina Clean Economy Act"
+#   )
+# apco_dom_historic_sales_line
+# 
+# apco_dom_historic_sales_line_p <-
+#   ggplotly_wrapper(apco_dom_historic_sales_line)
+# apco_dom_historic_sales_line_p
 
-apco_dom_historic_sales_line_p <-
-  ggplotly_wrapper(apco_dom_historic_sales_line)
-apco_dom_historic_sales_line_p
-
-apco_dom_sales_goal_line <-
-  line_figure(
-    list(lf_VCEA_goal_sales_reduction),
-    "year",
-    "Sales (GWh)",
-    "APCO and Dominion VCEA Sales Goals, 2022-2025",
-    return_static = F,
-    source_citation = "Source: U.S. Energy Information Administration, Virgina Clean Economy Act",
-    modifications = geom_line(linetype =
-                                "dashed", size = 1.3)
-  )
-apco_dom_sales_goal_line
-
-apco_dom_sales_goal_line_p <-
-  ggplotly_wrapper(apco_dom_sales_goal_line)
-apco_dom_sales_goal_line_p
+# apco_dom_sales_goal_line <-
+#   line_figure(
+#     list(lf_VCEA_goal_sales_reduction),
+#     "year",
+#     "Sales (GWh)",
+#     "APCO and Dominion VCEA Sales Goals, 2022-2025",
+#     return_static = F,
+#     source_citation = "Source: U.S. Energy Information Administration, Virgina Clean Economy Act",
+#     modifications = geom_line(linetype =
+#                                 "dashed", size = 1.3)
+#   )
+# apco_dom_sales_goal_line
+# 
+# apco_dom_sales_goal_line_p <-
+#   ggplotly_wrapper(apco_dom_sales_goal_line)
+# apco_dom_sales_goal_line_p
 
 apco_dom_historic_goal_sales_combined_line <-
   line_figure(
@@ -1197,21 +1197,21 @@ apco_dom_historic_goal_sales_combined_line_p <-
 apco_dom_historic_goal_sales_combined_line_p
 
 #facet grid
-apco_dom_sales_facet_graph <-
-  ggplot(data = lf_apco_dom_sales_combined,
-         mapping = aes(x = year, y = value, color = variable)) +
-  geom_line(aes(
-    group = variable,
-    text = paste0("Year: ", year, "\n", "Value: ", value, "\n", "Variable: ", variable)
-  )) +
-  facet_grid(. ~ category, scales = "free") +
-  scale_color_manual(name = NULL, values = ceps_pal[1:4]) +
-  xlab("Year") + ylab("Sales (GWh)") + ylim(0, NA) +
-  labs(title = "Electricty Sales",
-       subtitle = "Historic vs Goal",
-       caption = "Source:  U.S. Energy Information Administration, Virginia Clean Economy Act") +
-  theme_ceps()
-apco_dom_sales_facet_graph
+# apco_dom_sales_facet_graph <-
+#   ggplot(data = lf_apco_dom_sales_combined,
+#          mapping = aes(x = year, y = value, color = variable)) +
+#   geom_line(aes(
+#     group = variable,
+#     text = paste0("Year: ", year, "\n", "Value: ", value, "\n", "Variable: ", variable)
+#   )) +
+#   facet_grid(. ~ category, scales = "free") +
+#   scale_color_manual(name = NULL, values = ceps_pal[1:4]) +
+#   xlab("Year") + ylab("Sales (GWh)") + ylim(0, NA) +
+#   labs(title = "Electricty Sales",
+#        subtitle = "Historic vs Goal",
+#        caption = "Source:  U.S. Energy Information Administration, Virginia Clean Economy Act") +
+#   theme_ceps()
+# apco_dom_sales_facet_graph
 
 
 #Note: below figures come from ACEEE data - no metadata entries yet so manual citations are used
