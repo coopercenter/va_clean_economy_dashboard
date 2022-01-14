@@ -10,6 +10,10 @@ lbry<-c("data.table", "RPostgreSQL", "scales", 'maps', "tidyr", "dplyr",
 test <- suppressMessages(lapply(lbry, require, character.only=TRUE, warn.conflicts = FALSE, quietly = TRUE))
 rm(test,lbry)
 max_eia_annual_data_year = 2020
+#custom color palette
+# need a new color for wind.
+ceps_pal <- c("#00A087B2", "#3C5488B2", "#CEA5AC", "#BE7E8A", "#4DBBD5B2", "#91D1C2B2","#D9C6C9","#8491B4B2","#5868AC","#6FB3D9","#56BD96","#99A9E2","#A94F64","#B0DEFA","#99EEBB","#8FD3FE")
+
 db_driver = dbDriver("PostgreSQL")
 source(here::here("my_postgres_credentials.R"))
 db <- dbConnect(db_driver,user=db_user, password=ra_pwd,dbname="postgres", host=db_host)
@@ -60,163 +64,105 @@ va_elec_import<-data.table(dbGetQuery(db,"select * from eia_seds_elisp_va_a ;"))
 
 #load in APCO & Dom RPS
 VCEA_renewable_portfolio_standards<-data.table(dbGetQuery(db,"select * from \"VCEA_renewable_portfolio_standards\" ;"))
+setnames(VCEA_renewable_portfolio_standards,"year","Year")
 
 #load in utility sales data
 va_utility_sales <- data.table(dbGetQuery(db,"select * from va_utility_sales ;"))
+setnames(va_utility_sales,"year","Year")
 
 rps_mandate_schedule <- data.table(dbGetQuery(db,"select * from clean_energy_renewable_goals ;"))
 
-#function to fetch data from a specified db table; return as a data table & rename 'value' column with descriptive name
-fetch_time_series_from_db <- function(db_table_name, value_description, con){
-  sql_script  <- paste0("select value, date from ",db_table_name," where year <= ",max_eia_annual_data_year," ;")
-  print(sql_script)
-  dt <- data.table(dbGetQuery(con, sql_script))
-  dt <- dt[,.(year=year(date),value)]
-  setnames(dt, "value", value_description)
-  
-  return(dt)
-}
+###
+# Load EIA annual time series table
+#load in VA electricity imports
+#db <- dbConnect(db_driver,user=db_user, password=ra_pwd,dbname="postgres", host=db_host)
+eia_annual_data <-data.table(dbGetQuery(db,"select * from eia_annual_data ;"))
 
-#custom color palette
-# need a new color for wind.
-ceps_pal <- c("#00A087B2", "#3C5488B2", "#CEA5AC", "#BE7E8A", "#4DBBD5B2", "#91D1C2B2","#D9C6C9","#8491B4B2","#5868AC","#6FB3D9","#56BD96","#99A9E2","#A94F64","#B0DEFA","#99EEBB","#8FD3FE")
+# End of db access for now
+#dbDisconnect(db)
+#
+# Name mapping
+#
+eia_name=c("ELEC_GEN_COW_VA_99_A",
+           "ELEC_GEN_PEL_VA_99_A",
+           "ELEC_GEN_NG_VA_99_A",
+           "ELEC_GEN_NUC_VA_99_A",
+           "ELEC_GEN_SUN_VA_99_A",
+           "ELEC_GEN_DPV_VA_99_A",
+           "ELEC_GEN_HYC_VA_99_A",
+           "ELEC_GEN_HPS_VA_99_A",
+           "ELEC_GEN_WND_VA_99_A",
+           "ELEC_GEN_WWW_VA_99_A",
+           "ELEC_GEN_WAS_VA_99_A",
+           "ELEC_GEN_ALL_VA_99_A",
+           "SEDS_TERCB_VA_A",
+           "SEDS_TECCB_VA_A",
+           "SEDS_TEICB_VA_A",
+           "SEDS_TEACB_VA_A",
+           "EMISS_CO2_TOTV_EC_TO_VA_A",
+           "EMISS_CO2_TOTV_TT_TO_VA_A")
+local_name=c("Coal",
+             "Oil",
+             "Gas",
+             "Nuclear",
+             "Solar_utility", 
+             "Solar_distributed",
+             "Hydropower",
+             "Pumped_storage",
+             "Wind",
+             "Wood",
+             "Other_biomass",
+             "Total_gen",
+             "Residential",
+             "Commercial",
+             "Industrial",
+             "Transportation",
+             "Electric_sector_CO2_emissions",
+             "Total_CO2_emissions")
 
-# Creating a data frame called `table_list` that includes two columns:
-#      * `table_name`: the list of db table names with data to be pulled from db
-#      * `value_name` : associated name of 'value', e.g., "coal"
-table_list = data.frame(
-  table_name=c("eia_elec_gen_cow_va_99_a",
-               "eia_elec_gen_pel_va_99_a",
-               "eia_elec_gen_ng_va_99_a",
-               "eia_elec_gen_nuc_va_99_a",
-               "eia_elec_gen_sun_va_99_a",
-               "eia_elec_gen_dpv_va_99_a",
-               "eia_elec_gen_hyc_va_99_a",
-               "eia_elec_gen_wnd_va_99_a",
-               "eia_elec_gen_www_va_99_a",
-               "eia_elec_gen_was_va_99_a",
-               "eia_elec_gen_all_va_99_a",
-               "eia_seds_tercb_va_a",
-               "eia_seds_teccb_va_a",
-               "eia_seds_teicb_va_a",
-               "eia_seds_teacb_va_a",
-               "eia_emiss_co2_totv_ec_to_va_a",
-               "eia_emiss_co2_totv_tt_to_va_a"),
-  value_name=c("coal",
-               "oil",
-               "gas",
-               "nuclear",
-               "solar_utility", 
-               "solar_distributed",
-               "hydropower",
-               "wind",
-               "wood",
-               "other_biomass",
-               "total",
-               "residential",
-               "commercial",
-               "industrial",
-               "transportation",
-               "electric_sector_CO2_emissions",
-               "total_CO2_emissions")
-)
-table_list$value_name <- as.character(table_list$value_name)
-table_list$table_name <- as.character(table_list$table_name)
-# sql_script  <- paste0("select value, date from eia_elec_gen_wnd_va_99_a ;")
-# print(sql_script)
-# dt <- data.table(dbGetQuery(con, sql_script))
-
-#loading in data from database that is listed in table_list
-for(row in 1:nrow(table_list)){
-  table <- table_list[row,"table_name"]
-  name_of_value <- table_list[row,"value_name"]
-  
-  dt <- fetch_time_series_from_db(table, name_of_value, db)
-  assign(table,dt)
-}
-
-dbDisconnect(db)
-
-eia_elec_gen_sun_va_99_a[solar_utility == 0,solar_utility:=NA] #random fix for visual purposes later on
-
-# Isolating renewable and carbon free generation in it's own table -----------------------------------------------
-renewable_and_carbon_free_list <- list(eia_elec_gen_nuc_va_99_a,
-                                       eia_elec_gen_sun_va_99_a,
-                                       eia_elec_gen_dpv_va_99_a,
-                                       eia_elec_gen_hyc_va_99_a,
-                                       eia_elec_gen_wnd_va_99_a,
-                                       eia_elec_gen_all_va_99_a)
-
-va_annual_renewable_and_carbon_free_gen <- NULL
-
-for(table in renewable_and_carbon_free_list){
-  if (is.null(va_annual_renewable_and_carbon_free_gen))
-  {va_annual_renewable_and_carbon_free_gen <- table}
-  else
-  {va_annual_renewable_and_carbon_free_gen <- merge(va_annual_renewable_and_carbon_free_gen, table[], by = "year", all=TRUE)}
-}
-
-va_annual_renewable_and_carbon_free_gen[is.na(va_annual_renewable_and_carbon_free_gen)]=0
-va_annual_renewable_and_carbon_free_gen[,all_solar:=solar_distributed+solar_utility]
-
-# Creating 'other' generation measure by combining all by fuel type generation and total generation in a table to calculate other generation over time
-gen_by_fuel_type_list <- list(eia_elec_gen_cow_va_99_a,
-                              eia_elec_gen_pel_va_99_a,
-                              eia_elec_gen_ng_va_99_a,
-                              eia_elec_gen_nuc_va_99_a,
-                              eia_elec_gen_sun_va_99_a,
-                              eia_elec_gen_dpv_va_99_a,
-                              eia_elec_gen_hyc_va_99_a,
-                              eia_elec_gen_wnd_va_99_a,
-                              eia_elec_gen_www_va_99_a,
-                              eia_elec_gen_was_va_99_a,
-                              eia_elec_gen_all_va_99_a)
-
-va_annual_generation <- NULL
-
-for(table in gen_by_fuel_type_list){
-  if (is.null(va_annual_generation))
-  {va_annual_generation <- table}
-  else
-  {va_annual_generation <- merge(va_annual_generation, table[], by = "year", all=TRUE)}
-}
-
-va_annual_generation[is.na(va_annual_generation)]=0
-va_annual_generation[,other:=total-(coal+oil+gas+nuclear+solar_utility+solar_distributed+hydropower+wind+wood+other_biomass)]
-other_annual_generation <- va_annual_generation[,.(year,other)]
-
-# Finding sum of total annual renewable generation----------------------------------------------------------------
-va_annual_renewable_and_carbon_free_gen[,renewable:=wind+all_solar+hydropower]
-
-# Finding total annual renewable generation as a percent of total energy generation--------------------------------
-va_annual_renewable_and_carbon_free_gen[,percent_renewable:=(renewable/(total-nuclear))*100]
-
-# Finding sum of total annual carbon-free generation--------------------------------------------------------------
-va_annual_renewable_and_carbon_free_gen[,carbon_free:=wind+hydropower+all_solar+nuclear]
-
-# Finding total annual carbon-free generation as a percent of total energy generation--------------------------------------
-va_annual_renewable_and_carbon_free_gen[,percent_carbon_free:=(carbon_free/total)*100]
+setnames(eia_annual_data,
+         eia_name, local_name)
+# Some additions and adjustments
+eia_annual_data[Solar_utility == 0,Solar_utility:=NA] #random fix for visual purposes later on
+# Not sure if this should be done here or possibly closer to display time
+eia_annual_data[is.na(eia_annual_data)]=0
+### Check the energy math in the "other" calculation. For one thing, why is dpv in here?
+### Should we net out pumped storage electricity use?
+# Total annual carbon-free generation (incl. dpv)
+# Note: the  definition of renewable is only wind, solar and hydro
+eia_annual_data[,`:=`(Year = year(date),
+                      All_solar = Solar_distributed +  Solar_utility,
+                      Other = Total_gen-(Coal+Oil+Gas+Nuclear+Solar_utility+Solar_distributed+Hydropower+Wind+Wood+Other_biomass),
+                      Carbon_free = Wind+Hydropower+Solar_distributed+Solar_utility+Nuclear,     
+                      Renewable = Wind+Solar_distributed+Solar_utility+Hydropower                
+)]
+eia_annual_data[Total_gen!=0,`:=`(Percent_renewable = (Renewable/(Total_gen-Nuclear))*100, # Percent renewable generation of total generation
+                                  Percent_carbon_free = (Carbon_free/Total_gen)*100,        # Percent carbon-free generation of total elec. generation
+                                  Not_renewable=Total_gen-Renewable,
+                                  Carbon_emitting=Total_gen-Carbon_free
+)]
 
 # Renewable and carbon free percent gen---------------------------------------------------------------------
-lf_percent_renewable_and_carbon_free <- melt(va_annual_renewable_and_carbon_free_gen[,.(year,percent_renewable,percent_carbon_free)],id="year")
-lf_percent_renewable <- melt(va_annual_renewable_and_carbon_free_gen[,.(year,percent_renewable)],id="year")
-lf_percent_carbon_free <- melt(va_annual_renewable_and_carbon_free_gen[,.(year,percent_carbon_free)],id="year")
+lf_percent_renewable_and_carbon_free <- melt(eia_annual_data[,.(Year,Percent_renewable,Percent_carbon_free)],id="Year")
+lf_percent_renewable <- melt(eia_annual_data[,.(Year,Percent_renewable)],id="Year")
+lf_percent_carbon_free <- melt(eia_annual_data[,.(Year,Percent_carbon_free)],id="Year")
 
 #manually creating table of overall generation goals
 #creating table for facet grid 
-VCEA_goal_percent_gen = data.table(year=c(2030,2040,2050,2060),
-                                   percent_renewable=c(30,30,30,30),
-                                   percent_carbon_free=c(NA,NA,100,100))
-lf_VCEA_goal_percent_gen <- melt(VCEA_goal_percent_gen,id="year")
+VCEA_goal_percent_gen = data.table(Year=c(2030,2040,2050,2060),
+                                   Percent_renewable=c(30,30,30,30),
+                                   Percent_carbon_free=c(NA,NA,100,100))
+lf_VCEA_goal_percent_gen <- melt(VCEA_goal_percent_gen,id="Year")
 
-percent_renewable_carbon_free_combined <- merge(lf_percent_renewable_and_carbon_free[,.(year,category=variable,historic=value)],lf_VCEA_goal_percent_gen[,.(year,category=variable,goal=value)],by=c("year","category"),all=T)
-lf_percent_renewable_carbon_free_combined <- melt(percent_renewable_carbon_free_combined,id=c("year","category"))
+percent_renewable_carbon_free_combined <- merge(lf_percent_renewable_and_carbon_free[,.(Year,category=variable,historic=value)],
+                                                lf_VCEA_goal_percent_gen[,.(Year,category=variable,goal=value)],by=c("Year","category"),all=T)
+lf_percent_renewable_carbon_free_combined <- melt(percent_renewable_carbon_free_combined,id=c("Year","category"))
 lf_percent_renewable_carbon_free_combined <- lf_percent_renewable_carbon_free_combined[!is.na(value)]
 
 setnames(lf_percent_renewable_carbon_free_combined,old=c("variable","category"),new=c("category","variable"))
 
-lf_percent_renewable_carbon_free_combined[,variable:=gsub("percent_renewable","Renewable",variable)]
-lf_percent_renewable_carbon_free_combined[,variable:=gsub("percent_carbon_free","Carbon free",variable)]
+lf_percent_renewable_carbon_free_combined[,variable:=gsub("Percent_renewable","Renewable",variable)]
+lf_percent_renewable_carbon_free_combined[,variable:=gsub("Percent_carbon_free","Carbon free",variable)]
 lf_percent_renewable_carbon_free_combined[,category:=gsub("goal","Goal",category)]
 lf_percent_renewable_carbon_free_combined[,category:=gsub("historic","Historic",category)]
 
@@ -228,19 +174,19 @@ lf_percent_renewable_carbon_free_combined <- lf_percent_renewable_carbon_free_co
 lf_percent_renewable_carbon_free_combined <- as.data.table(lf_percent_renewable_carbon_free_combined)
 
 #creating table for regular line plot 
-VCEA_goal_percent_gen_dt = data.table(year=c(2030,2040,2050,2060),
-                                      percent_renewable_goal=c(30,30,30,30),
-                                      percent_carbon_free_goal=c(NA,NA,100,100))
-lf_VCEA_goal_percent_gen_dt <- melt(VCEA_goal_percent_gen_dt,id="year")
+VCEA_goal_percent_gen_dt = data.table(Year=c(2030,2040,2050,2060),
+                                      Percent_renewable_goal=c(30,30,30,30),
+                                      Percent_carbon_free_goal=c(NA,NA,100,100))
+lf_VCEA_goal_percent_gen_dt <- melt(VCEA_goal_percent_gen_dt,id="Year")
 
 #calculating percent share of Dom & Apco sales of total sales in 2019
-recent_year = va_utility_sales %>% select(year) %>% arrange(year)
+recent_year = va_utility_sales %>% select(Year) %>% arrange(Year)
 recent_year = recent_year[[nrow(va_utility_sales),1]]
 
 
-total_sales = va_utility_sales[year==recent_year,sum(tot_sales_mwh)]
-dom_percent_share = va_utility_sales[year==recent_year&utility_name=="dominion",sum(tot_sales_mwh)]/total_sales
-apco_percent_share = va_utility_sales[year==recent_year&utility_name=="apco",sum(tot_sales_mwh)]/total_sales
+total_sales = va_utility_sales[Year==recent_year,sum(tot_sales_mwh)]
+dom_percent_share = va_utility_sales[Year==recent_year&utility_name=="dominion",sum(tot_sales_mwh)]/total_sales
+apco_percent_share = va_utility_sales[Year==recent_year&utility_name=="apco",sum(tot_sales_mwh)]/total_sales
 
 #calculating weighted average of Dom and APCO rps
 VCEA_renewable_portfolio_standards[,`:=`(apco_rps=apco_rps*100,
@@ -295,12 +241,6 @@ lf_apco_dom_sales_combined_dt[variable=="dom_total_gwh"|variable=="dom_goal",var
 lf_apco_dom_sales_combined <- lf_apco_dom_sales_combined %>% 
   arrange(desc(category)) %>%
   mutate_at(vars(category), funs(factor(., levels=unique(.))))
-
-# Renewable versus Non-renewable Generation------------------------------------------------------------------------------------------------
-va_annual_renewable_and_carbon_free_gen[,not_renewable:=total-renewable]
-
-# Carbon versus Carbon Free Generation-----------------------------------------------------------------------------------------------------
-va_annual_renewable_and_carbon_free_gen[,carbon_emitting:=total-carbon_free]
 
 # Solar & Wind Capacity vs VCEA goals -----------------------------------------------------------------------------------------------------
 # Creating working versions to keep formatting of tables intact when they are uploaded to dashboard
@@ -403,38 +343,6 @@ va_elec_import<-subset(va_elec_import,select=-c(date))
 expenditures_source <- metadata[db_table_name=="energy_burden_county_expenditures",data_source_full_name]
 percent_income_source <- metadata[db_table_name=="energy_burden_county_percent_income",data_source_full_name]
 
-#Below there are 3 options to get the 'va_counties' geospatial dataset ready to be merged with the energy equity data
-#I have commented out options B & C, but included them for reference as none of the three options are ideal
-
-#OPTION A - successfully shows all city and county boundaries EXCEPT Accomack and Northampton
-#va_counties <- sf::st_read(dsn=here::here("VirginiaAdministrativeBoundary"),layer="VirginiaCounty")
-#va_counties <- as.data.table(va_counties)
-#setnames(va_counties,old="NAMELSAD",new="county")#renaming county column to match other datasets
-#va_counties$county <- toTitleCase(as.character(va_counties$county))
-
-#energy_burden_county_expenditures$county <- toTitleCase(energy_burden_county_expenditures$county)
-#energy_burden_county_percent_income$county <- toTitleCase(energy_burden_county_percent_income$county)
-
-#merging county geospatial data with energy equity data
-#va_energy_equity_by_county <- merge(va_counties,energy_burden_county_expenditures,id="county")
-#va_energy_equity_by_county$avg_annual_energy_cost <- as.numeric(va_energy_equity_by_county$avg_annual_energy_cost)
-#va_energy_equity_by_county <- merge(va_energy_equity_by_county,energy_burden_county_percent_income,id="county")
-#va_energy_equity_by_county$avg_energy_burden_as_percent_income <- as.numeric(va_energy_equity_by_county$avg_energy_burden_as_percent_income) 
-
-#states <- st_as_sf(map("state", plot = FALSE, fill = TRUE)) #to get  state outline
-
-#states <- as.data.table(states)
-#states$ID <- as.character(states$ID)
-#virginia_outline <- st_as_sf(states[ID=="virginia"])
-
-#va_energy_equity_by_county <- as.data.table(va_energy_equity_by_county)
-#strange trick to ensure hover text in map visual appears correctly
-#va_energy_equity_by_county[,number1:=(1500:1632)]
-#small_numbers <- seq(from=1, to=2.32, by=.01)
-#va_energy_equity_by_county[,number2:=small_numbers]
-
-#va_energy_equity_by_county <- st_as_sf(va_energy_equity_by_county)
-#---------------------------------------------------------------------------------------------------
 
 #OR
 #OPTION B - does not contain most cities' geospatial data but Accomack and Northampton counties appear as they should 
@@ -489,50 +397,50 @@ virginia_annual_savings_2020_2022$variable <- factor(virginia_annual_savings_202
 
 
 #-----------------------------------------REFORMATTING DATASETS--------------------------------------------------------------------
-
+# Formatting should be done at display time, not here.
 # reformatting the generation dataset
-va_gen_w_commas <- va_annual_generation %>%
-  select(-year) %>%
-  format(big.mark=",",scientific=FALSE,trim=TRUE) %>%
-  data.frame()
-
-va_gen_w_commas<- va_annual_generation %>% select(year) %>% cbind(va_gen_w_commas)
-gen_names <- names(va_gen_w_commas)
-good_gen_names <- capitalize(gsub("_"," ", gen_names))
-names(va_gen_w_commas) <- good_gen_names
+# va_gen_w_commas <- va_annual_generation %>%
+#   select(-year) %>%
+#   format(big.mark=",",scientific=FALSE,trim=TRUE) %>%
+#   data.frame()
+# 
+# va_gen_w_commas<- va_annual_generation %>% select(year) %>% cbind(va_gen_w_commas)
+# gen_names <- names(va_gen_w_commas)
+# good_gen_names <- capitalize(gsub("_"," ", gen_names))
+# names(va_gen_w_commas) <- good_gen_names
 
 # reformatting the consumption dataset
-consumption_by_sector_list <- list(eia_seds_tercb_va_a,
-                                   eia_seds_teccb_va_a,
-                                   eia_seds_teicb_va_a,
-                                   eia_seds_teacb_va_a)
-
-va_annual_consumption <- NULL
-
-for(table in consumption_by_sector_list){
-  if (is.null(va_annual_consumption))
-  {va_annual_consumption <- table}
-  else
-  {va_annual_consumption <- merge(va_annual_consumption, table[], by = "year", all=TRUE)}
-}
-
-va_con_w_commas<- va_annual_consumption %>%
-  select(residential, commercial, industrial, transportation) %>%
-  format(big.mark=",",scientific=FALSE,trim=TRUE) %>%
-  data.frame()
-  
-va_con_w_commas <- va_annual_consumption %>% select(year) %>% cbind(va_con_w_commas)
-
+# consumption_by_sector_list <- list(eia_seds_tercb_va_a,
+#                                    eia_seds_teccb_va_a,
+#                                    eia_seds_teicb_va_a,
+#                                    eia_seds_teacb_va_a)
+# 
+# va_annual_consumption <- NULL
+# 
+# for(table in consumption_by_sector_list){
+#   if (is.null(va_annual_consumption))
+#   {va_annual_consumption <- table}
+#   else
+#   {va_annual_consumption <- merge(va_annual_consumption, table[], by = "year", all=TRUE)}
+# }
+# 
+# va_con_w_commas<- va_annual_consumption %>%
+#   select(residential, commercial, industrial, transportation) %>%
+#   format(big.mark=",",scientific=FALSE,trim=TRUE) %>%
+#   data.frame()
+#   
+# va_con_w_commas <- va_annual_consumption %>% select(year) %>% cbind(va_con_w_commas)
+# 
 #reformatting carbon emissions from electricity sector
-virginia_emissions_electric <- eia_emiss_co2_totv_ec_to_va_a[,.(year,electric_sector_CO2_emissions)]
-virginia_emissions_electric_commas <- data.frame(signif(select(virginia_emissions_electric, electric_sector_CO2_emissions), digits=4))
-virginia_emissions_electric_commas <- cbind(virginia_emissions_electric[,1],virginia_emissions_electric_commas)
-colnames(virginia_emissions_electric_commas) <- c('Year','Million Metric Tons of CO2')
+# virginia_emissions_electric <- eia_emiss_co2_totv_ec_to_va_a[,.(year,electric_sector_CO2_emissions)]
+# virginia_emissions_electric_commas <- data.frame(signif(select(virginia_emissions_electric, electric_sector_CO2_emissions), digits=4))
+# virginia_emissions_electric_commas <- cbind(virginia_emissions_electric[,1],virginia_emissions_electric_commas)
+# colnames(virginia_emissions_electric_commas) <- c('Year','Million Metric Tons of CO2')
 
 #reformatting emissions compounds dataset
-va_emissions_compounds <- merge(emissions_co2_by_source_va[,.(year=year,CO2=total/1000)],emissions_no_by_source_va[,.(year=year,NO=total/1102311.31)],id="year")
-va_emissions_compounds <- merge(va_emissions_compounds,emissions_so2_by_source_va[,.(year=year,SO2=total/1102311.31)],id="year")
-va_emissions_compounds <- va_emissions_compounds %>% filter(year >= 2000) #limit data to baseline year of 2000
+# va_emissions_compounds <- merge(emissions_co2_by_source_va[,.(year=year,CO2=total/1000)],emissions_no_by_source_va[,.(year=year,NO=total/1102311.31)],id="year")
+# va_emissions_compounds <- merge(va_emissions_compounds,emissions_so2_by_source_va[,.(year=year,SO2=total/1102311.31)],id="year")
+# va_emissions_compounds <- va_emissions_compounds %>% filter(year >= 2000) #limit data to baseline year of 2000
 
 colnames(rps_mandate_schedule) <- c('year', 'variable', 'value')
 rps_mandate_schedule <- rps_mandate_schedule[variable=="Appalachian",variable:="APCO"]
