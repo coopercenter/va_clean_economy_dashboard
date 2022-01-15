@@ -17,7 +17,7 @@
 stacked_area_figure <- function(data_table,y_value_unit,title_name,character_list=NULL,x_label="Year",lower_limit=0,upper_limit=NA,return_static=TRUE,source_citation=NULL,modifications=NULL,subtitle_description=NULL){
   #data_table is a melted data table with "variable" formatted to be legend lables
   #           variable names: [x_value,y_value,fill_variable]
-  #value_unit = character description of units of value being plotted
+  #y_value_unit = character description of units of value being plotted
   #title_name = character description of what title of figure should be
   #character_list defaults to NULL, but if applicable should be a list of the relevant database data table names as strings, so that their source info can be extracted from metadata table
   #x_label defaults to "Year" but can be substituted with another character if Year is not appropriate xlabel

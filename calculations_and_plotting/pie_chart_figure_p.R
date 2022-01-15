@@ -1,7 +1,6 @@
 #' pie_chart_figure_p
 #'
-#' @param data_table_list
-#' @param merge_variable
+#' @param data_table
 #' @param title_name
 #' @param character_list
 #' @param legend_shown
