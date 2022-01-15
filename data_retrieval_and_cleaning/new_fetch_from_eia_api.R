@@ -1,4 +1,4 @@
-#library(dplyr)
+library(dplyr)
 #library(tidyverse)
 library(stringr) # for replacing strings
 library(here)
@@ -8,6 +8,10 @@ library("RPostgreSQL")
 library(readxl)
 library(data.table)
 library(eia)
+# groundhog.day = "2022-01-14"
+# pkgs = c("httr", "here", "dplyr", "readr", "RPostgreSQL",
+#          "eia", "stringr","data.table")
+# groundhog.library(pkgs, groundhog.day)
 
 db_driver = dbDriver("PostgreSQL")
 source(here('my_postgres_credentials.R'))
@@ -22,7 +26,7 @@ source(here('my_postgres_credentials.R'))
 #Function takes a list of EIA time-series names and returns:
 #   data: a data.table with a date column and a column for each item in the list
 #   metaData: the non-data part of the EIA response: vectors of series info
-#      including name, f(requency), units, description, etc.
+#      including name, f(requency), units, description, etc. <- currently not used
 eiaKey <- '7ee3cdbf1ded6bcfb9de1e50d722ebd4'
 eia_set_key(eiaKey)
 
@@ -97,7 +101,7 @@ eia_annual_metadata = data.table(response$metaData)
 setkey(eia_annual_data,date)
 
 #  Merge all annual series
-eia_annual_data_all = merge(eia_annual_data,annual_data.fromMonthly, by="date",all=TRUE)
+eia_annual_data = merge(eia_annual_data,annual_data.fromMonthly, by="date",all=TRUE)
 setkey(eia_annual_data,date)
 
 # store both data tables in the database
@@ -108,22 +112,24 @@ db <- dbConnect(db_driver,user="wms5f", password="manx(0)Rose",dbname="postgres"
 #
 # annual
 #
-names(annual_data_all) = tolower(names(annual_data_all))
+#names(eia_annual_data) = tolower(names(eia_annual_data))
 dbWriteTable(db, "eia_annual_data", value = eia_annual_data, append = FALSE, overwrite = TRUE, row.names = FALSE)
 dbExecute(db, "alter table eia_annual_data add primary key (date);")
 #
 # monthly
 #
-names(monthly_data) = tolower(names(monthly_data))
+#names(eia_monthly_data) = tolower(names(eia_monthly_data))
 dbWriteTable(db, "eia_monthly_data", value = eia_monthly_data, append = FALSE, overwrite = TRUE, row.names = FALSE)
 dbExecute(db, "alter table eia_monthly_data add primary key (date);")
 
 test_output = dbGetQuery(db, "SELECT ELEC_SALES_VA_ALL_M from monthly_data")
 # Close connection
 dbDisconnect(db)
-dbUnloadDriver(db_driver)
+#dbUnloadDriver(db_driver)
 
-
+#
+#The following code is a start at extracting and storing metadata
+#
 #cols = names(annual_data)[names(annual_data)!= "date"]
 
 #dbExecute(db, "COMMENT ON COLUMN annual_data.ELEC_SALES_VA_ALL_A IS 'All electricity sales';")
