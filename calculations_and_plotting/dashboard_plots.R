@@ -16,7 +16,7 @@ source(here::here("calculations_and_plotting", "dashboard_calculations.R")) #sou
 # Put these in a single file to source in. Replaces most of the viz package
 source(here("calculations_and_plotting","single_ring_donut_figure_p.R"))
 source(here("calculations_and_plotting","build_source_list.R"))
-source(here("calculations_and_plotting","new_stacked_area_figure.R"))
+source(here("calculations_and_plotting","stacked_area_figure.R"))
 source(here("calculations_and_plotting","theme_ceps.R"))
 source(here("calculations_and_plotting","ggplotly_wrapper.R"))
 source(here("calculations_and_plotting","pie_chart_figure_p.R"))
