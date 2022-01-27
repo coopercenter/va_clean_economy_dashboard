@@ -77,8 +77,8 @@ eia_series_names = response$metaData$name
 eiaSeriesInfo = data.table(series_ids = monthly_list,
                            series_names = eia_series_names)
 # store series names
-library(xlsx)
-write.xlsx(eiaSeriesInfo, here("eiaSeriesInfo.xlsx"))
+#library(xlsx)
+#write.xlsx(eiaSeriesInfo, here("eiaSeriesInfo.xlsx"))
 # Sum monthly data to annual data
 # Annual data must not include incomplete years.
 # !!!This filter needs fixing. Probably the best way is to count months
