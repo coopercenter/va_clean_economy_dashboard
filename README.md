@@ -1,6 +1,12 @@
 # VA Clean Economy Dashboard
 
 This is a document tutorial to run the dashboard on your local computer. This will be updated over time as new updates are created. 
+## New workflow for updating data (Updated 1/27/2022)
+1) To update data, run data_retrieval.R (this uses data_retrieval_functions.R) and retrieves updated data from online sources
+	- Data in the database should now be updated.
+	- Only a very few items are read in from *raw_data* files. These sources need to be monitored manually.
+	- NB: Eventually *ALL* data should be updated by this page. Policy inputs will need to be updated manually. 
+2) Run dashboard_plots.R (this sources dashboard_calculations.R). This code creates the Rdata file needed for the dashboard.
 
 ## Run the Dashboard Locally (Updated 9/3/2021)
 1. Clone the **va_clean_economy_dashboard** repository.
