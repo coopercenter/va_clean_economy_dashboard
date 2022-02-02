@@ -11,11 +11,9 @@
 /*.tar.gz
 # Output files from R CMD check
 /*.Rcheck/
-
 # RStudio files
 .Rproj.user/
 *.Rproj
-
 # produced vignettes
 vignettes/*.html
 vignettes/*.pdf
@@ -30,3 +28,4 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 my_postgres_credentials.R
+dashboard_output.RData
