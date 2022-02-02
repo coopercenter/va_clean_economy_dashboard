@@ -73,7 +73,8 @@ rm(annual_va_utility_data)
 # Currently (2021) the dashboard displays energy per capita
 # maybe this should be changed
 #Energy intensity
-intensity_data = merge(eia_annual_data[,.(date,Total_energy_cons,Total_CO2_emissions)],
+intensity_data = merge(eia_annual_data[,.(date,Total_energy_cons=SEDS_TETCB_VA_A,
+                                          Total_CO2_emissions=EMISS_CO2_TOTV_TT_TO_VA_A)],
                        va_state_info,by="date",all=TRUE)
 intensity_data[,energy_consumption_per_capita := Total_energy_cons/va_pop]
 #### Need to work out the units to report
@@ -138,7 +139,7 @@ setnames(total_production_forecast_offshore_wind,'Total_gen','Total_Production')
 
 dbRemoveTable(db,"offshore_wind")
 dbWriteTable(db,"offshore_wind",offshore_wind,append=F,row.names=F)
-rm(offshor_wind)
+rm(offshore_wind)
 #------------------------------------------------------#
 # Retrieve latest EIA annual emission data for Virginia
 
@@ -173,10 +174,10 @@ current_EE_programs <- data.table(read_excel(file_name, col_names = TRUE))
 rm(file_name)
 # This next line does not appear to be used
 # dominion_current_EE_data_through_2018 <- current_EE_programs[c(2,4:8),]
-rm(current_EE_programs)
 
 #upload to db
 dbWriteTable(db, 'current_ee_programs', current_EE_programs, row.names=FALSE, overwrite = TRUE)
+rm(current_EE_programs)
 
 ### Once again, the source of this data is undocumented. Its quality is unknown and suspect
 ### This part of the dashboard needs to be completely restructured.
