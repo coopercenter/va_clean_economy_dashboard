@@ -327,7 +327,6 @@ va_annual_consumption_pie_chart_p_with_legend <-
 va_annual_consumption_pie_chart_p_with_legend
 
 #--------------------------------PLOTTING RENEWABLE & CARBON-FREE GENERATION IN PARTICULAR-----------------------------------------------------
-source(here("calculations_and_plotting","line_figure.R"))
 
 # Graphing % of VA power generation (in GWh/yr) from renewables & carbon-free sources
 lf_percent_renewable_and_carbon_free <- melt(eia_annual_data[!is.na(Percent_renewable | !is.na(Percent_carbon_free)),
@@ -404,7 +403,7 @@ rps_renewable_line_p <-
   )
 rps_renewable_line_p
 
-#  
+#### FIX  
 latest_actuals_year = lf_percent_renewable_carbon_free_combined_dt[variable=="Percent_renewable",max(Year)]
 setnames(lf_percent_renewable_carbon_free_combined_dt,c("Year","variable","value"),
          c("x_value","fill_variable","y_value"))
@@ -452,6 +451,13 @@ percent_renewable_and_schedule_goal_combined_line_p
 
 # Solar, Hydro, and Nuclear Generation over Time
 carbon_free_data <- melt(eia_annual_data[Nuclear!=0,.(Year,Nuclear,Solar_utility,Solar_distributed,Hydropower,Wind)],id="Year")
+# Don't display long lines at zero.
+carbon_free_data[Year<2016 & variable=='Solar_utility',value := ifelse(value==0,NA,value)]
+carbon_free_data[Year<2013 & variable=='Solar_distributed',value := ifelse(value==0,NA,value)]
+carbon_free_data[Year<2021 & variable=='Wind',value := ifelse(value==0,NA,value)]
+#carbon_free_data[,Year:=as.factor(Year)]
+# Fix legend label text
+carbon_free_data[,variable:=gsub('_',', ',variable)]
 setnames(carbon_free_data,c("Year","variable","value"),
          c("x_value","fill_variable","y_value"))
 annual_carbon_free_generation_by_type_line <-
@@ -472,7 +478,12 @@ annual_carbon_free_generation_by_type_line_p
 rm(carbon_free_data)
 
 # Solar (broken into distributed and utility) over time
-solar_data <- melt(eia_annual_data[Year>2012,.(Year=as.factor(Year),Solar_utility,Solar_distributed)],id="Year")
+solar_data <- melt(eia_annual_data[Year>2012,.(Year=Year,Solar_utility,Solar_distributed)],id="Year")
+# Don't display long lines at zero.
+solar_data[Year<2016 & variable=='Solar_utility',value := ifelse(value==0,NA,value)]
+solar_data[,Year:=as.factor(Year)]
+# Fix legend label text
+solar_data[,variable:=gsub('_',', ',variable)]
 setnames(solar_data,c("Year","variable","value"),
          c("x_value","fill_variable","y_value"))
 solar_generation_time_series_line <-
@@ -541,8 +552,9 @@ wind_projected_capacity_line
 wind_projected_capacity_line_p <-
   ggplotly_wrapper(wind_projected_capacity_line)
 wind_projected_capacity_line_p
+rm(offshore_wind)
 
-#Stacked Annual Carbon Free Generation Broken Out by Type
+#Possibly unused: Stacked Annual Carbon Free Generation Broken Out by Type
 carbon_free_data <- melt(eia_annual_data[Nuclear!=0,.(Year,Nuclear,Solar_utility,Solar_distributed,Hydropower,Wind)],id="Year")
 setnames(carbon_free_data,c("Year","variable","value"),
          c("x_value","fill_variable","y_value"))
@@ -561,7 +573,7 @@ carbon_free_generation_by_type_stacked_p <-
   ggplotly_wrapper(carbon_free_generation_by_type_stacked)
 carbon_free_generation_by_type_stacked_p
 
-# Stacked Annual Renewable Generation Broken Out by Type (hydro, utility solar, distributed solar)
+# Possibly unused: Stacked Annual Renewable Generation Broken Out by Type (hydro, utility solar, distributed solar)
 renewables_data <- melt(eia_annual_data[Nuclear!=0,.(Year,Solar_utility,Solar_distributed,Hydropower,Wind)],id="Year")
 setnames(renewables_data,c("Year","variable","value"),
          c("x_value","fill_variable","y_value"))
@@ -609,13 +621,12 @@ va_elec_net_imports_line_p
 # The SEDS data is greatly delayed. Maybe we can think of a better presentation here.
 # Two more years of data is available beyond what SEDS has. I don't think that includes
 #    total energy related CO2 emissions.
-electricity_CO2_emissions = va_electricity_emissions_by_fuel[CO2_Total!=0,.(Year,
-                                      Electricity_sector = CO2_Total/1000)]
 all_CO2_emissions = eia_annual_data[Total_CO2_emissions!=0,
                                           .(Year=year(date),
-                                            All_sectors = Total_CO2_emissions) ]
-CO2_emissions = merge(electricity_CO2_emissions,all_CO2_emissions,by="Year",all=TRUE)
-CO2_emissions <- melt(CO2_emissions,id="Year")
+                                            All_sectors = Total_CO2_emissions,
+                                            Electricity_sector = Electric_sector_CO2_emissions)]
+#CO2_emissions = merge(electricity_CO2_emissions,all_CO2_emissions,by="Year",all=TRUE)
+CO2_emissions <- melt(all_CO2_emissions,id="Year")
 CO2_emissions[,variable := gsub("_"," ",variable)]
 setnames(CO2_emissions,c("Year","variable","value"),
          c("x_value","fill_variable","y_value"))

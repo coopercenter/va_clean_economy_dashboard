@@ -37,7 +37,7 @@ apco_dom_VCEA_goals<-data.table(dbGetQuery(db,"select * from \"VCEA_energy_effic
 
 #load in offshore wind projections
 # This data is suspect and needs to be vetted carefully
-offshore_wind <- data.table(dbGetQuery(db,"select * from offshore_wind ;"))
+offshore_wind_data <- data.table(dbGetQuery(db,"select * from offshore_wind ;"))
 # total_mw_offshore_wind <- data.table(dbGetQuery(db,"select * from total_mw_offshore_wind ;"))
 # total_production_forecast_offshore_wind <- data.table(dbGetQuery(db,"select * from total_production_forecast_offshore_wind ;"))
 
@@ -275,7 +275,7 @@ va_solar = plant_capacities[Prime_Mover=="PV",
                                Plant_Name,Operating_Year)]
 #Energy Storage
 # Currently this is battery storage only. VCEA specifies battery storage amounts
-# The display of storage my benefit from a little rethinking
+# The display of storage may benefit from a little rethinking
 va_storage <- plant_capacities[Prime_Mover=="BA",
                                .(id,capacity_mw = Nameplate_Capacity_MW,
                                  Plant_Name,Operating_Year)]
@@ -304,10 +304,11 @@ setnames(VCEA_onshore_wind_solar,old=c("apco_onshore_wind_and_solar_mw","dominio
          new=c("target_apco_onshore_wind_and_solar","target_dom_onshore_wind_and_solar"))
 
 # Projected Offshore Wind Capacity
-total_mw_offshore_wind = offshore_wind[,.(Year,Total_mw)]  #Pilot_mw,Stage_1_mw,Stage_2_mw,Stage_3_mw,
-net_capacity_factor_offshore_wind <- offshore_wind[,.(Year,Pilot_cf,Stage_1_cf,
-                                          Stage_2_cf,Stage_3_cf)]
-total_production_forecast_offshore_wind <- offshore_wind[,.(Year,Total_gen)]  #Stage_1_gen,Stage_2_gen,Stage_3_gen,
+total_mw_offshore_wind = offshore_wind_data[,.(Year,CVOW_Pilot,CVOW_Stage_I,CVOW_Stage_II,CVOW_Stage_III,Total=Total_mw)]  #,
+total_mw_offshore_wind[Year<2022,`:=`(CVOW_Stage_I=NA,CVOW_Stage_II=NA,
+                                      CVOW_Stage_III=NA)] 
+total_mw_offshore_wind[Year<2020] <- NA
+total_production_forecast_offshore_wind <- offshore_wind_data[,.(Year,Total_gen)]  #Stage_1_gen,Stage_2_gen,Stage_3_gen,
 setnames(total_production_forecast_offshore_wind,'Total_gen','Total_Production')
 
 total_mw_offshore_wind<-melt(total_mw_offshore_wind,id="Year")
@@ -370,7 +371,7 @@ setnames(virginia_emissions_electric_commas,c('Year','Million Metric Tons of CO2
 #reformatting emissions compounds dataset
 
 # Data is in metric tons (emission rates are also adjusted to be based on metric tons)
-va_electricity_emissions_by_fuel = va_electricity_emissions_by_fuel[Year >= 2000] #limit data to baseline year of 2000
+#va_electricity_emissions_by_fuel = va_electricity_emissions_by_fuel[Year >= 2000] #limit data to baseline year of 2000
 
 
 
