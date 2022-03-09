@@ -140,11 +140,15 @@ single_ring_sw_capacity_donut_p <-
 single_ring_sw_capacity_donut_p
 
 #plotting donut figure of progress towards storage capacity------------------------------------------------------------------------------------------
-# There was no battery storage installed in Virginia in 2020.
+# There are 4 MW of storage installed in Virginia in 2021.
 recent_year = va_storage[,max(Operating_Year,na.rm=TRUE)]
+## Temporary fix until storage capacity data retrieval is fixed
+recent_year = 2021
 
 # was`storage_capacity_2019_mw`
-solar_capacity_current_mw = va_solar[,sum(capacity_mw)] 
+storage_capacity_current_mw = va_storage[,sum(capacity_mw)] 
+## Temporary fix until storage data retrieval can be fixed
+storage_capacity_current_mw = 4
 storage_capacity_2035_mw_goal = 3100
 
 storage_ring = data.frame(
