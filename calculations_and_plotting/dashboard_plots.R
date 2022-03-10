@@ -329,14 +329,14 @@ va_annual_consumption_pie_chart_p_with_legend
 #--------------------------------PLOTTING RENEWABLE & CARBON-FREE GENERATION IN PARTICULAR-----------------------------------------------------
 
 # Graphing % of VA power generation (in GWh/yr) from renewables & carbon-free sources
-lf_percent_renewable_and_carbon_free <- melt(eia_annual_data[!is.na(Percent_renewable | !is.na(Percent_carbon_free)),
+lf_percent_renewable_and_carbon_free.plot <- melt(eia_annual_data[!is.na(Percent_renewable | !is.na(Percent_carbon_free)),
                                                              .(Year,Percent_renewable,Percent_carbon_free)],id="Year")
-setnames(lf_percent_renewable_and_carbon_free,c("Year","variable","value"),
+setnames(lf_percent_renewable_and_carbon_free.plot,c("Year","variable","value"),
          c("x_value","fill_variable","y_value"))
          
 percent_renewable_and_carbon_free_line <-
   line_figure(
-    lf_percent_renewable_and_carbon_free,
+    lf_percent_renewable_and_carbon_free.plot,
     "Percentage of Total Generation",
     "Virginia Recent Electricity Generation",
     list(
@@ -353,7 +353,7 @@ percent_renewable_and_carbon_free_line_p <-
 percent_renewable_and_carbon_free_line_p
 
 #--- Use the data.table from the previous plot
-lf_percent_carbon_free = lf_percent_renewable_and_carbon_free[fill_variable=="Percent_carbon_free"]
+lf_percent_carbon_free = lf_percent_renewable_and_carbon_free.plot[fill_variable=="Percent_carbon_free"]
 percent_carbon_free_line <-
   line_figure(
     lf_percent_carbon_free,
@@ -403,50 +403,53 @@ rps_renewable_line_p <-
   )
 rps_renewable_line_p
 
-#### FIX  
-latest_actuals_year = lf_percent_renewable_carbon_free_combined_dt[variable=="Percent_renewable",max(Year)]
-setnames(lf_percent_renewable_carbon_free_combined_dt,c("Year","variable","value"),
-         c("x_value","fill_variable","y_value"))
-percent_renewable_and_carbon_free_goal_combined_line <-
-  line_figure(
-    lf_percent_renewable_carbon_free_combined_dt[!is.na(y_value)],
-    "Percentage of Total Generation",
-    "Virginia Electricity Generation",
-    list(
-      "eia_elec_gen_nuc_va_99_a",
-      "VCEA_storage",
-      "va_utility_sales"
-    ),
-    return_static = F,
-    subtitle_description = "Renewable and Carbon Free",
-    future_date = as.numeric(latest_actuals_year) + 1
-  )
-percent_renewable_and_carbon_free_goal_combined_line
+#### FIX
+## Actually this plot is not used.
+#lf_percent_renewable_carbon_free_combined_dt[variable=="Percent_renewable"|variable=="Percent_renewable_goal",variable:="VA renewable"]
+#lf_percent_renewable_carbon_free_combined_dt[variable=="Percent_carbon_free"|variable=="Percent_carbon_free_goal",variable:="VA carbon free"]
+# latest_actuals_year = lf_percent_renewable_carbon_free_combined_dt[variable=="VA renewable",max(Year)]
+# setnames(lf_percent_renewable_carbon_free_combined_dt,c("Year","variable","value"),
+#          c("x_value","fill_variable","y_value"))
+# percent_renewable_and_carbon_free_goal_combined_line <-
+#   line_figure(
+#     lf_percent_renewable_carbon_free_combined_dt[!is.na(y_value)],
+#     "Percentage of Total Generation",
+#     "Virginia Electricity Generation",
+#     list(
+#       "eia_elec_gen_nuc_va_99_a",
+#       "VCEA_storage",
+#       "va_utility_sales"
+#     ),
+#     return_static = F,
+#     subtitle_description = "Renewable and Carbon Free",
+#     future_date = as.numeric(latest_actuals_year) + 1
+#   )
+# percent_renewable_and_carbon_free_goal_combined_line
 
-setnames(lf_percent_renewable_and_schedule_combined_dt,c("Year","variable","value"),
-         c("x_value","fill_variable","y_value"))
-percent_renewable_and_schedule_goal_combined_line <-
-  line_figure(
-    lf_percent_renewable_and_schedule_combined_dt[!is.na(y_value)],
-    "Percentage of Generation from RPS Eligible Sources",
-    "Virginia Renewable Portfolio Standard Schedule",
-    list(
-      "eia_elec_gen_nuc_va_99_a",
-      "VCEA_storage",
-      "va_utility_sales"
-    ),
-    return_static = F,
-    future_date = as.numeric(latest_actuals_year) + 1
-  )
-percent_renewable_and_schedule_goal_combined_line
-
-percent_renewable_and_carbon_free_goal_combined_line_p <-
-  ggplotly_wrapper(percent_renewable_and_carbon_free_goal_combined_line)
-percent_renewable_and_carbon_free_goal_combined_line_p
-
-percent_renewable_and_schedule_goal_combined_line_p <-
-  ggplotly_wrapper(percent_renewable_and_schedule_goal_combined_line)
-percent_renewable_and_schedule_goal_combined_line_p
+# setnames(lf_percent_renewable_and_schedule_combined_dt,c("Year","variable","value"),
+#          c("x_value","fill_variable","y_value"))
+# percent_renewable_and_schedule_goal_combined_line <-
+#   line_figure(
+#     lf_percent_renewable_and_schedule_combined_dt[!is.na(y_value)],
+#     "Percentage of Generation from RPS Eligible Sources",
+#     "Virginia Renewable Portfolio Standard Schedule",
+#     list(
+#       "eia_elec_gen_nuc_va_99_a",
+#       "VCEA_storage",
+#       "va_utility_sales"
+#     ),
+#     return_static = F,
+#     future_date = as.numeric(latest_actuals_year) + 1
+#   )
+# percent_renewable_and_schedule_goal_combined_line
+# 
+# percent_renewable_and_carbon_free_goal_combined_line_p <-
+#   ggplotly_wrapper(percent_renewable_and_carbon_free_goal_combined_line)
+# percent_renewable_and_carbon_free_goal_combined_line_p
+# 
+# percent_renewable_and_schedule_goal_combined_line_p <-
+#   ggplotly_wrapper(percent_renewable_and_schedule_goal_combined_line)
+# percent_renewable_and_schedule_goal_combined_line_p
 
 
 # Solar, Hydro, and Nuclear Generation over Time

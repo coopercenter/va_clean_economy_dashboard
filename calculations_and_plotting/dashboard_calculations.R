@@ -171,10 +171,10 @@ eia_annual_data[Total_gen!=0,`:=`(Percent_renewable = (Renewable/(Total_gen-Nucl
 # Renewable and carbon free percent gen---------------------------------------------------------------------
 #This code is a mess and should be redone at some point.
 
-percent_renewable_and_carbon_free <- eia_annual_data[,.(Year,Percent_renewable,Percent_carbon_free)]
+percent_renewable_and_carbon_free <- eia_annual_data[!is.na(Percent_renewable),.(Year,Percent_renewable,Percent_carbon_free)]
 lf_percent_renewable_and_carbon_free <- melt(percent_renewable_and_carbon_free,id="Year")
-lf_percent_renewable <- eia_annual_data[,.(Year,variable = as.factor("Historic"), value=Percent_renewable)]
-lf_percent_carbon_free <- melt(eia_annual_data[,.(Year,Percent_carbon_free)],id="Year")
+lf_percent_renewable <- eia_annual_data[!is.na(Percent_renewable),.(Year,variable = as.factor("Historic"), value=Percent_renewable)]
+lf_percent_carbon_free <- eia_annual_data[!is.na(Percent_renewable),.(Year,variable = as.factor("Historic"), value=Percent_carbon_free)]
 
 # APCO and Dominion RPS schedules are in the VCEA data.table
 rps_mandate_schedule = melt(VCEA[,.(Year,apco_rps,dominion_rps)], id = "Year")
@@ -223,8 +223,10 @@ VCEA_RPS = VCEA[,
 #VCEA_renewable_portfolio_standards <- rbind(VCEA_renewable_portfolio_standards,list(2019,NA,NA,NA)) #adding a NA historic value so plot legend label is solid instead of dashed
 lf_dom_apco_rps <- melt(VCEA_RPS[Year<=2030,.(Year,dom_and_apco_renewable)],id="Year")
 
-lf_percent_renewable_carbon_free_combined_dt <- merge(lf_percent_renewable_and_carbon_free,lf_VCEA_goal_percent_gen_dt,by=c("Year","variable","value"),all=T)
-lf_percent_renewable_carbon_free_combined_dt <- merge(lf_percent_renewable_carbon_free_combined_dt,lf_dom_apco_rps,by=c("Year","variable","value"),all=T)
+lf_percent_renewable_carbon_free_combined_dt <- merge(lf_percent_renewable_and_carbon_free,
+                                                      lf_VCEA_goal_percent_gen_dt,by=c("Year","variable","value"),all=T)
+lf_percent_renewable_carbon_free_combined_dt <- merge(lf_percent_renewable_carbon_free_combined_dt,lf_dom_apco_rps,
+                                                      by=c("Year","variable","value"),all=T)
 
 lf_percent_renewable_carbon_free_combined_dt[variable=="Percent_renewable"|variable=="Percent_renewable_goal",variable:="VA renewable"]
 lf_percent_renewable_carbon_free_combined_dt[variable=="Percent_carbon_free"|variable=="Percent_carbon_free_goal",variable:="VA carbon free"]

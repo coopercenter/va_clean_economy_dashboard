@@ -73,8 +73,8 @@ rm(annual_va_utility_data)
 # Currently (2021) the dashboard displays energy per capita
 # maybe this should be changed
 #Energy intensity
-intensity_data = merge(eia_annual_data[,.(date,Total_energy_cons=SEDS_TETCB_VA_A,
-                                          Total_CO2_emissions=EMISS_CO2_TOTV_TT_TO_VA_A)],
+intensity_data = merge(eia_annual_data[,.(date,Total_energy_cons,
+                                          Total_CO2_emissions)],
                        va_state_info,by="date",all=TRUE)
 intensity_data[,energy_consumption_per_capita := Total_energy_cons/va_pop]
 #### Need to work out the units to report
