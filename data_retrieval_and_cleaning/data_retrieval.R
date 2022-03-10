@@ -73,8 +73,8 @@ rm(annual_va_utility_data)
 # Currently (2021) the dashboard displays energy per capita
 # maybe this should be changed
 #Energy intensity
-intensity_data = merge(eia_annual_data[,.(date,Total_energy_cons=SEDS_TETCB_VA_A,
-                                          Total_CO2_emissions=EMISS_CO2_TOTV_TT_TO_VA_A)],
+intensity_data = merge(eia_annual_data[Total_energy_cons!=0 & Total_CO2_emissions != 0,
+                            .(date,Total_energy_cons,Total_CO2_emissions)],
                        va_state_info,by="date",all=TRUE)
 intensity_data[,energy_consumption_per_capita := Total_energy_cons/va_pop]
 #### Need to work out the units to report
@@ -129,8 +129,8 @@ setkey(va_solar,id)
 
 offshore_wind <- data.table(read_xlsx(here('raw_data','offshore_wind_data.xlsx'),
                             sheet = "Offshore_wind_data",skip=1))
-total_mw_offshore_wind = offshore_wind[,.(Year,Pilot_mw,Stage_1_mw,
-                                          Stage_2_mw,Stage_3_mw,Total_mw)]
+total_mw_offshore_wind = offshore_wind[,.(Year,CVOW_Pilot,CVOW_Stage_I,
+                                          CVOW_Stage_II,CVOW_Stage_III,Total_mw)]
 net_capacity_factor_offshore_wind <- offshore_wind[,.(Year,Pilot_cf,Stage_1_cf,
                                           Stage_2_cf,Stage_3_cf)]
 total_production_forecast_offshore_wind <- offshore_wind[,.(Year,Stage_1_gen,
