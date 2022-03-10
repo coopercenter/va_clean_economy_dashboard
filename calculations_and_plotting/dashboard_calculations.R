@@ -6,7 +6,7 @@
 # groundhog.library(pkgs, groundhog.day)
 lbry<-c("data.table", "RPostgreSQL", "scales", 'maps', "tidyr", "dplyr",
         "tools", "sf", "tools", "rnaturalearth", "rnaturalearthdata", "rgeos",
-        "ggplot2", "zoo", "lubridate", "Hmisc", "here")
+        "ggplot2", "zoo", "lubridate", "Hmisc", "here",'stringr')
 test <- suppressMessages(lapply(lbry, require, character.only=TRUE, warn.conflicts = FALSE, quietly = TRUE))
 rm(test,lbry)
 max_eia_annual_data_year = 2020
