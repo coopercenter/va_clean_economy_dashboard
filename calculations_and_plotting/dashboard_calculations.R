@@ -375,5 +375,213 @@ setnames(virginia_emissions_electric_commas,c('Year','Million Metric Tons of CO2
 # Data is in metric tons (emission rates are also adjusted to be based on metric tons)
 #va_electricity_emissions_by_fuel = va_electricity_emissions_by_fuel[Year >= 2000] #limit data to baseline year of 2000
 
+#data aggregation for energy efficiency plots
 
+#yearly data by building size
+year_by_building_size <- lead_by_example_data %>% group_by(year,size_range) %>%
+  dplyr::summarize(cost=sum(unique(totalCost),na.rm=TRUE),kWh=sum(unique(commonUse),na.rm=TRUE),
+                   sqft=sum(unique(size.value),na.rm=TRUE),buildings=n_distinct(placeId),
+                   savings=sum(unique(allTimeSavingsCommonUse),na.rm = TRUE))
+
+#write a function to filter by specified building size
+filter_by_building_size <- function(set_size_range){
+  data <- lead_by_example_data %>% filter(size_range==set_size_range)
+  return(data)
+}
+
+#group the specified building size by primary use
+group_by_place_use <- function(set_size_range){
+  base_data <- filter_by_building_size(set_size_range)
+  data_by_use <- base_data %>% group_by(year,primaryUse.primaryUseInfo) %>%
+    dplyr::summarize(cost=sum(unique(totalCost),na.rm=TRUE),kWh=sum(unique(commonUse),na.rm=TRUE),sqft=sum(unique(size.value),na.rm=TRUE),
+                     buildings=n_distinct(placeId),size=size_range,
+                     savings=sum(unique(allTimeSavingsCommonUse),na.rm = TRUE))
+  data_by_use <- distinct(data_by_use)
+  return(data_by_use)
+}
+
+#group the data by primary use for each size
+size_1_use <- group_by_place_use('5,000 - 50,000')
+size_2_use <- group_by_place_use('50,001 - 100,000')
+size_3_use <- group_by_place_use('100,001 - 250,000')
+size_4_use <- group_by_place_use('250,001 - 500,000')
+size_5_use <- group_by_place_use('500,001 - 990,000')
+
+#clean and restructure the building tracking data for the LBE data
+
+LBE_building_tracker <- read.csv(here('raw_data/COVA_Facility_Tracker_Simplified.csv'))
+
+#replace #VALUE! with NA's
+LBE_building_tracker[LBE_building_tracker=='#VALUE!'] <- NA
+
+#trim whitespace in the name and code columns
+LBE_building_tracker$agency_name <- trimws(LBE_building_tracker$agency_name)
+LBE_building_tracker$agency_code <- trimws(LBE_building_tracker$agency_code)
+
+#make a new column of categories to assign to the agency names for more readable aggregation
+colleges_and_universities <- c("CHRISTOPHER NEWPORT UNIVERSITY","GEORGE MASON UNIVERSITY","JAMES MADISON UNIVERSITY",
+                               "LONGWOOD COLLEGE","MARY WASHINGTON COLLEGE","NORFOLK STATE UNIVERSITY","OLD DOMINION UNIVERSITY",
+                               "Radford University","UNIVERSITY OF VIRGINIA","University of Virginia's College at Wise","Central Virginia Community College",
+                               'New River Community College','Patrick Henry Community College','Southwest Virginia Community College',
+                               'Virginia Community College System','Virginia Highlands Community College','Virginia Western Community College',
+                               'Wytheville Community College','VIRGINIA COMMONWEALTH UNIVERSITY','Virginia Polytechnic Institute and State University',
+                               'VIRGINIA STATE UNIVERSITY','WILLIAM AND MARY, COLLEGE OF','VIRGINIA MILITARY INSTITUTE')
+
+health_and_human_svs <- c('Catawba Hospital','Central Virginia Training Center',
+                          'Department of Behavioral Health and Developmental Services',
+                          'Southwestern Virginia Mental Health Institute','MEDICAL COLLEGE OF HAMPTON ROADS',
+                          'Southern Virginia Mental Health Institute','VIRGINIA DEPARTMENT OF HEALTH',
+                          'VIRGINIA DEPARTMENT OF MENTAL HEALTH','VIRGINIA DEPARTMENT FOR AGING AND REHABILITATIVE SERVICES',
+                          'VIRGINIA DEPARTMENT FOR THE BLIND AND VISION IMPAIRED', 'Department of Social Services')
+
+transportation <- c('CHESAPEAKE BAY BRIDGE TUNNEL COMMISSION','VIRGINIA DEPARTMENT OF AVIATION',
+                    'RICHMOND METROPOLITAN AUTHORITY','VIRGINIA DEPARTMENT OF MOTOR VEHICLES',
+                    'VIRGINIA PORT AUTHORITY','WASHINGTON METRO AREA TRANSIT AUTHORITY','Department of Transportation')
+
+natural_resources <- c('VIRGINIA DEPARTMENT OF CONSERVATION AND RECREATION',
+                       'VIRGINIA DEPARTMENT OF ENVIRONMENTAL QUALITY','POTOMAC RIVER FISHERIES COMMISSION',
+                       'VIRGINIA DEPARTMENT OF GAME AND INLAND FISHERIES','VIRGINIA OUTDOORS FOUNDATION')
+
+agriculture_and_forestry <- c('Department of Forestry','VIRGINIA DEPARTMENT OF AGRICULTURE AND CONSUMER SERVICES')
+
+education <- c('FRONTIER DISCOVERY MUSEUM','SCIENCE MUSEUM OF VIRGINIA','VIRGINIA MUSEUM OF FINE ARTS',
+               "Roanoke Higher Education Authority","Southwest Virginia 4-H Educational Center",
+               'VIRGINIA BIOTECHNOLOGY RESEARCH PARK AUTHORITY', 'VIRGINIA ASSOCIATED RESEARCH CENTER',
+               'VIRGINIA INSTITUTE OF MARINE SCIENCE','TRUCK & ORNAMENTAL RESEARCH ASSOCIATION',
+               'THE BOARD OF REGENTS/GUNSTON','JAMESTOWN FOUNDATION')
+
+administration <- c('VIRGINIA DEPARTMENT OF GENERAL SERVICES')
+
+public_safety_and_homeland_security <- c("Commonwealth's Attorneys' Services Council",
+                                         'Department of Fire Programs','Department of Forensic Science',
+                                         'VIRGINIA ALCOHOLIC BEVERAGE CONTROL AUTHORITY',
+                                         'VIRGINIA STATE POLICE DEPARTMENT','Department of State Police',
+                                         'VIRGINIA DEPARTMENT OF CORRECTIONS')
+
+commerce_and_trade <- c('VIRGINIA HOUSING DEVELOPMENT AUTHORITY',
+                        'Department of Small Business and Supplier Diversity','Virginia Employment Commission',
+                        'Virginia Tourism Authority')
+
+veterans_and_defense_affairs <- c('VIRGINIA DEPARTMENT OF MILITARY AFFAIRS','Department of Veterans Services')
+
+independent_agencies <- c('Virginia Lottery','VIRGINIA RETIREMENT SERVICES')
+
+other <- c('NO CONTRACT NUMBER ASSIGNED - UNIDENTIFIED','Township','Unidentified',
+           'VIRGINIA HORSE CENTER','WCTV CHANNEL 23')
+
+LBE_building_tracker$agency_category <- LBE_building_tracker$agency_name
+
+consolidate_agency_categories <- function(agency_list, new_agency_category){
+  for (item in agency_list){
+    LBE_building_tracker$agency_category <- LBE_building_tracker$agency_category %>% 
+      replace(LBE_building_tracker$agency_category==item,new_agency_category)
+  }
+  return(LBE_building_tracker$agency_category)
+}
+
+
+
+LBE_building_tracker$agency_category <- consolidate_agency_categories(colleges_and_universities,'Colleges and Universities')
+LBE_building_tracker$agency_category <- consolidate_agency_categories(health_and_human_svs,'Health and Human Services')
+LBE_building_tracker$agency_category <- consolidate_agency_categories(transportation,'Transportation')
+LBE_building_tracker$agency_category <- consolidate_agency_categories(natural_resources,'Natural Resources')
+LBE_building_tracker$agency_category <- consolidate_agency_categories(agriculture_and_forestry,'Agriculture and Forestry')
+LBE_building_tracker$agency_category <- consolidate_agency_categories(education,'Education')
+LBE_building_tracker$agency_category <- consolidate_agency_categories(administration,'Administration')
+LBE_building_tracker$agency_category <- consolidate_agency_categories(public_safety_and_homeland_security,'Public Safety and Homeland Security')
+LBE_building_tracker$agency_category <- consolidate_agency_categories(independent_agencies,'Independent Agencies')
+LBE_building_tracker$agency_category <- consolidate_agency_categories(commerce_and_trade,'Commerce and Trade')
+LBE_building_tracker$agency_category <- consolidate_agency_categories(veterans_and_defense_affairs,'Veterans and Defense Affairs')
+LBE_building_tracker$agency_category <- consolidate_agency_categories(other,'Other Services or Category Not Known')
+
+
+rm(colleges_and_universities,health_and_human_svs,transportation,natural_resources,agriculture_and_forestry,
+   education,administration,public_safety_and_homeland_security,independent_agencies,commerce_and_trade,
+   veterans_and_defense_affairs,other)
+
+#get all the fully capitalized names in agency_name to be conventionally capitalized
+LBE_building_tracker$agency_name <- str_to_title(LBE_building_tracker$agency_name)
+
+#make a couple of specific adjustments
+LBE_building_tracker$agency_name <- LBE_building_tracker$agency_name %>% 
+  replace(LBE_building_tracker$agency_name=='William And Mary, College Of','College Of William and Mary') %>%
+  replace(LBE_building_tracker$agency_name=='Wctv Channel 23','WCTV Channel 23')
+
+
+#group by agency category
+by_agency_category <- LBE_building_tracker %>% group_by(agency_category) %>% 
+  summarise(facilities_over_5000_sqft=sum(as.numeric(facilities_over_5000_sqft),na.rm=TRUE),
+            facilities_over_5000_sqft_tracked = sum(as.numeric(accounts_in_warehouse),na.rm=TRUE),
+            percent_done = sum(as.numeric(accounts_in_warehouse),na.rm=TRUE)/sum(as.numeric(facilities_over_5000_sqft),na.rm=TRUE),
+            number_of_agencies= n_distinct(agency_name))
+
+#filter by buildings over 5000 sq ft
+sqft_over_5000 <-by_agency_category %>% filter(facilities_over_5000_sqft !=0)
+
+#add the yearly targets and their labels, a little awkward since the lengths are different but this works in lieu of a better solution
+sqft_over_5000$yearly_goal <- c(0.05,0.20,0.45,0.70,1.00,1.00,1.00,1.00,1.00,1.00,1.00)
+sqft_over_5000$yearly_goal_label <- c('5% by January 2021','20% by January 2022','45% by January 2023',
+                                      '70% by January 2024','100% by January 2025','100% by January 2025','100% by January 2025','100% by January 2025','100% by January 2025','100% by January 2025','100% by January 2025')
+#factor for proper legend order
+sqft_over_5000$yearly_goal_label <- factor(sqft_over_5000$yearly_goal_label,levels=c("5% by January 2021","20% by January 2022",
+                                                                                     "45% by January 2023","70% by January 2024",
+                                                                                     "100% by January 2025"))
+
+#now, for each category, we're going to filter, filter again by 5000 square feet, and get the names of the agencies
+#make it a function
+filter_by_agency_categories <- function(category){
+  data <- LBE_building_tracker %>% filter(agency_category==category) %>% 
+    group_by(agency_name) %>% 
+    summarise(facilities_over_5000_sqft=sum(as.numeric(facilities_over_5000_sqft),na.rm=TRUE),
+              facilities_over_5000_sqft_tracked = sum(as.numeric(accounts_in_warehouse),na.rm=TRUE),
+              percent_done = sum(as.numeric(accounts_in_warehouse),na.rm=TRUE)/sum(as.numeric(facilities_over_5000_sqft),na.rm=TRUE)) %>%
+    filter(facilities_over_5000_sqft !=0)
+  return(data)
+}
+
+colleges_and_universities <- filter_by_agency_categories('Colleges and Universities')
+health_and_human_svs <- filter_by_agency_categories('Health and Human Services')
+transportation <- filter_by_agency_categories('Transportation')
+natural_resources <- filter_by_agency_categories('Natural Resources')
+agriculture_and_forestry <- filter_by_agency_categories('Agriculture and Forestry')
+education <- filter_by_agency_categories('Education')
+administration <- filter_by_agency_categories('Administration')
+public_safety_and_homeland_security <- filter_by_agency_categories('Public Safety and Homeland Security')
+independent_agencies <- filter_by_agency_categories('Independent Agencies')
+commerce_and_trade <- filter_by_agency_categories('Commerce and Trade')
+veterans_and_defense_affairs <-  filter_by_agency_categories('Veterans and Defense Affairs')
+other <- filter_by_agency_categories('Other Services or Category Not Known')
+
+rm(LBE_building_tracker)
+
+#load and reshape the new mandate data
+#eventually to be moved to the database
+eia_spending_prog <- read.csv(here('raw_data/eia_energy_efficiency_spending_progress.csv'))
+eia_standard_projections <- read.csv(here('raw_data/eia_energy_efficiency_resource_standard_projections.csv'))
+eia_spending_requirements <- read.csv(here('raw_data/eia_energy_efficiency_spending_requirements.csv'))
+
+#filter by the max date on the spending progress data
+current <- eia_spending_prog %>% filter(date==max(date))
+
+
+#filter by company
+apco <- current %>% select(date,contains('apco'))
+dom <- current %>% select(date,contains('dominion'))
+odp <- current %>% select(date,contains('odp'))
+
+#reshape all the data to something graphable
+apco_reshaped <- melt(apco, 'date',c('apco_ee_costs','apco_15_percent_carve_out','apco_hb2789_petition'),
+                      variable.name='spending_category',value.name = 'spending_to_date') %>%
+  bind_cols(spending_goal = eia_spending_requirements$spending_category,
+            spending_requirements = eia_spending_requirements$apco_required_2028)
+
+dom_reshaped <- melt(dom, 'date',c('dominion_ee_costs','dominion_15_percent_carve_out','dominion_hb2789_petition'),
+                     variable.name='spending_category',value.name = 'spending_to_date') %>%
+  bind_cols(spending_goal = eia_spending_requirements$spending_category,
+            spending_requirements = eia_spending_requirements$dominion_required_2028)
+
+odp_reshaped <- melt(odp, 'date',c('odp_ee_costs','odp_15_percent_carve_out','odp_hb2789_petition'),
+                     variable.name='spending_category',value.name = 'spending_to_date') %>%
+  bind_cols(spending_goal = eia_spending_requirements$spending_category,
+            spending_requirements = eia_spending_requirements$odp_required_2028)
 

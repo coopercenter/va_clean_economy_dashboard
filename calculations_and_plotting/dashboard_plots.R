@@ -22,6 +22,9 @@ source(here("calculations_and_plotting","ggplotly_wrapper.R"))
 source(here("calculations_and_plotting","pie_chart_figure_p.R"))
 source(here("calculations_and_plotting","line_figure.R"))
 
+#theme colours, not a permanent solution
+theme_colors <- c("#00A087B2", "#3C5488B2", "#CEA5AC", "#BE7E8A", "#4DBBD5B2", "#91D1C2B2","#D9C6C9","#8491B4B2","#5868AC","#6FB3D9","#56BD96","#99A9E2","#A94F64","#B0DEFA","#99EEBB","#8FD3FE")
+
 #----------------------------------------------PLOTTING DONUT FIGURES------------------------------------------------------------------------------
 
 #plotting doughnut figure of progress towards renewable generation goal------------------------------------------------------------------------------

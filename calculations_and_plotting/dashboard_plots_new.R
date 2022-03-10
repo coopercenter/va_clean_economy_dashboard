@@ -14,6 +14,9 @@ source(here("calculations_and_plotting","theme_ceps.R"))
 source(here("calculations_and_plotting","ggplotly_wrapper.R"))
 source(here("calculations_and_plotting","pie_chart_figure_p.R"))
 source(here("calculations_and_plotting","line_figure.R"))
+
+#theme colours, not a permanent solution
+theme_colors <- c("#00A087B2", "#3C5488B2", "#CEA5AC", "#BE7E8A", "#4DBBD5B2", "#91D1C2B2","#D9C6C9","#8491B4B2","#5868AC","#6FB3D9","#56BD96","#99A9E2","#A94F64","#B0DEFA","#99EEBB","#8FD3FE")
 #plots that are actually on the dashboard
 
 #The renewable_progress_donut
@@ -571,27 +574,109 @@ single_ring_carbon_free_donut_p <-
 single_ring_carbon_free_donut_p
 
 #annual_kwh_by_square_feet
+yearly_values_by_size <- plot_ly(year_by_building_size, x = ~year, y = ~kWh/sqft, type = 'bar',
+                                 color = ~size_range, colors = theme_colors,
+                                 text= ~paste("Kilowatt Hours per Square Foot: ",round(kWh/sqft,digits=2),
+                                              "<br> Cost per Square Foot: $",round(cost/sqft,digits=2),
+                                              "<br> Cost per Kilowatt Hour: $", round(cost/kWh,digits=2),
+                                              "<br> Number of Buildings: ",buildings,
+                                              "<br> Annual Kilowatt Hour Savings Per Square Foot: ",round(savings/kWh,digits=2)),
+                                 hoverinfo="text") %>% 
+  layout(title="Annual Power Use by Square Footage Range",xaxis = list(title = "Year", tickangle = -0),yaxis = list(title = "Kilowatt Hours per Square Foot"),
+         margin = list(b = 100),
+         barmode = 'group',
+         legend = list(title=list(text='<b> Square Footage Range </b>')),
+         paper_bgcolor="#F0F0F0", plot_bgcolor="#F0F0F0")
 yearly_values_by_size
 
 #buildings_tracked
+agency_category_progress <- ggplot(sqft_over_5000) + 
+  geom_col(aes(agency_category,percent_done,
+               text=paste("Buildings Over 5,000 Square Feet: ",facilities_over_5000_sqft,
+                          "<br> Buildings Over 5,000 Square Feet Being Tracked: ", facilities_over_5000_sqft_tracked,
+                          "<br> Percent Complete: ", percent(percent_done))),fill="#56B4E9") + 
+  geom_hline(aes(yintercept=yearly_goal, color=yearly_goal_label))+
+  theme(axis.text.x = element_text(angle=-0, vjust=1, hjust=1))+
+  labs(x="",y='Progress Towards Tracking Goal',color='Building Tracking Goals',title='Tracking Progress by Agency Category')+
+  scale_y_continuous(labels=percent)+
+  scale_color_manual(values=theme_colors#c(paletteer_d("ggthemes::colorblind"))
+  ) +
+  coord_flip() +
+  theme(plot.background = element_rect(fill = "#F0F0F0"),legend.background = element_rect(fill="#F0F0F0"))
+
+agency_category_progress_plot <- ggplotly(agency_category_progress,tooltip='text')
 agency_category_progress_plot
 
 #apco_ee_spending
+apco_ee <- ggplot(eia_standard_projections) + 
+  geom_col(aes(date,apco_ee_percent_projection,
+               text=paste('Projected Energy Savings Achievement :',apco_ee_percent_projection*100,'%'))
+           ,fill="#56B4E9") + 
+  geom_hline(aes(yintercept=apco_ee_mandated_min, color=c('2022 Mandated Minimum','2023 Mandated Minimum',
+                                                          '2024 Mandated Minimum','2025 Mandated Minimum')))+
+  labs(x="Year",y='Energy Savings as Percent of Annual Jurisdiction Sales',color="",title='Appalachian Power Company Projected Annual Savings')+
+  scale_y_continuous(labels=percent)+
+  scale_color_manual(values=theme_colors) + coord_flip() +
+  theme(plot.background = element_rect(fill = "#F0F0F0"),legend.background = element_rect(fill="#F0F0F0"))
+apco_ee_plot <- ggplotly(apco_ee,tooltip='text')
 apco_ee_plot
 
 #apco_mandates_and_progress
+apco_plot <- plot_ly(apco_reshaped,x=~spending_to_date,y=~spending_goal, type='bar',orientation='h',
+                     name='Spending To Date',color=as.factor('Spending To Date'),colors=theme_colors) %>%
+  add_trace(apco_reshaped,x=~spending_requirements,y=~spending_goal,type='bar',orientation='h',
+            name='Spending Requirements by 2028',color=as.factor('Spending Requirements by 2028'),colors=theme_colors) %>%
+  layout(title='Appalachian Power Company Spending Targets and Progress',xaxis=list(title='Million Dollars',tickprefix='$',tickangle=-0),
+         yaxis=list(title=''),
+         paper_bgcolor="#F0F0F0", plot_bgcolor="#F0F0F0")
 apco_plot
 
 #dominion_ee_spending
+dom_ee <- ggplot(eia_standard_projections) + 
+  geom_col(aes(date,dominion_ee_percent_projection,
+               text=paste('Projected Energy Savings Achievement :',dominion_ee_percent_projection*100,'%'))
+           ,fill="#56B4E9") + 
+  geom_hline(aes(yintercept=dominion_ee_mandated_min, color=c('2022 Mandated Minimum','2023 Mandated Minimum',
+                                                              '2024 Mandated Minimum','2025 Mandated Minimum')))+
+  labs(x="Year",y='Energy Savings as Percent of Annual Jurisdiction Sales',color="",title='Dominion Energy Projected Annual Savings')+
+  scale_y_continuous(labels=percent)+
+  scale_color_manual(values=theme_colors) + coord_flip() +
+  theme(plot.background = element_rect(fill = "#F0F0F0"),legend.background = element_rect(fill="#F0F0F0"))
+dom_ee_plot <- ggplotly(dom_ee,tooltip='text')
 dom_ee_plot
 
 #dominion_mandates_and_progress
+dominion_plot <- plot_ly(dom_reshaped,x=~spending_to_date,y=~spending_goal, type='bar', orientation='h',
+                         name='Spending To Date',color=as.factor('Spending To Date'),colors=theme_colors) %>%
+  add_trace(apco_plot,x=~spending_requirements,y=~spending_goal,type='bar', orientation='h',
+            name='Spending Requirements by 2028',color=as.factor('Spending Requirements by 2028'),colors=theme_colors) %>%
+  layout(title='Dominion Energy Spending Targets and Progress',xaxis=list(title='Million Dollars',tickprefix='$',tickangle=-0),
+         yaxis=list(title=''),
+         paper_bgcolor="#F0F0F0", plot_bgcolor="#F0F0F0")
 dominion_plot
 
 #odp_ee_spending
+odp_ee <- ggplot(eia_standard_projections) + 
+  geom_col(aes(date,odp_ee_percent_projection,
+               text=paste('Projected Energy Savings Achievement :',odp_ee_percent_projection*100,'%'))
+           ,fill="#56B4E9") + 
+  geom_hline(aes(yintercept=odp_ee_mandated_min, color=c('2022 Mandated Minimum','2023 Mandated Minimum',
+                                                         '2024 Mandated Minimum','2025 Mandated Minimum')))+
+  labs(x="Year",y='Energy Savings as Percent of Annual Jurisdiction Sales',color="",title='Old Dominion Power Projected Annual Savings')+
+  scale_y_continuous(labels=percent)+
+  scale_color_manual(values=theme_colors) + coord_flip() +
+  theme(plot.background = element_rect(fill = "#F0F0F0"),legend.background = element_rect(fill="#F0F0F0"))
+odp_ee_plot <- ggplotly(odp_ee,tooltip='text')
 odp_ee_plot
 
 #odp_mandates_and_progress
+odp_plot <- plot_ly(odp_reshaped,x=~spending_to_date,y=~spending_goal, type='bar', orientation='h',
+                    name='Spending To Date',color=as.factor('Spending To Date'),colors=theme_colors) %>%
+  add_trace(apco_plot,x=~spending_requirements,y=~spending_goal,type='bar',orientation='h',
+            name='Spending Requirements by 2028',color=as.factor('Spending Requirements by 2028'),colors=theme_colors) %>%
+  layout(title='Old Dominion Power Spending Targets and Progress',xaxis=list(title='Million Dollars',tickprefix='$',tickangle=-0),
+         yaxis=list(title=''),
+         paper_bgcolor="#F0F0F0", plot_bgcolor="#F0F0F0")
 odp_plot
 
 #electric_emissions_plot2
@@ -663,7 +748,8 @@ emissions_per_capita_line <-
     "Virginia CO2 Emissions per Capita",
     list("fred_vangsp", "eia_emiss_co2_totv_tt_to_va_a"),
     return_static = F,
-    modifications = theme(legend.position = "none")
+    modifications = theme(legend.position = "none"),
+    modifications2 = scale_x_discrete(breaks=c(1980,1990,2000,2010,2020))
   )
 emissions_per_capita_line
 emissions_per_capita_line_p <-
@@ -683,7 +769,8 @@ emissions_per_gdp_line <-
     "Virginia CO2 Emissions per Dollar of GDP",
     list("fred_vangsp", "eia_emiss_co2_totv_tt_to_va_a"),
     return_static = F,
-    modifications = theme(legend.position = "none")
+    modifications = theme(legend.position = "none"),
+    modifications2=scale_x_discrete(breaks=c(1995,2000,2005,2010,2015,2020))
   )
 emissions_per_gdp_line
 emissions_per_gdp_line_p <- ggplotly_wrapper(emissions_per_gdp_line)
@@ -722,5 +809,24 @@ save(
   carbon_by_fuel_emissions_stacked_p,
   emissions_per_capita_line_p,
   emissions_per_gdp_line_p,
+  #energy efficiency data for the reactive visualizations
+  size_1_use,
+  size_2_use,
+  size_3_use,
+  size_4_use,
+  size_5_use,
+  colleges_and_universities,
+  health_and_human_svs,
+  transportation,
+  natural_resources,
+  agriculture_and_forestry,
+  education,
+  administration,
+  public_safety_and_homeland_security,
+  independent_agencies,
+  commerce_and_trade,
+  veterans_and_defense_affairs,
+  other,
+  theme_colors,
   file = "dashboard_output.RData"
 )
