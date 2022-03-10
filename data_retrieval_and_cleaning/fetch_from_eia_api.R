@@ -84,7 +84,7 @@ eiaSeriesInfo = data.table(series_ids = monthly_list,
 # !!!This filter needs fixing. Probably the best way is to count months
 cols = names(eia_monthly_data)[names(eia_monthly_data)!= "date"]
 eia_monthly_data[,year := year(date)]
-annual_data.fromMonthly = eia_monthly_data[year<2021, lapply(.SD,sum), .SDcols = cols,by=year]
+annual_data.fromMonthly = eia_monthly_data[year<=2021, lapply(.SD,sum), .SDcols = cols,by=year]
 annual_data.fromMonthly[,`:=`(date = as.Date(paste0(year,"-01-01")),year=NULL)]
 eia_monthly_data[,year := NULL]
 # 
