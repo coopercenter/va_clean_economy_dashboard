@@ -236,34 +236,34 @@ lf_percent_renewable_carbon_free_combined_dt[variable=="Percent_carbon_free"|var
 apco_dom_historic_sales <- va_utility_sales[apco_total_gwh!=0,.(year, apco_total_gwh,dom_total_gwh)]
 lf_apco_dom_historic_sales <- melt(apco_dom_historic_sales,id="year")
 
-#manually creating table of sales goals
-VCEA_goal_sales_reduction = data.table(year=c(2022,2023,2024,2025),
-                                       apco_goal=c(14720.05985,14646.0897,14572.11955,14498.1494),
-                                       dom_goal=c(79655.137125,78646.84425,77638.551375,76630.2585))
-lf_VCEA_goal_sales_reduction <- melt(VCEA_goal_sales_reduction,id="year")
-lf_VCEA_goal_sales_reduction_dt <- melt(VCEA_goal_sales_reduction,id="year")
+#manually creating table of sales goals (UPDATE 03/07/22: Comment out as this no longer seems to be used)
+#VCEA_goal_sales_reduction = data.table(year=c(2022,2023,2024,2025),
+ #                                      apco_goal=c(14720.05985,14646.0897,14572.11955,14498.1494),
+  #                                     dom_goal=c(79655.137125,78646.84425,77638.551375,76630.2585))
+#lf_VCEA_goal_sales_reduction <- melt(VCEA_goal_sales_reduction,id="year")
+#lf_VCEA_goal_sales_reduction_dt <- melt(VCEA_goal_sales_reduction,id="year")
 
-apco_dom_sales_combined <- merge(lf_apco_dom_historic_sales[,.(year,category=variable,historic=value)],lf_VCEA_goal_sales_reduction[,.(year,category=variable,goal=value)],by=c("year","category"),all=T)
-lf_apco_dom_sales_combined <- melt(apco_dom_sales_combined,id=c("year","category"))
-lf_apco_dom_sales_combined <- lf_apco_dom_sales_combined[!is.na(value)]
+#apco_dom_sales_combined <- merge(lf_apco_dom_historic_sales[,.(year,category=variable,historic=value)],lf_VCEA_goal_sales_reduction[,.(year,category=variable,goal=value)],by=c("year","category"),all=T)
+#lf_apco_dom_sales_combined <- melt(apco_dom_sales_combined,id=c("year","category"))
+#lf_apco_dom_sales_combined <- lf_apco_dom_sales_combined[!is.na(value)]
 
 #setnames(lf_apco_dom_sales_combined,old=c("variable","category"),new=c("category","variable"))
 
-lf_apco_dom_sales_combined[,variable:=gsub("apco_total_gwh","APCO, historic",variable)]
-lf_apco_dom_sales_combined[,variable:=gsub("dom_total_gwh","Dominion, historic",variable)]
-lf_apco_dom_sales_combined[,variable:=gsub("apco_goal","APCO, goal",variable)]
-lf_apco_dom_sales_combined[,variable:=gsub("dom_goal","Dominion, goal",variable)]
-lf_apco_dom_sales_combined[,category:=gsub("goal","Goal",category)]
-lf_apco_dom_sales_combined[,category:=gsub("historic","Historic",category)]
+#lf_apco_dom_sales_combined[,variable:=gsub("apco_total_gwh","APCO, historic",variable)]
+#lf_apco_dom_sales_combined[,variable:=gsub("dom_total_gwh","Dominion, historic",variable)]
+#lf_apco_dom_sales_combined[,variable:=gsub("apco_goal","APCO, goal",variable)]
+#lf_apco_dom_sales_combined[,variable:=gsub("dom_goal","Dominion, goal",variable)]
+#lf_apco_dom_sales_combined[,category:=gsub("goal","Goal",category)]
+#lf_apco_dom_sales_combined[,category:=gsub("historic","Historic",category)]
 
 
-lf_apco_dom_sales_combined_dt <- merge(lf_apco_dom_historic_sales,lf_VCEA_goal_sales_reduction_dt,by=c("year","variable","value"),all=T)
-lf_apco_dom_sales_combined_dt[variable=="apco_total_gwh"|variable=="apco_goal",variable:="APCO"]
-lf_apco_dom_sales_combined_dt[variable=="dom_total_gwh"|variable=="dom_goal",variable:="Dominion"]
+#lf_apco_dom_sales_combined_dt <- merge(lf_apco_dom_historic_sales,lf_VCEA_goal_sales_reduction_dt,by=c("year","variable","value"),all=T)
+#lf_apco_dom_sales_combined_dt[variable=="apco_total_gwh"|variable=="apco_goal",variable:="APCO"]
+#lf_apco_dom_sales_combined_dt[variable=="dom_total_gwh"|variable=="dom_goal",variable:="Dominion"]
 
 # below code ensures that historic data will appear first then goal data
-lf_apco_dom_sales_combined = lf_apco_dom_sales_combined[,category:=as.factor(category)]
-setattr(lf_apco_dom_sales_combined$category,"levels",c("Historic","Goal"))
+#lf_apco_dom_sales_combined = lf_apco_dom_sales_combined[,category:=as.factor(category)]
+#setattr(lf_apco_dom_sales_combined$category,"levels",c("Historic","Goal"))
 
 # Solar & Wind Capacity vs VCEA goals -----------------------------------------------------------------------------------------------------
 # Creating working versions to keep formatting of tables intact when they are uploaded to dashboard
@@ -299,11 +299,13 @@ va_wind <- plant_capacities[Prime_Mover=="WT",
                                      .(id,capacity_mw = Nameplate_Capacity_MW,
                                         Plant_Name,Operating_Year)]
 # Utility target values for onshore wind and solar
-VCEA_onshore_wind_solar = VCEA[,.(date=as.Date(paste0(year,"-01-01")),
-                apco_onshore_wind_and_solar_mw,dominion_onshore_wind_and_solar_mw)]
-VCEA_onshore_wind_solar %>% tidyr::fill(everything())
-setnames(VCEA_onshore_wind_solar,old=c("apco_onshore_wind_and_solar_mw","dominion_onshore_wind_and_solar_mw"),
-         new=c("target_apco_onshore_wind_and_solar","target_dom_onshore_wind_and_solar"))
+#apco_onshore_wind_and_solar_mw doesn't exist
+#UPDATE 03/07/22, comment this section out as it is currently not used and needs overhaul
+#VCEA_onshore_wind_solar = VCEA[,.(date=as.Date(paste0(year,"-01-01")),
+#                apco_onshore_wind_and_solar_mw,dominion_onshore_wind_and_solar_mw)]
+#VCEA_onshore_wind_solar %>% tidyr::fill(everything())
+#setnames(VCEA_onshore_wind_solar,old=c("apco_onshore_wind_and_solar_mw","dominion_onshore_wind_and_solar_mw"),
+         #new=c("target_apco_onshore_wind_and_solar","target_dom_onshore_wind_and_solar"))
 
 # Projected Offshore Wind Capacity
 total_mw_offshore_wind = offshore_wind_data[,.(Year,CVOW_Pilot,CVOW_Stage_I,CVOW_Stage_II,CVOW_Stage_III,Total=Total_mw)]  #,
@@ -321,20 +323,20 @@ total_mw_offshore_wind[,variable:=gsub("_"," ",variable)]
 
 #For energy efficiency figures--------------------------------------------------------------------------------------------
 #renaming columns so it can be accepted as input into piechart function
-setnames(virginia_annual_savings_through_2020,old=c("Company Name","MWh"),new=c("variable","value"))
-virginia_annual_savings_through_2020 = virginia_annual_savings_through_2020[,year:=2020
-                                                     ][variable!="Total Needed"]
+#setnames(virginia_annual_savings_through_2020,old=c("Company Name","MWh"),new=c("variable","value"))
+#virginia_annual_savings_through_2020 = virginia_annual_savings_through_2020[,year:=2020
+                                                     #][variable!="Total Needed"]
 
-setnames(virginia_annual_savings_through_2022,old=c("Company Name","MWh"),new=c("variable","value"))
-virginia_annual_savings_through_2022 = virginia_annual_savings_through_2022[ ,`:=`(year=2022,
-                                                        variable = gsub("Dominion$","Dominion (Gross savings)",variable)
-                                                      )][variable!="Total Needed"]
+#setnames(virginia_annual_savings_through_2022,old=c("Company Name","MWh"),new=c("variable","value"))
+#virginia_annual_savings_through_2022 = virginia_annual_savings_through_2022[ ,`:=`(year=2022,
+                                                       # variable = gsub("Dominion$","Dominion (Gross savings)",variable)
+                                                      #)][variable!="Total Needed"]
 
 #manipulating datasets for stacked bar chart
-virginia_annual_savings_2020_2022<-rbind(virginia_annual_savings_through_2020,virginia_annual_savings_through_2022)
-virginia_annual_savings_2020_2022[,variable := gsub("DMME programs","Virginia Energy programs",variable)]
-setattr(virginia_annual_savings_2020_2022$variable,"levels",
-        c("Remaining Needed","APCO","C-PACE", "Virginia Energy programs","Dominion (Gross savings)","Energy Codes (modeled, adoption of 2015 IECC)","ESPCs  (modeled, MUSH and private)"))
+#virginia_annual_savings_2020_2022<-rbind(virginia_annual_savings_through_2020,virginia_annual_savings_through_2022)
+#virginia_annual_savings_2020_2022[,variable := gsub("DMME programs","Virginia Energy programs",variable)]
+#setattr(virginia_annual_savings_2020_2022$variable,"levels",
+ #       c("Remaining Needed","APCO","C-PACE", "Virginia Energy programs","Dominion (Gross savings)","Energy Codes (modeled, adoption of 2015 IECC)","ESPCs  (modeled, MUSH and private)"))
 
 
 #-----------------------------------------REFORMATTING DATASETS--------------------------------------------------------------------
@@ -375,8 +377,62 @@ setnames(virginia_emissions_electric_commas,c('Year','Million Metric Tons of CO2
 # Data is in metric tons (emission rates are also adjusted to be based on metric tons)
 #va_electricity_emissions_by_fuel = va_electricity_emissions_by_fuel[Year >= 2000] #limit data to baseline year of 2000
 
-#data aggregation for energy efficiency plots
+#CLEANING AND RESTRUCTURING THE ENERGYCAP API DATA
+#load in the energyCAP data from the database here
+db_driver = dbDriver("PostgreSQL")
+source(here::here("my_postgres_credentials.R"))
+db <- dbConnect(db_driver,user=db_user, password=ra_pwd,dbname="postgres", host=db_host)
+lead_by_example_data <- data.table(dbGetQuery(db,"select * from energycap_place_meter_and_savings_data ;"))
+dbDisconnect(db)
 
+#filter by square footage greater than 5000 square feet
+lead_by_example_data <- lead_by_example_data %>% filter(size.value >= 5000.0)
+
+#filter by electric meter
+lead_by_example_data <- lead_by_example_data %>% filter(commodity.commodityCode=='ELECTRIC')
+
+#create a categorical size range column
+lead_by_example_data$size_range <- lead_by_example_data$size.value
+breaks <- c(5000.0,50000.0,100000.0,250000.0,500000.0,990000.0)
+tags <- c("5,000 - 50,000","50,001 - 100,000","100,001 - 250,000","250,001 - 500,000","500,001 - 990,000")
+lead_by_example_data$size_range <- cut(lead_by_example_data$size_range,breaks=breaks, include.lowest=TRUE,right=FALSE, 
+                                       labels=tags)
+rm(breaks,tags)
+
+#replace NA with Information Not Recorded
+lead_by_example_data$primaryUse.primaryUseInfo <- lead_by_example_data$primaryUse.primaryUseInfo %>% replace_na('Information Missing')
+
+#in parent.placeInfo, get a fresh column so that VCCS, VCU, and VDOT localities can fall under their parent umbrellas
+lead_by_example_data$placeInfoSimple <- lead_by_example_data$parent.placeInfo
+
+vccs <- unique(lead_by_example_data$placeInfoSimple[grep("VCCS_",lead_by_example_data$placeInfoSimple,perl=TRUE)])
+vcu <- unique(lead_by_example_data$placeInfoSimple[grep("VCU_",lead_by_example_data$placeInfoSimple,perl=TRUE)])
+vdot <- unique(lead_by_example_data$placeInfoSimple[grep("VDOT_",lead_by_example_data$placeInfoSimple,perl=TRUE)])
+
+#make a function to cut out the for loops
+
+simplify_place_information <- function(agency, replacement_name){
+  for (item in agency){
+    lead_by_example_data$placeInfoSimple <- replace(lead_by_example_data$placeInfoSimple,lead_by_example_data$placeInfoSimple==item,replacement_name)
+  }
+  return(lead_by_example_data$placeInfoSimple)
+}
+
+lead_by_example_data$placeInfoSimple <- simplify_place_information(vccs,'Virginia Community Colleges (VCCS)')
+lead_by_example_data$placeInfoSimple <- simplify_place_information(vcu,'Virginia Commonwealth University (VCU)')
+lead_by_example_data$placeInfoSimple <- simplify_place_information(vdot,'Virginia Department of Transportation (VDOT)')
+
+rm(vccs,vcu,vdot)
+
+#replace AGENCY in placeInfoSimple with the corresponding placeInfo value
+agency_indices <- grep('AGENCY',lead_by_example_data$placeInfoSimple,fixed=TRUE)
+for (item in agency_indices){
+  lead_by_example_data$placeInfoSimple[item] <- lead_by_example_data$placeInfo[item]
+}
+
+rm(agency_indices,item)
+
+#data aggregation for energy efficiency plots
 #yearly data by building size
 year_by_building_size <- lead_by_example_data %>% group_by(year,size_range) %>%
   dplyr::summarize(cost=sum(unique(totalCost),na.rm=TRUE),kWh=sum(unique(commonUse),na.rm=TRUE),

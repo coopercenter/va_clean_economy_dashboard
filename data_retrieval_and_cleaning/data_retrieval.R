@@ -195,7 +195,6 @@ dbWriteTable(db, 'virginia_annual_savings_through_2020', virginia_annual_savings
 dbWriteTable(db, 'virginia_annual_savings_through_2022', virginia_annual_savings_through_2022, row.names=FALSE, overwrite = TRUE)
 rm(virginia_annual_savings_through_2020,virginia_annual_savings_through_2022)
 
-dbDisconnect(db)
 
 ## Retrieving the EnergyCAP data for the energy efficiency part of the dashboard
 

@@ -392,6 +392,21 @@ percent_renewable_and_carbon_free_line_p <-
 percent_renewable_and_carbon_free_line_p
 
 #rps_renewable_line_p
+rps_renewable_line <-
+  ggplot(rps_mandate_schedule, aes(x = Year, y = value, color = variable)) +
+  geom_line(aes(
+    group = variable,
+    text = paste0("Year: ",Year,"\n",
+                  "Variable: ",variable,"\n",
+                  "Value: ", round(value, 4)
+    )
+  ), linetype = "dashed") +
+  ylab("Percentage of Generation from RPS Eligible Sources") + xlab("Year") + ylim(0, NA) +
+  labs(title = "Virginia Renewable Portfolio Standard Schedule", caption =
+         paste("Source:", metadata[db_table_name == "clean_energy_renewable_goals", data_source_full_name])) +
+  scale_color_manual(name = NULL, values = ceps_pal[3:4]) +
+  theme_ceps()
+#put a plotly wrapper on it
 rps_renewable_line_p <-
   ggplotly_wrapper(
     list(
