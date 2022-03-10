@@ -718,8 +718,8 @@ consumption_per_capita_line_p <-
   ggplotly_wrapper(consumption_per_capita_line)
 consumption_per_capita_line_p
 
-co2_per_GDP <- intensity_data[!is.na(co2_per_GDP),
-                              .(x_value=as.factor(year(date)),y_value=co2_per_GDP,
+co2_per_GDP <- intensity_data[!is.na(co2_per_gdp),
+                              .(x_value=as.factor(year(date)),y_value=co2_per_gdp,
                               fill_variable="co2_per_gdp")]
 emissions_per_gdp_line <-
   line_figure(
@@ -736,7 +736,7 @@ rm(co2_per_GDP)
 emissions_per_gdp_line_p <- ggplotly_wrapper(emissions_per_gdp_line)
 emissions_per_gdp_line_p
 
-co2_per_capita <- intensity_data[!is.na(co2_per_GDP),
+co2_per_capita <- intensity_data[!is.na(co2_per_capita),
                         .(x_value=as.factor(year(date)),y_value=co2_per_capita,
                                 fill_variable="co2_per_capita")]
 emissions_per_capita_line <-
