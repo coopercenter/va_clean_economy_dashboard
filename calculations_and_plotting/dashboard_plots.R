@@ -953,7 +953,7 @@ save(
   #pjm_solar,
   #investment_by_IOUs,
   #pjm_storage,
-  #single_ring_storage_capacity_donut_p,
+  single_ring_storage_capacity_donut_p,
   consumption_per_capita_line_p,
   consumption_per_gdp_line_p,
   #emissions_per_capita_line_p,
