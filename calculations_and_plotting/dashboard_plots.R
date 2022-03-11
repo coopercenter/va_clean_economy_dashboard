@@ -592,7 +592,7 @@ single_ring_carbon_free_donut_p <-
 single_ring_carbon_free_donut_p
 
 #annual_kwh_by_square_feet
-yearly_values_by_size <- plot_ly(year_by_building_size, x = ~year, y = ~kWh/sqft, type = 'bar',
+yearly_values_by_size <- plot_ly(year_by_building_size, x = ~year, y = ~kWh/sqft, type = 'bar', width=1,
                                  color = ~size_range, colors = theme_colors,
                                  text= ~paste("Kilowatt Hours per Square Foot: ",round(kWh/sqft,digits=2),
                                               "<br> Cost per Square Foot: $",round(cost/sqft,digits=2),
@@ -600,7 +600,7 @@ yearly_values_by_size <- plot_ly(year_by_building_size, x = ~year, y = ~kWh/sqft
                                               "<br> Number of Buildings: ",buildings,
                                               "<br> Annual Kilowatt Hour Savings Per Square Foot: ",round(savings/kWh,digits=2)),
                                  hoverinfo="text") %>% 
-  layout(title="Annual Power Use by Square Footage Range",xaxis = list(title = "Year", tickangle = -0),yaxis = list(title = "Kilowatt Hours per Square Foot"),
+  layout(title="Annual Power Use by Facility Size",xaxis = list(title = "Year", tickangle = -0),yaxis = list(title = "Kilowatt Hours per Square Foot"),
          margin = list(b = 100),
          barmode = 'group',
          legend = list(title=list(text='<b> Square Footage Range </b>')),
@@ -610,12 +610,12 @@ yearly_values_by_size
 #buildings_tracked
 agency_category_progress <- ggplot(sqft_over_5000) + 
   geom_col(aes(agency_category,percent_done,
-               text=paste("Buildings Over 5,000 Square Feet: ",facilities_over_5000_sqft,
-                          "<br> Buildings Over 5,000 Square Feet Being Tracked: ", facilities_over_5000_sqft_tracked,
+               text=paste("Facilities Over 5,000 Square Feet: ",facilities_over_5000_sqft,
+                          "<br> Facilities Over 5,000 Square Feet Being Tracked: ", facilities_over_5000_sqft_tracked,
                           "<br> Percent Complete: ", percent(percent_done))),fill="#56B4E9") + 
   geom_hline(aes(yintercept=yearly_goal, color=yearly_goal_label))+
   theme(axis.text.x = element_text(angle=-0, vjust=1, hjust=1))+
-  labs(x="",y='Progress Towards Tracking Goal',color='Building Tracking Goals',title='Tracking Progress by Agency Category')+
+  labs(x="",y='Percent of Facilties Tracked',color='Facility Tracking Goals',title='Tracking Progress by Entity Category')+
   scale_y_continuous(labels=percent)+
   scale_color_manual(values=theme_colors#c(paletteer_d("ggthemes::colorblind"))
   ) +
