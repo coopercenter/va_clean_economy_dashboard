@@ -148,7 +148,7 @@ ui <- tagList(
           #adding in new tabs for Lead By Example and the Energy Efficiency Mandates
           tabBox(height = '800px',width='300px',
                  id='energy efficiency tabs',
-                 tabPanel('Lead By Example', style='background: #F0F0F0; border: #F0F0F0',
+                 tabPanel('Lead By Example', style='background: #F0F0F0',
                           h2('Lead by Example'),
                           h4(tags$div("This page highlights the facility tracking goals specified in",tags$a(href="https://law.lis.virginia.gov/vacode/title2.2/chapter6/section2.2-604.2/",
                                                                                                              "§2.2-604.2"),", part of Virginia Energy's",
