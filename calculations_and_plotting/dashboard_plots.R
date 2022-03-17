@@ -592,7 +592,7 @@ single_ring_carbon_free_donut_p <-
 single_ring_carbon_free_donut_p
 
 #annual_kwh_by_square_feet
-yearly_values_by_size <- plot_ly(year_by_building_size, x = ~year, y = ~kWh/sqft, type = 'bar', width=1,
+yearly_values_by_size <- plot_ly(year_by_building_size, x = ~year, y = ~kWh/sqft, type = 'bar', width="500px",
                                  color = ~size_range, colors = theme_colors,
                                  text= ~paste("Kilowatt Hours per Square Foot: ",round(kWh/sqft,digits=2),
                                               "<br> Cost per Square Foot: $",round(cost/sqft,digits=2),
@@ -615,7 +615,7 @@ agency_category_progress <- ggplot(sqft_over_5000) +
                           "<br> Percent Complete: ", percent(percent_done))),fill="#56B4E9") + 
   geom_hline(aes(yintercept=yearly_goal, color=yearly_goal_label))+
   theme(axis.text.x = element_text(angle=-0, vjust=1, hjust=1))+
-  labs(x="",y='Percent of Facilties Tracked',color='Facility Tracking Goals',title='Tracking Progress by Entity Category')+
+  labs(x="",y='Percent of Facilties Tracked',color='Facility Tracking Goals',title='Tracking Progress by Agency Category')+
   scale_y_continuous(labels=percent)+
   scale_color_manual(values=theme_colors#c(paletteer_d("ggthemes::colorblind"))
   ) +
@@ -835,7 +835,7 @@ save(
   size_3_use,
   size_4_use,
   size_5_use,
-  colleges_and_universities,
+  culture,
   health_and_human_svs,
   transportation,
   natural_resources,

@@ -475,13 +475,19 @@ LBE_building_tracker$agency_name <- trimws(LBE_building_tracker$agency_name)
 LBE_building_tracker$agency_code <- trimws(LBE_building_tracker$agency_code)
 
 #make a new column of categories to assign to the agency names for more readable aggregation
-colleges_and_universities <- c("CHRISTOPHER NEWPORT UNIVERSITY","GEORGE MASON UNIVERSITY","JAMES MADISON UNIVERSITY",
+education <- c("CHRISTOPHER NEWPORT UNIVERSITY","GEORGE MASON UNIVERSITY","JAMES MADISON UNIVERSITY",
                                "LONGWOOD COLLEGE","MARY WASHINGTON COLLEGE","NORFOLK STATE UNIVERSITY","OLD DOMINION UNIVERSITY",
                                "Radford University","UNIVERSITY OF VIRGINIA","University of Virginia's College at Wise","Central Virginia Community College",
                                'New River Community College','Patrick Henry Community College','Southwest Virginia Community College',
                                'Virginia Community College System','Virginia Highlands Community College','Virginia Western Community College',
                                'Wytheville Community College','VIRGINIA COMMONWEALTH UNIVERSITY','Virginia Polytechnic Institute and State University',
-                               'VIRGINIA STATE UNIVERSITY','WILLIAM AND MARY, COLLEGE OF','VIRGINIA MILITARY INSTITUTE')
+                               'VIRGINIA STATE UNIVERSITY','WILLIAM AND MARY, COLLEGE OF','VIRGINIA MILITARY INSTITUTE',
+               "Roanoke Higher Education Authority",
+               'VIRGINIA INSTITUTE OF MARINE SCIENCE',
+               "Southwest Virginia 4-H Educational Center",
+               'VIRGINIA ASSOCIATED RESEARCH CENTER',
+               'VIRGINIA BIOTECHNOLOGY RESEARCH PARK AUTHORITY',
+               'TRUCK & ORNAMENTAL RESEARCH ASSOCIATION')
 
 health_and_human_svs <- c('Catawba Hospital','Central Virginia Training Center',
                           'Department of Behavioral Health and Developmental Services',
@@ -500,10 +506,7 @@ natural_resources <- c('VIRGINIA DEPARTMENT OF CONSERVATION AND RECREATION',
 
 agriculture_and_forestry <- c('Department of Forestry','VIRGINIA DEPARTMENT OF AGRICULTURE AND CONSUMER SERVICES')
 
-education <- c('FRONTIER DISCOVERY MUSEUM','SCIENCE MUSEUM OF VIRGINIA','VIRGINIA MUSEUM OF FINE ARTS',
-               "Roanoke Higher Education Authority","Southwest Virginia 4-H Educational Center",
-               'VIRGINIA BIOTECHNOLOGY RESEARCH PARK AUTHORITY', 'VIRGINIA ASSOCIATED RESEARCH CENTER',
-               'VIRGINIA INSTITUTE OF MARINE SCIENCE','TRUCK & ORNAMENTAL RESEARCH ASSOCIATION',
+culture <- c('FRONTIER DISCOVERY MUSEUM','SCIENCE MUSEUM OF VIRGINIA','VIRGINIA MUSEUM OF FINE ARTS',
                'THE BOARD OF REGENTS/GUNSTON','JAMESTOWN FOUNDATION')
 
 administration <- c('VIRGINIA DEPARTMENT OF GENERAL SERVICES')
@@ -537,12 +540,12 @@ consolidate_agency_categories <- function(agency_list, new_agency_category){
 
 
 
-LBE_building_tracker$agency_category <- consolidate_agency_categories(colleges_and_universities,'Colleges and Universities')
+LBE_building_tracker$agency_category <- consolidate_agency_categories(education,'Education')
 LBE_building_tracker$agency_category <- consolidate_agency_categories(health_and_human_svs,'Health and Human Services')
 LBE_building_tracker$agency_category <- consolidate_agency_categories(transportation,'Transportation')
 LBE_building_tracker$agency_category <- consolidate_agency_categories(natural_resources,'Natural Resources')
 LBE_building_tracker$agency_category <- consolidate_agency_categories(agriculture_and_forestry,'Agriculture and Forestry')
-LBE_building_tracker$agency_category <- consolidate_agency_categories(education,'Education')
+LBE_building_tracker$agency_category <- consolidate_agency_categories(culture,'Culture')
 LBE_building_tracker$agency_category <- consolidate_agency_categories(administration,'Administration')
 LBE_building_tracker$agency_category <- consolidate_agency_categories(public_safety_and_homeland_security,'Public Safety and Homeland Security')
 LBE_building_tracker$agency_category <- consolidate_agency_categories(independent_agencies,'Independent Agencies')
@@ -551,7 +554,7 @@ LBE_building_tracker$agency_category <- consolidate_agency_categories(veterans_a
 LBE_building_tracker$agency_category <- consolidate_agency_categories(other,'Other Services or Category Not Known')
 
 
-rm(colleges_and_universities,health_and_human_svs,transportation,natural_resources,agriculture_and_forestry,
+rm(culture,health_and_human_svs,transportation,natural_resources,agriculture_and_forestry,
    education,administration,public_safety_and_homeland_security,independent_agencies,commerce_and_trade,
    veterans_and_defense_affairs,other)
 
@@ -563,7 +566,6 @@ LBE_building_tracker$agency_name <- LBE_building_tracker$agency_name %>%
   replace(LBE_building_tracker$agency_name=='William And Mary, College Of','College Of William and Mary') %>%
   replace(LBE_building_tracker$agency_name=='Wctv Channel 23','WCTV Channel 23')
 
-
 #group by agency category
 by_agency_category <- LBE_building_tracker %>% group_by(agency_category) %>% 
   summarise(facilities_over_5000_sqft=sum(as.numeric(facilities_over_5000_sqft),na.rm=TRUE),
@@ -573,6 +575,7 @@ by_agency_category <- LBE_building_tracker %>% group_by(agency_category) %>%
 
 #filter by buildings over 5000 sq ft
 sqft_over_5000 <-by_agency_category %>% filter(facilities_over_5000_sqft !=0)
+
 
 #add the yearly targets and their labels, a little awkward since the lengths are different but this works in lieu of a better solution
 sqft_over_5000$yearly_goal <- c(0.05,0.20,0.45,0.70,1.00,1.00,1.00,1.00,1.00,1.00,1.00)
@@ -595,12 +598,12 @@ filter_by_agency_categories <- function(category){
   return(data)
 }
 
-colleges_and_universities <- filter_by_agency_categories('Colleges and Universities')
+education <- filter_by_agency_categories('Education')
 health_and_human_svs <- filter_by_agency_categories('Health and Human Services')
 transportation <- filter_by_agency_categories('Transportation')
 natural_resources <- filter_by_agency_categories('Natural Resources')
 agriculture_and_forestry <- filter_by_agency_categories('Agriculture and Forestry')
-education <- filter_by_agency_categories('Education')
+culture <- filter_by_agency_categories('Culture')
 administration <- filter_by_agency_categories('Administration')
 public_safety_and_homeland_security <- filter_by_agency_categories('Public Safety and Homeland Security')
 independent_agencies <- filter_by_agency_categories('Independent Agencies')
@@ -609,6 +612,19 @@ veterans_and_defense_affairs <-  filter_by_agency_categories('Veterans and Defen
 other <- filter_by_agency_categories('Other Services or Category Not Known')
 
 rm(LBE_building_tracker)
+
+#factor the agency categories for cleaner plotting
+sqft_over_5000$agency_category <- factor(sqft_over_5000$agency_category,levels=c("Administration",
+                                                 "Agriculture and Forestry",
+                                                 "Commerce and Trade",
+                                                 "Culture",
+                                                 "Education",
+                                                 "Health and Human Services",
+                                                 "Natural Resources",
+                                                "Public Safety and Homeland Security",
+                                                "Transportation",
+                                                "Veterans and Defense Affairs",
+                                                "Total"))
 
 #load and reshape the new mandate data
 #eventually to be moved to the database

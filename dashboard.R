@@ -68,7 +68,7 @@ ui <- tagList(
         menuItem("Emissions", tabName = "emissions"),
         hr(),
         menuItem("About", tabName = "about"),
-        menuItem("Downloadable Data Tables", tabName = "tables"),
+        #menuItem("Downloadable Data Tables", tabName = "tables"),
         menuItem("Credits", tabName = "credits")
       )
     ),
@@ -148,52 +148,56 @@ ui <- tagList(
           #adding in new tabs for Lead By Example and the Energy Efficiency Mandates
           tabBox(height = '800px',width='300px',
                  id='energy efficiency tabs',
-                 tabPanel('Lead By Example',
-                          h2('Annual Energy Use'),
-                          h3('Tracking annual energy use for facilities recorded in the Virginia Energy database'),
-                          h4('Measured in Kilowatt Hours per Square Foot to better understand how facilities of different sizes and uses are using energy, and how their energy savings compare to each other'),
-                          #plot the annual bar chart broken down by square foot range
-                          fluidRow(box(width=8,plotlyOutput('annual_kwh_by_square_feet'))),
-                                   #plot the detailed annual kWh by building use for a chosen square foot range
-                          h4('Select a size to see how the facilities are used and how their energy use is changing over time'),
-                          h5("Dot size reflects the number of facilities in a category"),
-                         fluidRow(
-                                   box(width=5,                                       #chose a square foot range for a more detailed view of who is using energy
-                                       selectInput('square_foot_range',
-                                                   label=h5(''),
-                                                   choices=c('5,000 - 50,000 square feet',
-                                                             '50,001 - 100,000 square feet',
-                                                             '100,001 - 250,000 square feet',
-                                                             '250,001 - 500,000 square feet',
-                                                             '500,001 - 990,000 square feet'))),
-                                   box(width=8,height='700px',plotlyOutput('kwh_by_use_by_sqft'))),
-                          h2('Facility Tracking Goals'),
-                          h4(tags$div("Tracking the number of facilities whose energy use is recorded in Virginia Energy's database, as specified in",
-                            tags$a(href="https://law.lis.virginia.gov/vacode/title2.2/chapter6/section2.2-604.2/", 
-                                   "this legislation"))),
-                          #plot the building tracking progress compared to the mandated goals
+                 tabPanel('Lead By Example', style='background: #F0F0F0; border: #F0F0F0',
+                          h2('Lead by Example'),
+                          h4(tags$div("This page highlights the facility tracking goals specified in",tags$a(href="https://law.lis.virginia.gov/vacode/title2.2/chapter6/section2.2-604.2/",
+                                                                                                             "§2.2-604.2"),", part of Virginia Energy's",
+                                      tags$a(href="https://energy.virginia.gov/renewable-energy/Documents/CEVWebinar2021/LeadByExample2021.pdf",
+                                             "Lead By Example Program,"),"and explores the energy use of those facilities as they are added to the database. 
+                                      These visualizations will be updated as additional facility information is gathered.")),
+                          #plot the building tracking progress compared to the mandated goals, by category
+                         h3("Facility Tracking by Agency Category"),
+                         h4("See how different categories of state agencies are meeting the building tracking targets"),
                           fluidRow(box(width=10,plotlyOutput('buildings_tracked'))),
-                          h4('Select a category to see how many facilities each state entity oversees and how many are currently in the database'),
+                          h4('Select a category to see how many facilities each state agency oversees and how many are currently in the database'),
                           fluidRow(box(width=3,
                                        #select a category of building owners to see how progress is going
                                        selectInput('agency_drilldown',
                                                    label=h5(''),
-                                                   choices=c('Colleges and Universities',
-                                                             'Health and Human Services',
-                                                             'Transportation',
-                                                             'Natural Resources',
+                                                   choices=c('Administration',
                                                              'Agriculture and Forestry',
-                                                             'Education',
-                                                             'Administration',
-                                                             'Public Safety and Homeland Security',
                                                              'Commerce and Trade',
+                                                             'Culture',
+                                                             'Education',
+                                                             'Health and Human Services',
+                                                             'Natural Resources',
+                                                             'Public Safety and Homeland Security',
+                                                             'Transportation',
                                                              'Veterans and Defense Affairs'))),
                                    #plot the more detailed view of the building tracking progress by who is responsible for the buildings
-                                   box(width=10,plotlyOutput('buildings_by_category'))
+                                   box(width=10,height="475px",plotlyOutput('buildings_by_category'))
                                    
-                          )
+                          ),
+                         h2('Annual Energy Use'),
+                         h3('Tracking annual energy use for facilities recorded in the Virginia Energy database'),
+                         h4('Measured in Kilowatt Hours per Square Foot to better understand how facilities of different sizes are using energy, and how their energy savings compare to each other'),
+                         #plot the annual bar chart broken down by square foot range
+                         fluidRow(box(width=8,plotlyOutput('annual_kwh_by_square_feet'))),
+                         #plot the detailed annual kWh by building use for a chosen square foot range
+                         h4('Select a size to see how the facilities are used and how their energy use is changing over time'),
+                         h5("Dot size reflects the number of facilities in a category"),
+                         fluidRow(
+                           box(width=5,                                       #chose a square foot range for a more detailed view of who is using energy
+                               selectInput('square_foot_range',
+                                           label=h5(''),
+                                           choices=c('5,000 - 50,000 square feet',
+                                                     '50,001 - 100,000 square feet',
+                                                     '100,001 - 250,000 square feet',
+                                                     '250,001 - 500,000 square feet',
+                                                     '500,001 - 990,000 square feet'))),
+                           box(width=8,height='700px',plotlyOutput('kwh_by_use_by_sqft')))
                  ),
-                 tabPanel('Energy Efficiency Mandates',
+                 tabPanel('Energy Efficiency Mandates',style='background: #F0F0F0',
                           h2("Energy Efficiency Spending"),
                           h4("Tracking the progress of energy companies towards their energy efficiency program spending requirements, and anticipated energy savings compared to required annual savings"),
                           h4('Requirement Definitions:'),
@@ -624,7 +628,7 @@ server <- function(input, output) {
   
   #get the reactive building tracking by category going
   agency_category <- reactive({switch(input$agency_drilldown,
-                                      'Colleges and Universities'=colleges_and_universities,
+                                      'Culture'=culture,
                                       'Health and Human Services'=health_and_human_svs,
                                       'Transportation'=transportation,
                                       'Natural Resources'=natural_resources,
@@ -639,13 +643,15 @@ server <- function(input, output) {
     plot_ly(data, x=~facilities_over_5000_sqft,y=~agency_name,
             type='bar', orientation='h',
             name='Facilities Over 5,000 Square Feet',color=as.factor('Facilities Over 5,000 Sqare Feet'),
-            colors=theme_colors) %>%
-      add_trace(colleges_and_universities,x=~facilities_over_5000_sqft_tracked,y=~agency_name,type='bar',
+            colors=theme_colors,
+            height="500px") %>%
+      add_trace(data,x=~facilities_over_5000_sqft_tracked,y=~agency_name,type='bar',
                 orientation='h',
                 name='Facilities Over 5,000 Square Feet In Database',color=as.factor('Facilities Over 5,000 Square Feet In Database'),
-                colors=theme_colors) %>%
+                colors=theme_colors,
+                height="500px") %>%
       layout(xaxis=list(title="Number of Facilities",tickangle=-0),yaxis=list(title=""),
-             title='Tracking Progress by Entity',
+             title='Tracking Progress by Agency',
              paper_bgcolor="#F0F0F0", plot_bgcolor="#F0F0F0")
   })
   
