@@ -11,12 +11,13 @@
 #' @param return_static
 #' @param source_citation
 #' @param modifications
+#' @param modifications2
 #' @param subtitle_description
 #' @param future_date
 #'
 #' @return figure
 #' @export
-line_figure <- function(data_table,y_value_unit,title_name,character_list=NULL,x_label="Year",lower_limit=0,upper_limit=NA,return_static=TRUE,source_citation=NULL,modifications=NULL,subtitle_description=NULL,future_date=NULL){
+line_figure <- function(data_table,y_value_unit,title_name,character_list=NULL,x_label="Year",lower_limit=0,upper_limit=NA,return_static=TRUE,source_citation=NULL,modifications=NULL,modifications2=NULL,subtitle_description=NULL,future_date=NULL){
   #data_table_list is a list of data tables which should be ready to be merged into one table
   #       *if only one table is included in input list (note that it still must be in list form), this table should be ready to be plotted i.e it should include a variable and value column and an x-value (usually date or year) column
   #merge_variable is a character description of which variable the merge should be performed on (ex:"date","year) if applicable; it should also be the x-axis being graphed
@@ -53,7 +54,8 @@ line_figure <- function(data_table,y_value_unit,title_name,character_list=NULL,x
       labs(title=title_name,subtitle=subtitle_description,caption=source_description) +
       scale_color_manual(name=NULL,values=ceps_pal[1:category_count])+
       theme_ceps()+
-      modifications
+      modifications+
+      modifications2
     figure
   }
   else{
@@ -66,7 +68,8 @@ line_figure <- function(data_table,y_value_unit,title_name,character_list=NULL,x
       labs(title=title_name,subtitle=subtitle_description,caption=source_description) +
       scale_color_manual(name=NULL,values=ceps_pal[1:category_count])+
       theme_ceps()+
-      modifications
+      modifications+
+      modifications2
     figure
   }
 

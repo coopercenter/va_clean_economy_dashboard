@@ -1,0 +1,1 @@
+energycap_key <- "ZWNhcHxQcm9kdWN0aW9u.Y292YXwxMDI0fDEwMjQ=.ZmFjMjQ0NWItNWY3OS00ODYwLThkMmYtMjRmMWVlMjJlM2Rj"

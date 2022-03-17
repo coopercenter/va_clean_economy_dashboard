@@ -195,5 +195,77 @@ dbWriteTable(db, 'virginia_annual_savings_through_2020', virginia_annual_savings
 dbWriteTable(db, 'virginia_annual_savings_through_2022', virginia_annual_savings_through_2022, row.names=FALSE, overwrite = TRUE)
 rm(virginia_annual_savings_through_2020,virginia_annual_savings_through_2022)
 
-dbDisconnect(db)
 
+## Retrieving the EnergyCAP data for the energy efficiency part of the dashboard
+
+#get the key
+key <- source(here('data_retrieval_and_cleaning/EnergyCAP_API_key.R'))
+
+#make the API requests and convert them into dataframes
+
+#get the first page of the place data so we can use the headers to tell us how many more pages we need
+energyCAP_building_data <- GET("https://app.energycap.com/api/v3/place",
+                               add_headers(.headers=c('ECI-ApiKey'=energycap_key)))
+
+#store the number of pages before flattening to a JSON
+pages <- as.numeric(energyCAP_building_data$headers$totalpages)
+
+#flatten the request results
+energyCAP_building_data <- energyCAP_building_data %>% content("text") %>% 
+  fromJSON(flatten=TRUE) %>%
+  as.data.frame() %>% unnest(cols=c(meters))
+
+#use a for-loop to go through the places page by page to capture all the building data
+for(i in (2:pages)){
+  next_page <- GET(paste("https://app.energycap.com/api/v3/place?pageNumber=",i,sep=""), 
+                   add_headers(.headers=c('ECI-ApiKey'=energycap_key))) %>% content("text") %>% 
+    fromJSON(flatten=TRUE) %>% 
+    as.data.frame() %>% unnest(cols=c(meters))
+  energyCAP_building_data <- rbind(energyCAP_building_data,next_page)
+  
+}
+
+#get the meter data which has use and cost, convert to dataframe then unnest the deeper columns
+energyCAP_meter_data <- GET("https://app.energycap.com/api/v3/meter/digest/actual/yearly", 
+                            add_headers(.headers=c('ECI-ApiKey'=energycap_key)))  %>% content("text") %>% 
+  fromJSON(flatten=TRUE) %>%
+  as.data.frame() %>% unnest(cols=results)
+
+#get the savings data
+energyCAP_savings_data <- GET("https://app.energycap.com/api/v3/meter/digest/savings/yearly", 
+                              add_headers(.headers=c('ECI-ApiKey'=energycap_key))) %>% content("text") %>% 
+  fromJSON(flatten=TRUE) %>%
+  as.data.frame() %>% unnest(cols=results)
+
+#remove the excess variables
+rm(energycap_key,key)
+
+#join the meter dataframe with the building dataframe on meterId
+energyCAP_data <- full_join(energyCAP_building_data,energyCAP_meter_data,by='meterId')
+
+#join the meter and building data with the savings data on meterId and year
+energyCAP_data <- full_join(energyCAP_data,energyCAP_savings_data,by=c('meterId','year'))
+
+#pare the data down to just the important parts to explore for visualizations
+columns_to_keep <- c('placeId','commodity.commodityCode','parent.placeInfo','placeInfo','parent.placeType.placeTypeInfo',
+                     'parent.placeType.structure','placeType.placeTypeInfo',
+                     'placeType.structure','primaryUse.primaryUseInfo',
+                     'size.value','year','totalCost.x','commonUse.x','nativeUse.x','allTimeSavingsNativeUse',
+                     'allTimeSavingsCommonUse','allTimeSavingsTotalCost','savingsStartDate','savingsCommonUse')
+
+energyCAP_data <- energyCAP_data %>% select(all_of(columns_to_keep))
+rm(energyCAP_building_data,energyCAP_meter_data,energyCAP_savings_data,columns_to_keep)
+
+#rename the ambiguous or repeated columns to something more descriptive
+energyCAP_data  <- energyCAP_data  %>% 
+  #rename(year=year.x) %>% rename(savings_year=year.y) %>%
+  rename(totalCost = totalCost.x) %>% rename(commonUse = commonUse.x) %>% rename(nativeUse = nativeUse.x)
+
+#write to the database
+db_driver = dbDriver("PostgreSQL")
+source(here::here("my_postgres_credentials.R"))
+db <- dbConnect(db_driver,user=db_user, password=ra_pwd,dbname="postgres", host=db_host)
+dbRemoveTable(db,"energycap_place_meter_and_savings_data")
+dbWriteTable(db,"energycap_place_meter_and_savings_data",energyCAP_data)
+
+dbDisconnect(db)
