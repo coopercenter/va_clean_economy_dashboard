@@ -60,7 +60,8 @@ updateEIA826Data <- function(database="postgres") {
   library(readxl);library(lubridate); library(data.table)
   library(RMySQL);library(stringr); library(arrow)
   library(RPostgres)
-  database="postgres"; table="eia_f826_data"
+#  database="postgres" 
+  table="eia_f826_data"
   # db_driver = dbDriver("MySQL")
   # CCPS_DATABASE_PWD = 'manx(0)Rose'
   # CCPS_DATABASE_ACCT = 'wms5f'
@@ -68,7 +69,7 @@ updateEIA826Data <- function(database="postgres") {
   # database = "energy"
   
   # Find the dates with data labeled as "Preliminary"
-  this_year = 2021 #year(now())
+  this_year = year(now())
   start_year = this_year - 2
   update_years <- seq(start_year,this_year)
   db_driver = dbDriver("PostgreSQL")
@@ -88,7 +89,7 @@ updateEIA826Data <- function(database="postgres") {
   #length(update_years)
   for (year in update_years) {
     # In 2017, EIA changed the way the file are stored
-    year = 2020
+#    year = 2020
     if(year>=2017) {
       if(year == this_year) {
         path = "https://www.eia.gov/electricity/data/eia861m/xls/"
