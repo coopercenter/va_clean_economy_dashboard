@@ -68,7 +68,7 @@ ui <- tagList(
         menuItem("Emissions", tabName = "emissions"),
         hr(),
         menuItem("About", tabName = "about"),
-        menuItem("Downloadable Data Tables", tabName = "tables"),
+        #menuItem("Downloadable Data Tables", tabName = "tables"),
         menuItem("Credits", tabName = "credits")
       )
     ),
@@ -80,7 +80,7 @@ ui <- tagList(
         tabItem(
           tabName = "summary",
           h1("Virginia's Progress Towards a Cleaner Electric Grid"),
-          h4("This dashboard includes interactive elements. Move your mouse around to discover them. For more information, click on the 'About' tab."),
+          h4("This dashboard includes interactive elements. Move your mouse around to discover them. For visualizations with legends, click a legend item once to remove it or double click to isolate it. Double click on the legend to restore all items. For more information, click on the 'About' tab."),
           h2("Goals"),
           fluidRow(
             box(width = 4, plotlyOutput("renewable_progress_donut"), align = "center"),
@@ -145,16 +145,81 @@ ui <- tagList(
         tabItem(
           tabName = "efficiency",
           h1("Energy Efficiency"),
-          h2("Energy Efficiency Mandates for Appalachian Power and Dominion Energy"),
-          fluidRow(box(plotlyOutput("apco_dom_historic_goals"))),
+          #adding in new tabs for Lead By Example and the Energy Efficiency Mandates
+          tabBox(height = '800px',width='300px',
+                 id='energy efficiency tabs',
+                 tabPanel('Lead By Example', style='background: #F0F0F0; border: #F0F0F0',
+                          h2('Lead by Example'),
+                          h4(tags$div("This page highlights the facility tracking goals specified in",tags$a(href="https://law.lis.virginia.gov/vacode/title2.2/chapter6/section2.2-604.2/",
+                                                                                                             "§2.2-604.2"),", part of Virginia Energy's",
+                                      tags$a(href="https://energy.virginia.gov/renewable-energy/Documents/CEVWebinar2021/LeadByExample2021.pdf",
+                                             "Lead By Example Program,"),"and explores the energy use of those facilities as they are added to the database. 
+                                      These visualizations will be updated as additional facility information is gathered.")),
+                          #plot the building tracking progress compared to the mandated goals, by category
+                         h3("Facility Tracking by Agency Category"),
+                         h4("See how different categories of state agencies are meeting the building tracking targets"),
+                          fluidRow(box(width=10,plotlyOutput('buildings_tracked'))),
+                          h4('Select a category to see how many facilities each state agency oversees and how many are currently in the database'),
+                          fluidRow(box(width=3,
+                                       #select a category of building owners to see how progress is going
+                                       selectInput('agency_drilldown',
+                                                   label=h5(''),
+                                                   choices=c('Administration',
+                                                             'Agriculture and Forestry',
+                                                             'Commerce and Trade',
+                                                             'Culture',
+                                                             'Education',
+                                                             'Health and Human Services',
+                                                             'Natural Resources',
+                                                             'Public Safety and Homeland Security',
+                                                             'Transportation',
+                                                             'Veterans and Defense Affairs'))),
+                                   #plot the more detailed view of the building tracking progress by who is responsible for the buildings
+                                   box(width=10,height="475px",plotlyOutput('buildings_by_category'))
+                                   
+                          ),
+                         h2('Annual Energy Use'),
+                         h3('Tracking annual energy use for facilities recorded in the Virginia Energy database'),
+                         h4('Measured in Kilowatt Hours per Square Foot to better understand how facilities of different sizes are using energy, and how their energy savings compare to each other'),
+                         #plot the annual bar chart broken down by square foot range
+                         fluidRow(box(width=8,plotlyOutput('annual_kwh_by_square_feet'))),
+                         #plot the detailed annual kWh by building use for a chosen square foot range
+                         h4('Select a size to see how the facilities are used and how their energy use is changing over time'),
+                         h5("Dot size reflects the number of facilities in a category"),
+                         fluidRow(
+                           box(width=5,                                       #chose a square foot range for a more detailed view of who is using energy
+                               selectInput('square_foot_range',
+                                           label=h5(''),
+                                           choices=c('5,000 - 50,000 square feet',
+                                                     '50,001 - 100,000 square feet',
+                                                     '100,001 - 250,000 square feet',
+                                                     '250,001 - 500,000 square feet',
+                                                     '500,001 - 990,000 square feet'))),
+                           box(width=8,height='700px',plotlyOutput('kwh_by_use_by_sqft')))
+                 ),
+                 tabPanel('Energy Efficiency Mandates',style='background: #F0F0F0',
+                          h2("Energy Efficiency Spending"),
+                          h4("Tracking the progress of energy companies towards their energy efficiency program spending requirements, and anticipated energy savings compared to required annual savings"),
+                          h4('Requirement Definitions:'),
+                          htmlOutput('ee_requirement_definitions'),
+                          fluidRow(box(width=6,plotlyOutput('apco_ee_spending')),
+                                   box(width=6,plotlyOutput('apco_mandates_and_progress')),
+                                   box(width=6,plotlyOutput('dominion_ee_spending')),
+                                   box(width=6,plotlyOutput('dominion_mandates_and_progress')),
+                                   box(width=6,plotlyOutput('odp_ee_spending')),
+                                   box(width=6,plotlyOutput('odp_mandates_and_progress'))))
+          )
+          #h1("Energy Efficiency"),
+          #h2("Energy Efficiency Mandates for Appalachian Power and Dominion Energy"),
+          #fluidRow(box(plotlyOutput("apco_dom_historic_goals"))),
           
           
-          h2("Projected Future Savings From Energy Efficiency Programs"), 
-          fluidRow(box(plotlyOutput("annual_savings_2020_2022"), width = "100%")),
+          #h2("Projected Future Savings From Energy Efficiency Programs"), 
+          #fluidRow(box(plotlyOutput("annual_savings_2020_2022"), width = "100%")),
           
-          h2("Consumption"),
-          fluidRow(box(plotlyOutput("con_per_capita")),
-                   box(plotlyOutput("con_per_gdp")))
+          #h2("Consumption"),
+          #fluidRow(box(plotlyOutput("con_per_capita")),
+                   #box(plotlyOutput("con_per_gdp")))
         ),
         
         # tabItem(
@@ -291,7 +356,7 @@ ui <- tagList(
                     ),
                     br(),
                     h4('Energy Efficiency'),
-                    p('The Virgina Clean Economy Act imposes energy efficiency targets on both Dominion Power and Appalachian Power Company. These targets are expressed as required percentage reductions in total retail sales, from a 2019 baseline. Dominion Power must reduce sales by 5% by 2025. Appalachian Power must reduce sales by 2% by 2025. For context, the Energy Efficiency section also displays trends on consumption per capita and consumption per GDP in Virginia. Data tables at bottom contain information about ongoing and planned investment by investor-owned public utilities in energy efficiency programs.' 
+                    p('The Virgina Clean Economy Act imposes energy efficiency targets on both Dominion Power and Appalachian Power Company. These targets are expressed as required percentage reductions in total retail sales, from a 2019 baseline. Dominion Power must reduce sales by 5% by 2025. Appalachian Power must reduce sales by 2% by 2025' 
                     ),
                     p("Acronyms found in the VCEA summary include:", br(), "APCO: Appalachian Power Company" ,br(), "C-PACE: Commercial Property Assessed Clean Energy ",br(),"DMME:Department of Mines, Minerals, and Energy (now called Virginia Energy)",br(),"IECC: International Energy Conservation Code",br(),"ESPCs: Energy Savings Performance Costs ",br(),"MUSH: Municipalities, Universities, Schools, and Hospitals"),
                     
@@ -408,9 +473,9 @@ server <- function(input, output) {
     va_annual_production_pie_chart_p_with_legend
   })
   
-  output$electric_emissions_plot <- renderPlotly({
-    co2_combined_emissions_line_p
-  })
+  #output$electric_emissions_plot <- renderPlotly({
+  # co2_combined_emissions_line_p
+  #})
   
   output$electric_emissions_plot2 <- renderPlotly({
     co2_combined_emissions_line_p
@@ -423,9 +488,10 @@ server <- function(input, output) {
   output$con_area <- renderPlotly({
     va_annual_consumption_area_p
   })
-  output$con_ts <- renderPlotly({
-    va_annual_consumption_area_p
-  })
+  #output$con_ts <- renderPlotly({
+  #va_annual_consumption_area_p
+  #})
+  
   output$con_pie <- renderPlotly({
     va_annual_consumption_pie_chart_p_with_legend
   })
@@ -437,11 +503,11 @@ server <- function(input, output) {
   
   output$sw_donut <- renderPlotly(single_ring_sw_capacity_donut_p)
   
-  output$rc_line <-
-    renderPlotly(percent_renewable_and_schedule_goal_combined_line_p)
+  #output$rc_line <-
+  # renderPlotly(percent_renewable_and_schedule_goal_combined_line_p)
   
-  output$cf_line <- 
-    renderPlotly(percent_carbon_free_line_p)
+  #output$cf_line <- 
+  #renderPlotly(percent_carbon_free_line_p)
   
   output$rc_break_line <-
     renderPlotly(annual_carbon_free_generation_by_type_line_p)
@@ -458,21 +524,21 @@ server <- function(input, output) {
   output$offshore_wind_progress <-
     renderPlotly(single_ring_offshore_wind_capacity_donut_p)
   
-  output$burden_map_expenditure <-
-    renderPlotly(va_avg_annual_energy_cost_p)
+  #output$burden_map_expenditure <-
+  #renderPlotly(va_avg_annual_energy_cost_p)
   
-  output$burden_map_expenditure_2 <-
-    renderPlotly(va_avg_annual_energy_percent_exp_p)
+  #output$burden_map_expenditure_2 <-
+  # renderPlotly(va_avg_annual_energy_percent_exp_p)
   
   
   output$energy_storage_donut <-
     renderPlotly(single_ring_storage_capacity_donut_p)
   
-  output$con_per_capita <-
-    renderPlotly(consumption_per_capita_line_p)
+  #output$con_per_capita <-
+  #renderPlotly(consumption_per_capita_line_p)
   
   
-  output$con_per_gdp <- renderPlotly(consumption_per_gdp_line_p)
+  #output$con_per_gdp <- renderPlotly(consumption_per_gdp_line_p)
   
   output$emissions_per_capita <-
     renderPlotly(emissions_per_capita_line_p)
@@ -480,13 +546,13 @@ server <- function(input, output) {
   output$emissions_per_gdp <- renderPlotly(emissions_per_gdp_line_p)
   
   
-  output$annual_savings_2020_2022 <- renderPlotly(annual_savings_2020_2022_stacked_bar_chart_p)
+  #output$annual_savings_2020_2022 <- renderPlotly(annual_savings_2020_2022_stacked_bar_chart_p)
   
-  output$apco_dom_historic_goals <- renderPlotly(apco_dom_historic_goal_sales_combined_line_p)
+  #output$apco_dom_historic_goals <- renderPlotly(apco_dom_historic_goal_sales_combined_line_p)
   
-  output$dollar_reference_figure <- renderPlotly(dollar_reference_figure_p)
+  #output$dollar_reference_figure <- renderPlotly(dollar_reference_figure_p)
   
-  output$percent_income_reference_figure <- renderPlotly(percent_income_reference_figure_p)
+  #output$percent_income_reference_figure <- renderPlotly(percent_income_reference_figure_p)
   
   output$va_elec_net_imports_line_p <- renderPlotly(va_elec_net_imports_line_p)
   
@@ -544,6 +610,114 @@ server <- function(input, output) {
     content = function(file) {
       write.csv(datasetInput(), file,  row.names = FALSE)
     }
+  )
+  
+  #revamped energy efficiency tab
+  
+  #html outut for the energy efficiency program definitions
+  output$ee_requirement_definitions <- renderUI({
+    HTML("<b> Total EE program costs:</b> Provide for the submission of (a) petition(s) for approval of EE programs with projected costs (for design, implementation, and operation) of min. $870M between July 1 2018 - July 1 2028.
+         <br> <b>15% carve out:</b> At least 15 percent of proposed costs shall be allocated to programs designed to benefit low-income, elderly, or disabled individuals or veterans.
+         <br> <b>HB2789:</b> Submit a petition for approval for a 3-yr EE program for LI, elderly, disabled individuals or veterans costing up to $25M (shall be deemed part of the $870M requirement)")
+  })
+  
+  #plot the overall building tracking and goals
+  output$buildings_tracked <- renderPlotly({
+    ggplotly(agency_category_progress_plot,tooltip='text')
+  })
+  
+  #get the reactive building tracking by category going
+  agency_category <- reactive({switch(input$agency_drilldown,
+                                      'Culture'=culture,
+                                      'Health and Human Services'=health_and_human_svs,
+                                      'Transportation'=transportation,
+                                      'Natural Resources'=natural_resources,
+                                      'Agriculture and Forestry'=agriculture_and_forestry,
+                                      'Education'=education,
+                                      'Administration'=administration,
+                                      'Public Safety and Homeland Security'=public_safety_and_homeland_security,
+                                      'Commerce and Trade'=commerce_and_trade,
+                                      'Veterans and Defense Affairs'=veterans_and_defense_affairs)})
+  output$buildings_by_category <- renderPlotly({
+    data <- agency_category()
+    plot_ly(data, x=~facilities_over_5000_sqft,y=~agency_name,
+            type='bar', orientation='h',
+            name='Facilities Over 5,000 Square Feet',color=as.factor('Facilities Over 5,000 Sqare Feet'),
+            colors=theme_colors,
+            height="500px") %>%
+      add_trace(data,x=~facilities_over_5000_sqft_tracked,y=~agency_name,type='bar',
+                orientation='h',
+                name='Facilities Over 5,000 Square Feet In Database',color=as.factor('Facilities Over 5,000 Square Feet In Database'),
+                colors=theme_colors,
+                height="500px") %>%
+      layout(xaxis=list(title="Number of Facilities",tickangle=-0),yaxis=list(title=""),
+             title='Tracking Progress by Agency',
+             paper_bgcolor="#F0F0F0", plot_bgcolor="#F0F0F0")
+  })
+  
+  #plot the annual kwh/square foot bar chart
+  output$annual_kwh_by_square_feet <- renderPlotly({
+    yearly_values_by_size
+  })
+  
+  #create the reactive building use by size range inputs
+  size_range <- reactive({switch(input$square_foot_range,
+                                 '5,000 - 50,000 square feet'=size_1_use,
+                                 '50,001 - 100,000 square feet'=size_2_use,
+                                 '100,001 - 250,000 square feet'=size_3_use,
+                                 '250,001 - 500,000 square feet'=size_4_use,
+                                 '500,001 - 990,000 square feet'=size_5_use)})
+  
+  #plot the reactive kwh/use/size graphs
+  output$kwh_by_use_by_sqft <- renderPlotly({
+    data <- size_range()
+    plot_ly(data, x = ~year, y = ~kWh/sqft, type = 'scatter',
+            mode = 'markers', size = ~buildings, 
+            color = ~primaryUse.primaryUseInfo, 
+            colors = theme_colors,
+            text= ~paste("Building Use: ",primaryUse.primaryUseInfo,
+                         "<br>Kilowatt Hours per Square Foot: ",round(kWh/sqft,digits=2),
+                         "<br> Cost per Square Foot: $",round(cost/sqft,digits=2),
+                         "<br> Cost per Kilowatt Hour: $", round(cost/kWh,digits=2),
+                         "<br> Number of Facilities: ",buildings,
+                         "<br> Annual Kilowatt Hour Savings Per Square Foot: ",round(savings/kWh,digits=2)),
+            hoverinfo="text",
+            #Choosing the range of the bubbles' sizes:
+            sizes = c(20,50),
+            marker = list(sizeref=data$buildings,opacity = 0.78, sizemode = 'diameter'),
+            height=675
+            ) %>%
+      layout(title = paste('Facilities Between ', data$size[1], ' sqft by Primary Use',sep=""),  xaxis = list(title = 'Year', tickangle = -0), 
+             yaxis = list(title = 'Kilowatt Hours per Square Foot'), 
+             legend = list(title=list(text='<b> Primary Use </b>')),
+             paper_bgcolor="#F0F0F0", plot_bgcolor="#F0F0F0")
+  })
+  
+  #plot the energy efficiency spending and other mandates for APCO
+  output$apco_ee_spending <- renderPlotly({
+    apco_ee_plot
+  })
+  
+  output$apco_mandates_and_progress <- renderPlotly(
+    apco_plot
+  )
+  
+  #plot energy efficiency mandates and spending for Dominion
+  output$dominion_ee_spending <- renderPlotly(
+    dom_ee_plot
+  )
+  output$dominion_mandates_and_progress <- renderPlotly(
+    dominion_plot
+  )
+  
+  #plot efficiency mandates and spending for odp
+  
+  output$odp_ee_spending <- renderPlotly(
+    odp_ee_plot
+  )
+  
+  output$odp_mandates_and_progress <- renderPlotly(
+    odp_plot
   )
   
 }
