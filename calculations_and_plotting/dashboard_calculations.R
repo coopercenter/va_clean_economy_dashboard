@@ -628,9 +628,9 @@ sqft_over_5000$agency_category <- factor(sqft_over_5000$agency_category,levels=c
 
 #load and reshape the new mandate data
 #eventually to be moved to the database
-eia_spending_prog <- read.csv(here('raw_data/eia_energy_efficiency_spending_progress.csv'))
-eia_standard_projections <- read.csv(here('raw_data/eia_energy_efficiency_resource_standard_projections.csv'))
-eia_spending_requirements <- read.csv(here('raw_data/eia_energy_efficiency_spending_requirements.csv'))
+eia_spending_prog <- read.csv(here('raw_data/energy_efficiency_spending_progress.csv'))
+eia_standard_projections <- read.csv(here('raw_data/energy_efficiency_resource_standard_projections.csv'))
+eia_spending_requirements <- read.csv(here('raw_data/energy_efficiency_spending_requirements.csv'))
 
 #filter by the max date on the spending progress data
 current <- eia_spending_prog %>% filter(date==max(date))
