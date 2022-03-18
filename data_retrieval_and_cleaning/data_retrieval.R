@@ -2,6 +2,8 @@ lbry<-c("data.table", "RPostgreSQL",  "tidyr", "dplyr","arrow","stringr",
         "tools","lubridate", "Hmisc", "here", "readxl","read_xlsx")
 test <- suppressMessages(lapply(lbry, require, character.only=TRUE, warn.conflicts = FALSE, quietly = TRUE))
 rm(test,lbry)
+
+#A lot of data retrieval functionality is in these data retrieval functions
 source(here("data_retrieval_and_cleaning","data_retrieval_functions.R"))
 #
 # Update EIA time series; saving to the db is done inside the sourced code
@@ -24,7 +26,7 @@ setnames(va_real_gsp,2,"va_rgsp")
 va_state_info = merge(va_pop,va_real_gsp,by="date",all=TRUE)
 dbRemoveTable(db,"va_state_info")
 dbWriteTable(db,"va_state_info",va_state_info,append=F,row.names=F)
-# Do not remove this dqta.table yet. It is used to calculate intensities.
+# Do not remove this data table yet. It is used to calculate intensities.
 #------------------------------------------------------#
 #Next, update EIA_f826 data
 # This function pulls EIA data and updates the postgres data tables:
@@ -54,7 +56,6 @@ if (recent$last_month != 12) {
   latest.year = recent$last_year
 } 
 # Aggregate from monthly to annual data
-#APPARENTLY 2020 DID NOT EXIST,no monthly data for 2020 here after updating, sets back at 2019
 annual_va_utility_data = monthly_utility_data[year<=latest.year,.(
   va_total_sales_gwh = sum(va_total_sales_gwh,na.rm=TRUE),
   apco_total_gwh = sum(apco_total_gwh,na.rm=TRUE),
@@ -74,7 +75,7 @@ rm(annual_va_utility_data)
 # Currently (2021) the dashboard displays energy per capita
 # maybe this should be changed
 #Energy intensity
-
+#
 # Map local names to EIA data series (copied from dashboard_calculations.R)
 #
 eia_name=c("ELEC_GEN_COW_VA_99_A",
@@ -219,15 +220,15 @@ rm(electricity_emissions_by_fuel)
 ### The origins of this spreadsheet are not documented and the data is 
 ###    pertty worthless
 #read in dataset
-file_name = here('raw_data','energy_efficiency_programs.xlsx')
-current_EE_programs <- data.table(read_excel(file_name, col_names = TRUE))
-rm(file_name)
+#file_name = here('raw_data','energy_efficiency_programs.xlsx')
+#current_EE_programs <- data.table(read_excel(file_name, col_names = TRUE))
+#rm(file_name)
 # This next line does not appear to be used
 # dominion_current_EE_data_through_2018 <- current_EE_programs[c(2,4:8),]
 
 #upload to db
-dbWriteTable(db, 'current_ee_programs', current_EE_programs, row.names=FALSE, overwrite = TRUE)
-rm(current_EE_programs)
+#dbWriteTable(db, 'current_ee_programs', current_EE_programs, row.names=FALSE, overwrite = TRUE)
+#rm(current_EE_programs)
 
 ### Once again, the source of this data is undocumented. Its quality is unknown and suspect
 ### This part of the dashboard needs to be completely restructured.
