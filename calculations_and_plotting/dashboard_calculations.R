@@ -95,7 +95,7 @@ dbDisconnect(db)
 
 #
 # Map local names to EIA data series
-#
+#This needs to be done in data_retrieval.R
 eia_name=c("ELEC_GEN_COW_VA_99_A",
            "ELEC_GEN_PEL_VA_99_A",
            "ELEC_GEN_NG_VA_99_A",
