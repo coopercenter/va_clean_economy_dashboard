@@ -1,3 +1,5 @@
+#PREP--------------------------------------------------------------------------------------------------------------------------------
+
 lbry<-c("lubridate", "devtools", "here","data.table")
 test <- suppressMessages(lapply(lbry, require, character.only=TRUE, warn.conflicts = FALSE, quietly = TRUE))
 rm(test,lbry)
@@ -17,8 +19,9 @@ source(here("calculations_and_plotting","line_figure.R"))
 theme_colors <- c("#00A087B2", "#3C5488B2", "#CEA5AC", "#BE7E8A", "#4DBBD5B2", "#91D1C2B2","#D9C6C9","#8491B4B2","#5868AC","#6FB3D9","#56BD96","#99A9E2","#A94F64","#B0DEFA","#99EEBB","#8FD3FE")
 #plots that are actually on the dashboard
 
+#SUMMARY PAGE---------------------------------------------------------------------------------------------------------------------------------------------------
+
 #The renewable_progress_donut
-#setting up the data (these sorts of calculations should probably be moved to dashboard_calculations.R)
 setkey(eia_annual_data,Year)
 recent_year = eia_annual_data[!is.na(Percent_renewable),last(Year)]
 renewable_percent_gen_recent = round(eia_annual_data[!is.na(Percent_renewable),
@@ -69,7 +72,7 @@ carbon_free_ring = data.frame(
     carbon_free_percent_gen_2050_goal - carbon_free_percent_gen_recent
   )
 )
-#actually generationg the plot
+#actually generating the plot
 single_ring_carbon_free_donut_p <-
   single_ring_donut_figure_p(
     carbon_free_ring,
@@ -230,6 +233,8 @@ va_annual_consumption_pie_chart_p_with_legend <-
     legend_shown = T
   )
 va_annual_consumption_pie_chart_p_with_legend
+
+#GENERATION AND CAPACITY PAGE-------------------------------------------------------------------------------------------------------------------------------
 
 #sw_donut
 #setting up the data and variables
@@ -591,6 +596,8 @@ single_ring_carbon_free_donut_p <-
   )
 single_ring_carbon_free_donut_p
 
+#ENERGY EFFICIENCY PAGE---------------------------------------------------------------------------------------------------------------------------------
+
 #annual_kwh_by_square_feet
 yearly_values_by_size <- plot_ly(year_by_building_size, x = ~year, y = ~kWh/sqft, type = 'bar', width="500px",
                                  color = ~size_range, colors = theme_colors,
@@ -696,6 +703,8 @@ odp_plot <- plot_ly(odp_reshaped,x=~spending_to_date,y=~spending_goal, type='bar
          yaxis=list(title=''),
          paper_bgcolor="#F0F0F0", plot_bgcolor="#F0F0F0")
 odp_plot
+
+#EMISSIONS PAGE-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #electric_emissions_plot2
 # CO2 total emissions & CO2 emissions from electric sector on same figure
