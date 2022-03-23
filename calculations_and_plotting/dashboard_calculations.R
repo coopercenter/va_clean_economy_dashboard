@@ -55,15 +55,15 @@ offshore_wind_data <- data.table(dbGetQuery(db,"select * from offshore_wind ;"))
 plant_capacities = data.table(dbGetQuery(db,"select * from eia_plant_capacities ;"))
 
 #load in APCO and Dominion historic sales (also ROS is in there)
-#apco_dom_sales<-data.table(dbGetQuery(db,"select apco_total_gwh,dom_total_gwh from elec_sales_through_2019_annual ;"))
-#va_utility_sales<-data.table(dbGetQuery(db,"select * from va_annual_utility_sales ;"))
-#setnames(va_utility_sales,"year","Year")
+apco_dom_sales<-data.table(dbGetQuery(db,"select apco_total_gwh,dom_total_gwh from elec_sales_through_2019_annual ;"))
+va_utility_sales<-data.table(dbGetQuery(db,"select * from va_annual_utility_sales ;"))
+setnames(va_utility_sales,"year","Year")
 
 
 #load in APCO & Dom RPS
 #I think the next two lines are made redundant by the one after, but they're here until I figure out for sure
-#VCEA <- data.table(dbGetQuery(db,"select * from vcea_provisions ;"))
-#setnames(VCEA,"year","Year")
+VCEA <- data.table(dbGetQuery(db,"select * from vcea_provisions ;"))
+setnames(VCEA,"year","Year")
 rps_mandate_schedule <- data.table(dbGetQuery(db,"select * from clean_energy_renewable_goals ;"))
 
 #EIA Annual Data Loading---------------------------------------------------------------------------------------------------------------
@@ -164,13 +164,13 @@ lf_percent_renewable <- eia_annual_data[!is.na(Percent_renewable),.(Year,variabl
 lf_percent_carbon_free <- eia_annual_data[!is.na(Percent_renewable),.(Year,variable = as.factor("Historic"), value=Percent_carbon_free)]
 
 # APCO and Dominion RPS schedules are in the VCEA data.table
-#rps_mandate_schedule = melt(VCEA[,.(Year,apco_rps,dominion_rps)], id = "Year")
-#rps_mandate_schedule[,variable := gsub("apco_rps","APCO",variable)]
-#rps_mandate_schedule[,variable := gsub("dominion_rps","Dominion",variable)]
+rps_mandate_schedule = melt(VCEA[,.(Year,apco_rps,dominion_rps)], id = "Year")
+rps_mandate_schedule[,variable := gsub("apco_rps","APCO",variable)]
+rps_mandate_schedule[,variable := gsub("dominion_rps","Dominion",variable)]
 
-#lf_percent_renewable_and_schedule_combined_dt <- merge(lf_percent_renewable,
-                                                       #rps_mandate_schedule,
-                                                       #by=c("Year","variable","value"),all=T)
+lf_percent_renewable_and_schedule_combined_dt <- merge(lf_percent_renewable,
+                                                       rps_mandate_schedule,
+                                                       by=c("Year","variable","value"),all=T)
 #manually creating table of overall generation goals
 #creating table for facet grid 
 VCEA_goal_percent_gen = data.table(Year=c(2030,2040,2050,2060),
@@ -642,8 +642,8 @@ odp_reshaped <- melt(odp, 'date',c('odp_ee_costs','odp_15_percent_carve_out','od
 #virginia_annual_savings_through_2020 <- data.table(dbGetQuery(db,"select * from virginia_annual_savings_through_2020 ;"))
 #apco_dom_VCEA_goals<-data.table(dbGetQuery(db,"select * from \"VCEA_energy_efficiency\" ;"))
 
-# total_mw_offshore_wind <- data.table(dbGetQuery(db,"select * from total_mw_offshore_wind ;"))
-# total_production_forecast_offshore_wind <- data.table(dbGetQuery(db,"select * from total_production_forecast_offshore_wind ;"))
+#total_mw_offshore_wind <- data.table(dbGetQuery(db,"select * from total_mw_offshore_wind ;"))
+#total_production_forecast_offshore_wind <- data.table(dbGetQuery(db,"select * from total_production_forecast_offshore_wind ;"))
 
 #load in pjm solar and wind data & apco/dominion goals
 # Replace the subsequent 3 lines with 
