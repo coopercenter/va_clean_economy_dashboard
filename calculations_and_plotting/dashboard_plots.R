@@ -1,6 +1,6 @@
 #PREP--------------------------------------------------------------------------------------------------------------------------------
 
-lbry<-c("lubridate", "devtools", "here","data.table")
+lbry<-c("lubridate", "devtools", "here","data.table",'plotly')
 test <- suppressMessages(lapply(lbry, require, character.only=TRUE, warn.conflicts = FALSE, quietly = TRUE))
 rm(test,lbry)
 
