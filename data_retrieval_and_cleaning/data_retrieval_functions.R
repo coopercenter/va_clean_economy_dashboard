@@ -61,6 +61,7 @@ updateEIA826Data <- function(database="postgres") {
   library(RMySQL);library(stringr); library(arrow)
   library(RPostgres)
 #  database="postgres" 
+  # Set table name
   table="eia_f826_data"
   # db_driver = dbDriver("MySQL")
   # CCPS_DATABASE_PWD = 'manx(0)Rose'
