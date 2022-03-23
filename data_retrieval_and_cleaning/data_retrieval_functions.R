@@ -60,7 +60,9 @@ updateEIA826Data <- function(database="postgres") {
   library(readxl);library(lubridate); library(data.table)
   library(RMySQL);library(stringr); library(arrow)
   library(RPostgres)
-  database="postgres"; table="eia_f826_data"
+  #  database="postgres" 
+  # Set table name
+  table="eia_f826_data"
   # db_driver = dbDriver("MySQL")
   # CCPS_DATABASE_PWD = 'manx(0)Rose'
   # CCPS_DATABASE_ACCT = 'wms5f'
@@ -68,14 +70,14 @@ updateEIA826Data <- function(database="postgres") {
   # database = "energy"
   
   # Find the dates with data labeled as "Preliminary"
-  this_year = 2022 #year(now())
+  this_year = year(now())
   start_year = this_year - 2
   update_years <- seq(start_year,this_year)
   db_driver = dbDriver("PostgreSQL")
   source(here::here("my_postgres_credentials.R"))
   db <- dbConnect(db_driver,user=db_user, password=ra_pwd,dbname=database, host=db_host)
-    script  <- paste0("select year, month from ",table," where year>=",start_year,";")
-    all_f826_dates = data.table(dbGetQuery(db, script))
+  script  <- paste0("select year, month from ",table," where year>=",start_year,";")
+  all_f826_dates = data.table(dbGetQuery(db, script))
   dbDisconnect(db)
   # update_years = unique(all_f826_data$year)
   print('Update EIA826/861 data')
@@ -88,18 +90,18 @@ updateEIA826Data <- function(database="postgres") {
   #length(update_years)
   for (year in update_years) {
     # In 2017, EIA changed the way the file are stored
-    #year = 2020
+    #    year = 2020
     if(year>=2017) {
       if(year == this_year) {
         path = "https://www.eia.gov/electricity/data/eia861m/xls/"
       } else {
         path = "https://www.eia.gov/electricity/data/eia861m/archive/xls/"
       }
-        file_name = paste0("retail_sales_",year,".xlsx")  
-    # } else {
-    #   path = "https://www.eia.gov/electricity/data/eia861m/archive/xls/"
-    #   year <= 2016
-    #   file_name = paste0("f826",year,".xls")   
+      file_name = paste0("retail_sales_",year,".xlsx")  
+      # } else {
+      #   path = "https://www.eia.gov/electricity/data/eia861m/archive/xls/"
+      #   year <= 2016
+      #   file_name = paste0("f826",year,".xls")   
     }
     url = paste0(path,file_name) #
     local_file = paste0(file_name)   #local_directory,
@@ -120,9 +122,9 @@ updateEIA826Data <- function(database="postgres") {
       this_data = this_data[!is.na(year) & state=="VA"][!is.nan(year)]
       cat("Updating EIA 826 data.\n")
       db <- dbConnect(db_driver,user=db_user, password=ra_pwd,dbname="postgres", host=db_host)
-        script  <- paste0("delete from ",table," where year=",year,";")
-        temp = data.table(dbGetQuery(db, script))
-        dbWriteTable(db,"virginia_eia_f826",this_data,append=TRUE,row.names=F)
+      script  <- paste0("delete from ",table," where year=",year,";")
+      temp = data.table(dbGetQuery(db, script))
+      dbWriteTable(db,"virginia_eia_f826",this_data,append=TRUE,row.names=F)
       dbDisconnect(db)
     } 
   }
@@ -131,11 +133,11 @@ updateEIA826Data <- function(database="postgres") {
   # This code needs frequent maintenance due to changes in the underlying EIA data
   # Especially check utility_name. Names change quite frequently
   #
-db <- dbConnect(db_driver,user=db_user, password=ra_pwd,dbname="postgres", host=db_host)
+  db <- dbConnect(db_driver,user=db_user, password=ra_pwd,dbname="postgres", host=db_host)
   # Sales data from EIA survey. Note: does not include sales for resale!!
   script = paste0("select * from eia_f826_data where state = 'VA';")  
   virginia_utility_sales = data.table(dbGetQuery(db, script))
-dbDisconnect(db)
+  dbDisconnect(db)
   virginia_utility_sales[,date := as.Date(paste(year,month,'01',sep='-'))]
   setorder(virginia_utility_sales,date)
   setnames(virginia_utility_sales,"utilityid","utility_id")
@@ -149,23 +151,23 @@ dbDisconnect(db)
   virginia_utility_sales[str_detect(utility_name, 'Potomac'),utility_name:="Potomac_Edison"]
   virginia_utility_sales[str_detect(utility_name, 'Conectiv'),utility_name:="A&N_Electric_Coop"]
   virginia_utility_sales[str_detect(utility_name, 'Virginia_Electric'),utility_name:="Dominion"]
- 
+  
   virginia_utility_sales[,utility_name_orig:=utility_name]
   virginia_utility_sales[str_detect(utility_name, 'APCO'),utility_name:="apco"]
   virginia_utility_sales[str_detect(utility_name, 'Dominion'),utility_name:="dominion"]
   virginia_utility_sales[utility_name!="dominion" & utility_name!="apco",utility_name:="rest_of_state"]
   monthly_utility_sales = virginia_utility_sales[,.(total_sales_mwh = sum(tot_sales_mwh),
-                                            residential_sales_mwh = sum(res_sales_mwh),residential_cust=sum(as.integer(res_cust),na.rm = TRUE),
-                                            commercial_sales_mwh = sum(com_sales_mwh),commercial_cust=sum(as.integer(com_cust),na.rm = TRUE),
-                                            industrial_sales_mwh = sum(ind_sales_mwh),industrial_cust=sum(as.integer(ind_cust),na.rm = TRUE),
-                                            other_sales_mwh = sum(oth_sales_mwh),other_cust=sum(as.integer(oth_cust),na.rm = TRUE)     
+                                                    residential_sales_mwh = sum(res_sales_mwh),residential_cust=sum(as.integer(res_cust),na.rm = TRUE),
+                                                    commercial_sales_mwh = sum(com_sales_mwh),commercial_cust=sum(as.integer(com_cust),na.rm = TRUE),
+                                                    industrial_sales_mwh = sum(ind_sales_mwh),industrial_cust=sum(as.integer(ind_cust),na.rm = TRUE),
+                                                    other_sales_mwh = sum(oth_sales_mwh),other_cust=sum(as.integer(oth_cust),na.rm = TRUE)     
   ),by=list(date, utility_name)]
   #monthly_utility_sales[,avg_daily_total_sales_mwh := total_sales_mwh/days_in_month]
   db <- dbConnect(db_driver,user=db_user, password=ra_pwd,dbname="postgres", host=db_host)
-    dbRemoveTable(db,"virginia_utility_sales_long")
-    dbWriteTable(db,"virginia_utility_sales_long",monthly_utility_sales,append=F,row.names=F)
+  dbRemoveTable(db,"virginia_utility_sales_long")
+  dbWriteTable(db,"virginia_utility_sales_long",monthly_utility_sales,append=F,row.names=F)
   dbDisconnect(db)
-
+  
   # DAO_data_long = virginia_utility_sales[,.(total_sales_mwh = sum(tot_sales_mwh) , days_in_month = days_in_month(date), month = month(date),
   #                                  residential_sales_mwh = sum(res_sales_mwh),residential_cust=sum(as.integer(res_cust),na.rm = TRUE),
   #                                  commercial_sales_mwh = sum(com_sales_mwh),commercial_cust=sum(as.integer(com_cust),na.rm = TRUE),
@@ -175,15 +177,14 @@ dbDisconnect(db)
   DAO_data_monthly = reshape(monthly_utility_sales, idvar='date', timevar='utility_name', direction='wide')
   DAO_data_monthly[,Year := year(date)]
   db <- dbConnect(db_driver,user=db_user, password=ra_pwd,dbname="postgres", host=db_host)
-    dbRemoveTable(db,"virginia_monthly_utility_sales")
-    dbWriteTable(db,"virginia_monthly_utility_sales",DAO_data_monthly,append=F,row.names=F)
+  dbRemoveTable(db,"virginia_monthly_utility_sales")
+  dbWriteTable(db,"virginia_monthly_utility_sales",DAO_data_monthly,append=F,row.names=F)
   dbDisconnect(db)
   
-#  arrow::write_feather(virginia_utility_sales,paste0("virginia_utility_sales_long.ftr"))
-#  arrow::write_feather(DAO_data_monthly,paste0("virginia_monthly_utility_sales.ftr"))
-
+  #  arrow::write_feather(virginia_utility_sales,paste0("virginia_utility_sales_long.ftr"))
+  #  arrow::write_feather(DAO_data_monthly,paste0("virginia_monthly_utility_sales.ftr"))
+  
 } # End function updateEIA826Data
-
 
 last_eia_data_date <- function() {
   vv_base = "http://api.eia.gov/series/?api_key=0E59CFF12754E0513DEB30FB4850B0FA&series_id="
