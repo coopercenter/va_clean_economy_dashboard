@@ -1,6 +1,6 @@
 #PREP--------------------------------------------------------------------------------------------------------------------------------
 
-lbry<-c("lubridate", "devtools", "here","data.table",'plotly')
+lbry<-c("lubridate", "devtools", "here","data.table",'plotly','ggplot2')
 test <- suppressMessages(lapply(lbry, require, character.only=TRUE, warn.conflicts = FALSE, quietly = TRUE))
 rm(test,lbry)
 
@@ -17,7 +17,11 @@ source(here("calculations_and_plotting","line_figure.R"))
 
 #theme colours, not a permanent solution
 theme_colors <- c("#00A087B2", "#3C5488B2", "#CEA5AC", "#BE7E8A", "#4DBBD5B2", "#91D1C2B2","#D9C6C9","#8491B4B2","#5868AC","#6FB3D9","#56BD96","#99A9E2","#A94F64","#B0DEFA","#99EEBB","#8FD3FE")
-#plots that are actually on the dashboard
+
+#custom color palette
+# need a new color for wind.
+#should just replace the instances of this with theme_colours for consistency
+ceps_pal <- c("#00A087B2", "#3C5488B2", "#CEA5AC", "#BE7E8A", "#4DBBD5B2", "#91D1C2B2","#D9C6C9","#8491B4B2","#5868AC","#6FB3D9","#56BD96","#99A9E2","#A94F64","#B0DEFA","#99EEBB","#8FD3FE")
 
 #SUMMARY PAGE---------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -42,17 +46,17 @@ renewable_ring = data.frame(
 #actually creating the plot
 single_ring_renewable_donut_p <-
   single_ring_donut_figure_p(
-    renewable_ring,
-    "Renewable Portfolio Standard",
-    paste0(recent_year,
+    data_table=renewable_ring,
+    description_of_goal="Renewable Portfolio Standard",
+    top_description=paste0(recent_year,
            " Status: ",
            renewable_percent_gen_recent,
            "% of Generation from RPS Eligible Sources"
     ),
-    "Goal: 100% of Generation from<br>RPS Eligible Sources by 2050",
+    bottom_description="Goal: 100% of Generation from<br>RPS Eligible Sources by 2050",
     "label+value",
-    c("#5868AC","#3C5488B2"),
-    list("eia_elec_gen_sun_va_99_a","VCEA_storage")
+    colors_list=c("#5868AC","#3C5488B2"),
+    character_list=list("eia_elec_gen_sun_va_99_a","VCEA_storage")
   )
 single_ring_renewable_donut_p
 
@@ -64,7 +68,7 @@ carbon_free_percent_gen_2050_goal = 100 #100% of Virginia’s electricity from c
 
 carbon_free_ring = data.frame(
   category = c(
-    "2019 carbon free generation (%)",
+    paste0(recent_year, " carbon free generation (%)"),
     "Additional progress necessary to reach goal (%)"
   ),
   value = c(
@@ -570,7 +574,7 @@ carbon_free_percent_gen_2050_goal = 100 #100% of Virginia’s electricity from c
 
 carbon_free_ring = data.frame(
   category = c(
-    "2019 carbon free generation (%)",
+    paste0(recent_year," carbon free generation (%)"),
     "Additional progress necessary to reach goal (%)"
   ),
   value = c(

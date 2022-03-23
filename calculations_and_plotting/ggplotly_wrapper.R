@@ -14,9 +14,7 @@ ggplotly_wrapper <- function(list){
     layout(title = list(text=paste0(list$title_name,"<br>","<sup>",list$subtitle_description,"</sup>"),font=list(size=15,family = "Helvetica")),
            xaxis=list(title = paste0(list$x_label,"<br>","<i>","<sub>",list$source_description,"<sub>","<i>"),titlefont=list(size=14,family = "Helvetica")),
            yaxis=list(title = list$y_label,titlefont=list(size=14,family = "Helvetica")),
-           legend = list(x = 100, y = 0.5))%>%
-    config(displaylogo = FALSE,
-           modeBarButtonsToRemove = c("zoomIn2d", "zoomOut2d","pan2d","select2d","lasso2d","zoom2d","autoScale2d","resetScale2d"))
+           legend = list(x = 100, y = 0.5))
   #citation is built into x-axis label rather than as an annotation so that it does not move as plot margins change, which happens with plotly annotations
   #subtitle is built into second line of title
 

@@ -61,9 +61,9 @@ single_ring_donut_figure_p <- function(data_table,description_of_goal,top_descri
            font = list(family="Helvetica",color="dimgrey",size=14),
            paper_bgcolor="#F0F0F0", plot_bgcolor="#F0F0F0") %>%
     add_annotations(x=0.5,y=0.5,text=paste0(description_of_goal,"<br>","<sub>",bottom_description),showarrow=F,font = list(color = "dimgrey",size = 14,family = "Helvetica")) %>%
-    add_annotations(x=0.5,y=-0.09,text=paste0("<i>","<sub>",source_description,"<sub>","</i>"),showarrow=F,font = list(color = "dimgrey",size = 13,family = "Helvetica"))%>%
-    config(displaylogo = FALSE,
-           modeBarButtonsToRemove = c("zoomIn2d", "zoomOut2d","pan2d","select2d","lasso2d","hoverCompareCartesian","zoom2d"))
+    add_annotations(x=0.5,y=-0.09,text=paste0("<i>","<sub>",source_description,"<sub>","</i>"),showarrow=F,font = list(color = "dimgrey",size = 13,family = "Helvetica"))
+    #config(displaylogo = FALSE,
+          # modeBarButtonsToRemove = c("zoomIn2d", "zoomOut2d","pan2d","select2d","lasso2d","hoverCompareCartesian","zoom2d"))
   figure
 
   return(figure)
