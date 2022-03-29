@@ -1,31 +1,34 @@
-#compilation of all figures relevant to dashboard
-
-library(groundhog)
-groundhog.day = "2021-09-01"
-pkgs = c("lubridate", "devtools", "here")
-groundhog.library(pkgs, groundhog.day)
-
-install_github("coopercenter/cepsvizfunctions")
-library(cepsvizfunctions)
+lbry<-c("lubridate", "devtools", "here","data.table")
+test <- suppressMessages(lapply(lbry, require, character.only=TRUE, warn.conflicts = FALSE, quietly = TRUE))
+rm(test,lbry)
 
 source(here::here("calculations_and_plotting", "dashboard_calculations.R")) #sourcing in data and reformatted data tables & calculations ready to serve as input to viz functions
 
-#----------------------------------------------PLOTTING DONUT FIGURES------------------------------------------------------------------------------
+# Put these in a single file to source in. Replaces most of the viz package
+source(here("calculations_and_plotting","single_ring_donut_figure_p.R"))
+source(here("calculations_and_plotting","build_source_list.R"))
+source(here("calculations_and_plotting","stacked_area_figure.R"))
+source(here("calculations_and_plotting","theme_ceps.R"))
+source(here("calculations_and_plotting","ggplotly_wrapper.R"))
+source(here("calculations_and_plotting","pie_chart_figure_p.R"))
+source(here("calculations_and_plotting","line_figure.R"))
 
-#plotting donut figure of progress towards renewable generation goal------------------------------------------------------------------------------
+#theme colours, not a permanent solution
+theme_colors <- c("#00A087B2", "#3C5488B2", "#CEA5AC", "#BE7E8A", "#4DBBD5B2", "#91D1C2B2","#D9C6C9","#8491B4B2","#5868AC","#6FB3D9","#56BD96","#99A9E2","#A94F64","#B0DEFA","#99EEBB","#8FD3FE")
+#plots that are actually on the dashboard
 
-# was `renewable_percent_gen_2019`
-recent_year = va_annual_renewable_and_carbon_free_gen %>% select(year) %>% arrange(year)
-recent_year = recent_year[[nrow(va_annual_renewable_and_carbon_free_gen),1]]
-
-renewable_percent_gen_recent = round(va_annual_renewable_and_carbon_free_gen[year ==
-                                                                               recent_year, (all_solar + hydropower) / (total - nuclear)] * 100, 1)
+#The renewable_progress_donut
+#setting up the data (these sorts of calculations should probably be moved to dashboard_calculations.R)
+setkey(eia_annual_data,Year)
+recent_year = eia_annual_data[!is.na(Percent_renewable),last(Year)]
+renewable_percent_gen_recent = round(eia_annual_data[!is.na(Percent_renewable),
+                                                     last(Percent_renewable)], 1)
 renewable_percent_gen_2050_goal = 100
 
 renewable_ring = data.frame(
   category = c(
-    paste(recent_year, "RPS generation progress (%)"),
-    "additional progress necessary to reach goal (%)"
+    paste(recent_year, "RPS generation (%)"),
+    "Additional progress necessary to reach goal (%)"
   ),
   value = c(
     renewable_percent_gen_recent,
@@ -33,14 +36,15 @@ renewable_ring = data.frame(
   )
 )
 
+#actually creating the plot
 single_ring_renewable_donut_p <-
   single_ring_donut_figure_p(
     renewable_ring,
     "Renewable Portfolio Standard",
     paste0(recent_year,
-      " Status: ",
-      renewable_percent_gen_recent,
-      "% of Generation from RPS Eligible Sources"
+           " Status: ",
+           renewable_percent_gen_recent,
+           "% of Generation from RPS Eligible Sources"
     ),
     "Goal: 100% of Generation from<br>RPS Eligible Sources by 2050",
     "label+value",
@@ -49,34 +53,31 @@ single_ring_renewable_donut_p <-
   )
 single_ring_renewable_donut_p
 
-#plotting donut figure of progress towards carbon-free generation goal ------------------------------------------------------------------------------------------
-recent_year = va_annual_renewable_and_carbon_free_gen %>% select(year) %>% arrange(year)
-recent_year = recent_year[[nrow(va_annual_renewable_and_carbon_free_gen),1]]
-
-# was `carbon_free_percent_gen_2019`
-carbon_free_percent_gen_recent = round(va_annual_renewable_and_carbon_free_gen[year ==
-                                                                               recent_year, (all_solar + hydropower + nuclear) / total] * 100, 1)
+#carbon_free_donut
+#setting up the plot variables
+recent_year = eia_annual_data[!is.na(Percent_carbon_free),last(Year)]
+carbon_free_percent_gen_recent = round(eia_annual_data[!is.na(Percent_carbon_free),last(Percent_carbon_free)], 1)
 carbon_free_percent_gen_2050_goal = 100 #100% of Virginia’s electricity from carbon-free sources by 2050
 
 carbon_free_ring = data.frame(
   category = c(
     "2019 carbon free generation (%)",
-    "additional progress necessary to reach goal (%)"
+    "Additional progress necessary to reach goal (%)"
   ),
   value = c(
     carbon_free_percent_gen_recent,
     carbon_free_percent_gen_2050_goal - carbon_free_percent_gen_recent
   )
 )
-
+#actually generationg the plot
 single_ring_carbon_free_donut_p <-
   single_ring_donut_figure_p(
     carbon_free_ring,
     "Carbon-Free Generation",
     paste0(recent_year,
-      " Status: ",
-      carbon_free_percent_gen_recent,
-      "% of Generation from Carbon-Free Sources"
+           " Status: ",
+           carbon_free_percent_gen_recent,
+           "% of Generation from Carbon-Free Sources"
     ),
     "Goal: 100% of Generation from<br>Carbon-Free Sources by 2050",
     "label+value",
@@ -85,87 +86,36 @@ single_ring_carbon_free_donut_p <-
   )
 single_ring_carbon_free_donut_p
 
-#plotting donut figure of progess towards onshore wind and solar capacity goals-----------------------------------------------------------------------------------------
-recent_year <- pjm_solar_working %>% select(actual_in_service_date) %>% arrange(actual_in_service_date) %>% filter(!is.na(actual_in_service_date)) 
-recent_year <- recent_year[[nrow(recent_year),1]] %>% as.POSIXct() %>% year()
-
-# was `solar_capacity_2019_mw`
-solar_capacity_current_mw = pjm_solar_working[status == "In Service", sum(mfo)] #currently only solar in service, no wind
-
-# was `onshore_wind_capacity_2019_mw`
-onshore_wind_capacity_current_mw = pjm_wind_working[fuel == "Wind" &
-                                                   status == "In Service", sum(mfo)]
-sw_capacity_2035_mw_goal = 16100 #16,100 MW of solar and onshore wind by January 1, 2024 (from VCEA Summary 3.0)
-
-sw_ring = data.frame(
-  category = c(paste0(recent_year, " capacity"),"additional capacity necessary to reach goal"),
-  value = c(
-    solar_capacity_current_mw + onshore_wind_capacity_current_mw,
-    sw_capacity_2035_mw_goal - (solar_capacity_current_mw + onshore_wind_capacity_current_mw)
-  )
-)
-
-single_ring_sw_capacity_donut_p <-
-  single_ring_donut_figure_p(
-    sw_ring,
-    "Onshore Wind & Solar Capacity",
-    paste(recent_year,
-      "Status:",
-      format(
-        solar_capacity_current_mw + onshore_wind_capacity_current_mw,
-        big.mark = ",",
-        scientific = FALSE,
-        trim = TRUE
-      ),
-      "MW of Onshore Wind & Solar Capacity"
-    ),
-    paste(
-      "Goal:",
-      format(
-        sw_capacity_2035_mw_goal,
-        big.mark = ",",
-        scientific = FALSE,
-        trim = TRUE
-      ),
-      "MW of Onshore Wind & Solar<br>Capacity in Operation by 2035"
-    ),
-    "label+value",
-    c("#00A087B2","#91D1C2B2"),
-    list("pjm_solar", "pjm_wind", "VCEA_storage")
-  )
-single_ring_sw_capacity_donut_p
-
-#plotting donut figure of progress towards storage capacity------------------------------------------------------------------------------------------
-recent_year <- pjm_storage_working %>% select(actual_in_service_date) %>% arrange(actual_in_service_date) %>% filter(!is.na(actual_in_service_date)) 
-recent_year <- recent_year[[nrow(recent_year),1]] %>% as.POSIXct() %>% year
-
-# was`storage_capacity_2019_mw`
-storage_capacity_current_mw = pjm_storage_working[status == "In Service", sum(mfo)]
+#energy_storage_donut
+#prepping the plot data/variables
+storage_capacity_current_mw = va_storage[,sum(capacity_mw)] 
+## Temporary fix until storage data retrieval can be fixed
+storage_capacity_current_mw = 4
 storage_capacity_2035_mw_goal = 3100
 
-
-
 storage_ring = data.frame(
-  category = c(paste(recent_year, "capacity"),"additional capacity necessary to reach goal"),
+  category = c(paste(recent_year, "capacity"),
+               "Additional capacity necessary to reach goal"),
   value = c(
     storage_capacity_current_mw,
     storage_capacity_2035_mw_goal - storage_capacity_current_mw
   )
 )
 
+#generating the plot
 single_ring_storage_capacity_donut_p <-
   single_ring_donut_figure_p(
     storage_ring,
     "Energy Storage Capacity",
     paste(recent_year,
-      "Status:",
-      format(
-        storage_capacity_current_mw,
-        big.mark = ",",
-        scientific = FALSE,
-        trim = TRUE
-      ),
-      "MW of Storage Capacity"
+          "Status:",
+          format(
+            storage_capacity_current_mw,
+            big.mark = ",",
+            scientific = FALSE,
+            trim = TRUE
+          ),
+          "MW of Storage Capacity"
     ),
     paste(
       "Goal:",
@@ -183,15 +133,197 @@ single_ring_storage_capacity_donut_p <-
   )
 single_ring_storage_capacity_donut_p
 
-#plotting donut figure of progress towards offshore wind--------------------------------------------------------------------------------------------------------------
-## commented out as there are no wind actually in service. this should be check for an update in the next few years
-"
-recent_year <- pjm_wind_working %>% select(actual_in_service_date) %>% arrange() %>% filter(!is.na(actual_in_service_date)) 
-recent_year <- recent_year[[nrow(recent_year),1]] %>% as.POSIXct() %>% year
-"
+#gen_area
+#set up the data for this plot and the next one
+generation_stacked_area_data = melt(eia_annual_data[Year>2000,.(Year,
+                                                                Coal,Oil,Gas,Nuclear,Solar_utility,Solar_distributed,
+                                                                Hydropower,Wind,Wood,Other_biomass
+)],id="Year")
+generation_stacked_area_data[,variable:=gsub('_',' ',variable)]
+generation_stacked_area_data[,variable:=gsub('Solar utility','Solar, utility',variable)]
+generation_stacked_area_data[,variable:=gsub('Solar distributed','Solar, distributed',variable)]
+setnames(generation_stacked_area_data,c("Year","variable","value"),
+         c("x_value","fill_variable","y_value")
+)
+#generate the visualization
+va_annual_production_area <-
+  stacked_area_figure(
+    generation_stacked_area_data,
+    "Generation (GWh)",
+    "Virginia Electricity Generation by Fuel Type",
+    list(
+      "eia_elec_gen_cow_va_99_a"
+    ),
+    lower_limit = -1900,
+    return_static = F
+  )
+va_annual_production_area
 
-offshore_wind_current_mw = pjm_wind_working[fuel == "Offshore Wind" &
-                                              status == "In Service", sum(mfo)]
+va_annual_production_area_p <-
+  ggplotly_wrapper(va_annual_production_area)
+va_annual_production_area_p
+
+#gen_pie
+#some additional variable/data setup
+latest_year = max(generation_stacked_area_data$x_value)
+annual_production_pie_chart_data = generation_stacked_area_data[x_value==latest_year ][,x_value:=NULL]
+setnames(annual_production_pie_chart_data,c("y_value","fill_variable"),c("value","variable"))
+
+#generate the plot
+va_annual_production_pie_chart_p_with_legend <-
+  pie_chart_figure_p(
+    annual_production_pie_chart_data,
+    paste0(
+      "Virginia ", latest_year, " Electricity Generation by Fuel Type"
+    ),
+    list(
+      "eia_elec_gen_cow_va_99_a"     # Source: EIA
+    ),
+    legend_shown = T
+  )
+va_annual_production_pie_chart_p_with_legend
+
+#con_area
+#set up the data
+annual_consumption_data = melt(eia_annual_data[,.(Year,Residential,
+                                                  Commercial,Transportation,Industrial)],
+                               id="Year")
+setnames(annual_consumption_data,c("Year","variable","value"),
+         c("x_value","fill_variable","y_value")
+)
+
+#generate the plot
+va_annual_consumption_area <-
+  stacked_area_figure(
+    annual_consumption_data,
+    "Consumption (Billion Btu)",
+    "Virginia Energy Consumption by Sector",
+    list(
+      "eia_seds_tercb_va_a"
+    ),
+    return_static = F,
+    modifications = scale_y_continuous(labels = comma)
+  )
+va_annual_consumption_area
+
+va_annual_consumption_area_p <-
+  ggplotly_wrapper(va_annual_consumption_area)
+va_annual_consumption_area_p
+
+#con_pie
+#set data/variables
+
+latest_year = max(eia_annual_data[Commercial!=0,Year])
+annual_consumption_pie_chart_data = annual_consumption_data[x_value==latest_year ][,x_value:=NULL]
+setnames(annual_consumption_pie_chart_data,c("y_value","fill_variable"),c("value","variable"))
+
+#generate plot
+va_annual_consumption_pie_chart_p_with_legend <-
+  pie_chart_figure_p(
+    annual_consumption_pie_chart_data,
+    paste0(
+      "Virginia ", latest_year, " Energy Consumption by Sector"
+    ),
+    list(
+      "eia_seds_tercb_va_a"
+    ),
+    legend_shown = T
+  )
+va_annual_consumption_pie_chart_p_with_legend
+
+#sw_donut
+#setting up the data and variables
+recent_year = va_solar[,max(Operating_Year,na.rm=TRUE)]
+solar_capacity_current_mw = va_solar[,sum(capacity_mw)] 
+### This should reflect onshore wind only!! There is none as of Jan 2022
+onshore_wind_capacity_current_mw = 0  #va_wind[,sum(capacity_mw)]
+
+sw_capacity_2035_mw_goal = 16100 #16,100 MW of solar and onshore wind by January 1, 2024 (from VCEA Summary 3.0)
+
+sw_ring = data.frame(
+  category = c(paste0(recent_year, " capacity"),"Additional capacity necessary to reach goal"),
+  value = c(
+    solar_capacity_current_mw + onshore_wind_capacity_current_mw,
+    sw_capacity_2035_mw_goal - (solar_capacity_current_mw + onshore_wind_capacity_current_mw)
+  )
+)
+
+#generating the plot
+single_ring_sw_capacity_donut_p <-
+  single_ring_donut_figure_p(
+    sw_ring,
+    "Onshore Wind & Solar Capacity",
+    paste(recent_year,
+          "Status:",
+          format(
+            solar_capacity_current_mw + onshore_wind_capacity_current_mw,
+            big.mark = ",",
+            scientific = FALSE,
+            trim = TRUE
+          ),
+          "MW of Onshore Wind & Solar Capacity"
+    ),
+    paste(
+      "Goal:",
+      format(
+        sw_capacity_2035_mw_goal,
+        big.mark = ",",
+        scientific = FALSE,
+        trim = TRUE
+      ),
+      "MW of Onshore Wind & Solar<br>Capacity in Operation by 2035"
+    ),
+    "label+value",
+    c("#00A087B2","#91D1C2B2"),
+    list("pjm_solar", "pjm_wind", "VCEA_storage")
+  )
+single_ring_sw_capacity_donut_p
+
+#gen_goal1
+#set up the plot data
+setkey(eia_annual_data,Year)
+recent_year = eia_annual_data[!is.na(Percent_renewable),last(Year)]
+renewable_percent_gen_recent = round(eia_annual_data[!is.na(Percent_renewable),
+                                                     last(Percent_renewable)], 1)
+renewable_percent_gen_2050_goal = 100
+
+renewable_ring = data.frame(
+  category = c(
+    paste(recent_year, "RPS generation (%)"),
+    "Additional progress necessary to reach goal (%)"
+  ),
+  value = c(
+    renewable_percent_gen_recent,
+    renewable_percent_gen_2050_goal - renewable_percent_gen_recent
+  )
+)
+
+#generate the visualization
+single_ring_renewable_donut_p <-
+  single_ring_donut_figure_p(
+    renewable_ring,
+    "Renewable Portfolio Standard",
+    paste0(recent_year,
+           " Status: ",
+           renewable_percent_gen_recent,
+           "% of Generation from RPS Eligible Sources"
+    ),
+    "Goal: 100% of Generation from<br>RPS Eligible Sources by 2050",
+    "label+value",
+    c("#5868AC","#3C5488B2"),
+    list("eia_elec_gen_sun_va_99_a","VCEA_storage")
+  )
+single_ring_renewable_donut_p
+
+#offshore_wind_progress
+#set up the data
+#recent_year = pjm_wind_working[,max(year(actual_in_service_date),na.rm=TRUE)]
+recent_year = 2021
+
+# The 12 MW of offshore wind is not showing up on the PJM queue
+# offshore_wind_current_mw = pjm_wind_working[fuel == "Offshore Wind" &
+#                                               status == "In Service", sum(mfo)]
+offshore_wind_current_mw = 12
 offshore_wind_2034_mw_goal = 5200 #Requires Dominion to develop 5,200 MW of offshore wind by Jan. 1, 2034 (from VCEA Summary 3.0)
 
 offshore_wind_ring = data.frame(
@@ -202,19 +334,20 @@ offshore_wind_ring = data.frame(
   )
 )
 
+#generate the plot
 single_ring_offshore_wind_capacity_donut_p <-
   single_ring_donut_figure_p(
     offshore_wind_ring,
     "Offshore Wind Capacity",
     paste(recent_year,
-      "Status:",
-      format(
-        offshore_wind_current_mw,
-        big.mark = ",",
-        scientific = FALSE,
-        trim = TRUE
-      ),
-      "MW of Offshore Wind Capacity"
+          "Status:",
+          format(
+            offshore_wind_current_mw,
+            big.mark = ",",
+            scientific = FALSE,
+            trim = TRUE
+          ),
+          "MW of Offshore Wind Capacity"
     ),
     paste(
       "Goal:",
@@ -232,201 +365,24 @@ single_ring_offshore_wind_capacity_donut_p <-
   )
 single_ring_offshore_wind_capacity_donut_p
 
-#--------------------------------------------PLOTTING GENERATION/PRODUCTION FIGURES----------------------------------------------------------------
-
-va_annual_production_area <-
-  stacked_area_figure(
-    list(
-      eia_elec_gen_cow_va_99_a,
-      eia_elec_gen_pel_va_99_a,
-      eia_elec_gen_ng_va_99_a,
-      eia_elec_gen_nuc_va_99_a,
-      eia_elec_gen_sun_va_99_a,
-      eia_elec_gen_dpv_va_99_a,
-      eia_elec_gen_hyc_va_99_a,
-      eia_elec_gen_www_va_99_a,
-      eia_elec_gen_was_va_99_a,
-      other_annual_generation
-    ),
-    "year",
-    "Generation (GWh)",
-    "Virginia Electricity Generation by Fuel Type",
-    list(
-      "eia_elec_gen_cow_va_99_a",
-      "eia_elec_gen_pel_va_99_a",
-      "eia_elec_gen_ng_va_99_a",
-      "eia_elec_gen_nuc_va_99_a",
-      "eia_elec_gen_sun_va_99_a",
-      "eia_elec_gen_dpv_va_99_a",
-      "eia_elec_gen_hyc_va_99_a",
-      "eia_elec_gen_www_va_99_a",
-      "eia_elec_gen_was_va_99_a"
-    ),
-    lower_limit = -1900,
-    return_static = F
-  )
-va_annual_production_area
-
-va_annual_production_area_p <-
-  ggplotly_wrapper(va_annual_production_area)
-va_annual_production_area_p
-
-recent_year <- eia_elec_gen_nuc_va_99_a %>% select(year) %>% arrange(year) %>% filter(!is.na(year)) 
-recent_year <- recent_year[[nrow(recent_year),1]]
-
-va_annual_production_2019_pie_chart_p <-
-  pie_chart_figure_p(
-    list(
-      eia_elec_gen_cow_va_99_a[year == recent_year],
-      eia_elec_gen_pel_va_99_a[year == recent_year],
-      eia_elec_gen_ng_va_99_a[year == recent_year],
-      eia_elec_gen_nuc_va_99_a[year == recent_year],
-      eia_elec_gen_sun_va_99_a[year == recent_year],
-      eia_elec_gen_dpv_va_99_a[year == recent_year],
-      eia_elec_gen_hyc_va_99_a[year == recent_year],
-      eia_elec_gen_www_va_99_a[year == recent_year],
-      eia_elec_gen_was_va_99_a[year == recent_year],
-      other_annual_generation[year == recent_year]
-    ),
-    "year", 
-    paste0(
-    "Virginia ", recent_year, " Electricity Generation by Fuel Type"
-    ),
-    list(
-      "eia_elec_gen_cow_va_99_a",
-      "eia_elec_gen_pel_va_99_a",
-      "eia_elec_gen_ng_va_99_a",
-      "eia_elec_gen_nuc_va_99_a",
-      "eia_elec_gen_sun_va_99_a",
-      "eia_elec_gen_dpv_va_99_a",
-      "eia_elec_gen_hyc_va_99_a",
-      "eia_elec_gen_www_va_99_a",
-      "eia_elec_gen_was_va_99_a"
-    )
-  )
-va_annual_production_2019_pie_chart_p
-
-va_annual_production_2019_pie_chart_p_with_legend <-
-  pie_chart_figure_p(
-    list(
-      eia_elec_gen_cow_va_99_a[year == recent_year],
-      eia_elec_gen_pel_va_99_a[year == recent_year],
-      eia_elec_gen_ng_va_99_a[year == recent_year],
-      eia_elec_gen_nuc_va_99_a[year == recent_year],
-      eia_elec_gen_sun_va_99_a[year == recent_year],
-      eia_elec_gen_dpv_va_99_a[year == recent_year],
-      eia_elec_gen_hyc_va_99_a[year == recent_year],
-      eia_elec_gen_www_va_99_a[year == recent_year],
-      eia_elec_gen_was_va_99_a[year == recent_year],
-      other_annual_generation[year == recent_year]
-    ),
-    "year",
-    paste0(
-      "Virginia ", recent_year, " Electricity Generation by Fuel Type"
-    ),
-    list(
-      "eia_elec_gen_cow_va_99_a",
-      "eia_elec_gen_pel_va_99_a",
-      "eia_elec_gen_ng_va_99_a",
-      "eia_elec_gen_nuc_va_99_a",
-      "eia_elec_gen_sun_va_99_a",
-      "eia_elec_gen_dpv_va_99_a",
-      "eia_elec_gen_hyc_va_99_a",
-      "eia_elec_gen_www_va_99_a",
-      "eia_elec_gen_was_va_99_a"
-    ),
-    legend_shown = T
-  )
-va_annual_production_2019_pie_chart_p_with_legend
-
-#--------------------------------------------PLOTTING CONSUMPTION FIGURES---------------------------------------------------------------------
-va_annual_consumption_area <-
-  stacked_area_figure(
-    list(
-      eia_seds_tercb_va_a,
-      eia_seds_teccb_va_a,
-      eia_seds_teicb_va_a,
-      eia_seds_teacb_va_a
-    ),
-    "year",
-    "Consumption (Billion Btu)",
-    "Virginia Energy Consumption by Sector",
-    list(
-      "eia_seds_tercb_va_a",
-      "eia_seds_teccb_va_a",
-      "eia_seds_teicb_va_a",
-      "eia_seds_teacb_va_a"
-    ),
-    return_static = F,
-    modifications = scale_y_continuous(labels = comma)
-  )
-va_annual_consumption_area
-
-va_annual_consumption_area_p <-
-  ggplotly_wrapper(va_annual_consumption_area)
-va_annual_consumption_area_p
-
-
-recent_year <- eia_seds_tercb_va_a %>% select(year) %>% arrange(year) %>% filter(!is.na(year)) 
-recent_year <- recent_year[[nrow(recent_year),1]]
-
-va_annual_consumption_2018_pie_chart_p <-
-  pie_chart_figure_p(
-    list(
-      eia_seds_tercb_va_a[year == recent_year],
-      eia_seds_teccb_va_a[year == recent_year],
-      eia_seds_teicb_va_a[year == recent_year],
-      eia_seds_teacb_va_a[year == recent_year]
-    ),
-    "year",
-    paste0(
-      "Virginia ", recent_year, " Energy Consumption by Sector"
-    ),
-    list(
-      "eia_seds_tercb_va_a",
-      "eia_seds_teccb_va_a",
-      "eia_seds_teicb_va_a",
-      "eia_seds_teacb_va_a"
-    )
-  )
-va_annual_consumption_2018_pie_chart_p
-
-va_annual_consumption_2018_pie_chart_p_with_legend <-
-  pie_chart_figure_p(
-    list(
-      eia_seds_tercb_va_a[year == recent_year],
-      eia_seds_teccb_va_a[year == recent_year],
-      eia_seds_teicb_va_a[year == recent_year],
-      eia_seds_teacb_va_a[year == recent_year]
-    ),
-    "year",
-    paste0(
-      "Virginia ", recent_year, " Energy Consumption by Sector"
-    ),
-    list(
-      "eia_seds_tercb_va_a",
-      "eia_seds_teccb_va_a",
-      "eia_seds_teicb_va_a",
-      "eia_seds_teacb_va_a"
-    ),
-    legend_shown = T
-  )
-va_annual_consumption_2018_pie_chart_p_with_legend
-
-#--------------------------------PLOTTING RENEWABLE & CARBON-FREE GENERATION IN PARTICULAR-----------------------------------------------------
-
+#renewable_timeline_plot
+#data setup
 # Graphing % of VA power generation (in GWh/yr) from renewables & carbon-free sources
+lf_percent_renewable_and_carbon_free.plot <- melt(eia_annual_data[!is.na(Percent_renewable | !is.na(Percent_carbon_free)),
+                                                                  .(Year,Percent_renewable,Percent_carbon_free)],id="Year")
+lf_percent_renewable_and_carbon_free.plot[,variable:=gsub('_',' ',variable)]
+lf_percent_renewable_and_carbon_free.plot[,variable:=gsub('Percent carbon free','Percent carbon-free',variable)]
+setnames(lf_percent_renewable_and_carbon_free.plot,c("Year","variable","value"),
+         c("x_value","fill_variable","y_value"))
+
+#make the graph
 percent_renewable_and_carbon_free_line <-
   line_figure(
-    list(lf_percent_renewable_carbon_free_combined[category == "Historic"]),
-    "year",
+    lf_percent_renewable_and_carbon_free.plot,
     "Percentage of Total Generation",
     "Virginia Recent Electricity Generation",
     list(
-      "eia_elec_gen_nuc_va_99_a",
-      "eia_elec_gen_sun_va_99_a",
-      "eia_elec_gen_dpv_va_99_a",
-      "eia_elec_gen_hyc_va_99_a"
+      "eia_elec_gen_nuc_va_99_a"
     ),
     return_static = F,
     upper_limit = 100,
@@ -438,54 +394,14 @@ percent_renewable_and_carbon_free_line_p <-
   ggplotly_wrapper(percent_renewable_and_carbon_free_line)
 percent_renewable_and_carbon_free_line_p
 
-percent_carbon_free_line <-
-  line_figure(
-    list(lf_percent_carbon_free),
-    "year",
-    "Percentage of Total Generation",
-    "Virginia Carbon-Free Electricity Generation",
-    list(
-      "eia_elec_gen_nuc_va_99_a",
-      "eia_elec_gen_sun_va_99_a",
-      "eia_elec_gen_dpv_va_99_a",
-      "eia_elec_gen_hyc_va_99_a"
-    ),
-    return_static = F,
-    modifications = theme(legend.position = "none"),
-    upper_limit = 100
-  )
-
-percent_carbon_free_line
-
-percent_carbon_free_line_p <-
-  ggplotly_wrapper(percent_carbon_free_line)
-percent_carbon_free_line_p
-
-percent_renewable_and_carbon_free_goal_line <-
-  line_figure(
-    list(lf_VCEA_goal_percent_gen),
-    "year",
-    "Percentage of Total Generation",
-    "Virginia Electricity Generation Goals",
-    list("VCEA_storage"),
-    return_static = F,
-    subtitle_description = "Renewable and Carbon-Free"
-  )
-percent_renewable_and_carbon_free_goal_line
-
+#rps_renewable_line_p
 rps_renewable_line <-
-  ggplot(rps_mandate_schedule, aes(x = year, y = value, color = variable)) +
+  ggplot(rps_mandate_schedule, aes(x = Year, y = value, color = variable)) +
   geom_line(aes(
     group = variable,
-    text = paste0(
-      "Year: ",
-      year,
-      "\n",
-      "Value: ",
-      round(value, 4),
-      "\n",
-      "Variable: ",
-      variable
+    text = paste0("Year: ",Year,"\n",
+                  "Variable: ",variable,"\n",
+                  "Value: ", round(value, 4)
     )
   ), linetype = "dashed") +
   ylab("Percentage of Generation from RPS Eligible Sources") + xlab("Year") + ylim(0, NA) +
@@ -493,8 +409,7 @@ rps_renewable_line <-
          paste("Source:", metadata[db_table_name == "clean_energy_renewable_goals", data_source_full_name])) +
   scale_color_manual(name = NULL, values = ceps_pal[3:4]) +
   theme_ceps()
-rps_renewable_line
-
+#put a plotly wrapper on it
 rps_renewable_line_p <-
   ggplotly_wrapper(
     list(
@@ -508,113 +423,48 @@ rps_renewable_line_p <-
   )
 rps_renewable_line_p
 
-percent_renewable_and_carbon_free_goal_line_p <-
-  ggplotly_wrapper(percent_renewable_and_carbon_free_goal_line)
-percent_renewable_and_carbon_free_goal_line_p
-
-recent_year <- eia_elec_gen_nuc_va_99_a %>% select(year) %>% arrange(year) %>% filter(!is.na(year)) 
-recent_year <- recent_year[[nrow(recent_year),1]]
-
-percent_renewable_and_carbon_free_goal_combined_line <-
+#va_elec_net_imports_line_p
+#set up the plot data
+# VA Electricity Net Imports
+electricity_imports <- eia_annual_data[Imported_electricity!=0,
+                                       .(x_value=Year,y_value=Imported_electricity,
+                                         fill_variable="Imports")]
+#generate the plot
+va_elec_net_imports_line <-
   line_figure(
-    list(lf_percent_renewable_carbon_free_combined_dt),
-    "year",
-    "Percentage of Total Generation",
-    "Virginia Electricity Generation",
-    list(
-      "eia_elec_gen_nuc_va_99_a",
-      "eia_elec_gen_sun_va_99_a",
-      "eia_elec_gen_dpv_va_99_a",
-      "eia_elec_gen_hyc_va_99_a",
-      "VCEA_storage",
-      "va_utility_sales"
-    ),
+    electricity_imports,
+    "Interstate Electricity Flow (GWh)",
+    "Virginia Net Interstate Electricity Flow",
     return_static = F,
-    subtitle_description = "Renewable and Carbon Free",
-    future_date = as.numeric(recent_year) + 1
+    source_citation = "Source: U.S. Energy Information Administration",
+    subtitle_description = "Positive Values = Imports",
+    modifications = theme(legend.position = "none")
   )
-percent_renewable_and_carbon_free_goal_combined_line
+va_elec_net_imports_line_p <-
+  ggplotly_wrapper(va_elec_net_imports_line)
+va_elec_net_imports_line_p
 
-percent_renewable_and_schedule_goal_combined_line <-
-  line_figure(
-    list(lf_percent_renewable_and_schedule_combined_dt),
-    "year",
-    "Percentage of Generation from RPS Eligible Sources",
-    "Virginia Renewable Portfolio Standard Schedule",
-    list(
-      "eia_elec_gen_nuc_va_99_a",
-      "eia_elec_gen_sun_va_99_a",
-      "eia_elec_gen_dpv_va_99_a",
-      "eia_elec_gen_hyc_va_99_a",
-      "VCEA_storage",
-      "va_utility_sales"
-    ),
-    return_static = F,
-    future_date = as.numeric(recent_year) + 1
-  )
-percent_renewable_and_schedule_goal_combined_line
-
-percent_renewable_and_carbon_free_goal_combined_line_p <-
-  ggplotly_wrapper(percent_renewable_and_carbon_free_goal_combined_line)
-percent_renewable_and_carbon_free_goal_combined_line_p
-
-percent_renewable_and_schedule_goal_combined_line_p <-
-  ggplotly_wrapper(percent_renewable_and_schedule_goal_combined_line)
-percent_renewable_and_schedule_goal_combined_line_p
-
-#facet grid
-renewable_and_carbon_free_facet_graph <-
-  ggplot(data = lf_percent_renewable_carbon_free_combined,
-         mapping = aes(x = year, y = value, color = variable)) +
-  geom_line(aes(
-    group = variable,
-    text = paste0("Year: ", year, "\n", "Value: ", value, "\n", "Variable: ", variable)
-  )) +
-  facet_grid(. ~ category, scales = "free") +
-  scale_color_manual(name = NULL, values = ceps_pal[1:2]) +
-  xlab("Year") + ylab("Percentage of Total Generation") + ylim(0, NA) +
-  labs(title = "Virginia Electricity Generation, Renewable and Carbon-Free",
-       subtitle = "Historic vs Goal",
-       caption = "Source: U.S. Energy Information Administration, Virginia Clean Economy Act") +
-  theme_ceps()
-renewable_and_carbon_free_facet_graph
-
-renewable_and_carbon_free_facet_graph_p <-
-  subplot(
-    percent_renewable_and_carbon_free_line_p,
-    percent_renewable_and_carbon_free_goal_line_p,
-    shareY = T
-  ) %>%
-  add_annotations(
-    x = 0.5,
-    y = -0.13,
-    yref = 'paper',
-    xref = 'paper',
-    text = paste0(
-      "<sub><i>Source: U.S. Energy Information Administration, Virginia Clean Economy Act"
-    ),
-    showarrow = F,
-    font = list(size = 14)
-  )
-renewable_and_carbon_free_facet_graph_p
-
+#rc_break_line
+#set plot data/variables
 # Solar, Hydro, and Nuclear Generation over Time
+carbon_free_data <- melt(eia_annual_data[Nuclear!=0,.(Year,Nuclear,Solar_utility,Solar_distributed,Hydropower,Wind)],id="Year")
+# Don't display long lines at zero.
+carbon_free_data[Year<2016 & variable=='Solar_utility',value := ifelse(value==0,NA,value)]
+carbon_free_data[Year<2013 & variable=='Solar_distributed',value := ifelse(value==0,NA,value)]
+carbon_free_data[Year<2021 & variable=='Wind',value := ifelse(value==0,NA,value)]
+#carbon_free_data[,Year:=as.factor(Year)]
+# Fix legend label text
+carbon_free_data[,variable:=gsub('_',', ',variable)]
+setnames(carbon_free_data,c("Year","variable","value"),
+         c("x_value","fill_variable","y_value"))
+
 annual_carbon_free_generation_by_type_line <-
   line_figure(
-    list(
-      eia_elec_gen_nuc_va_99_a,
-      eia_elec_gen_sun_va_99_a,
-      eia_elec_gen_dpv_va_99_a,
-      eia_elec_gen_hyc_va_99_a
-    ),
-    "year",
+    carbon_free_data,
     "Generation (GWh)",
     "Virginia Carbon-Free Electricity Generation",
     list(
-      "eia_elec_gen_nuc_va_99_a",
-      "eia_elec_gen_sun_va_99_a",
-      "eia_elec_gen_dpv_va_99_a",
-      "eia_elec_gen_hyc_va_99_a"
+      "eia_elec_gen_nuc_va_99_a"
     ),
     return_static = F
   )
@@ -623,76 +473,76 @@ annual_carbon_free_generation_by_type_line
 annual_carbon_free_generation_by_type_line_p <-
   ggplotly_wrapper(annual_carbon_free_generation_by_type_line)
 annual_carbon_free_generation_by_type_line_p
+rm(carbon_free_data)
 
+#solar_gen
+#data edits
 # Solar (broken into distributed and utility) over time
+solar_data <- melt(eia_annual_data[Year>2012,.(Year=Year,Solar_utility,Solar_distributed)],id="Year")
+# Don't display long lines at zero.
+solar_data[Year<2016 & variable=='Solar_utility',value := ifelse(value==0,NA,value)]
+solar_data[,Year:=as.factor(Year)]
+# Fix legend label text
+solar_data[,variable:=gsub('_',', ',variable)]
+setnames(solar_data,c("Year","variable","value"),
+         c("x_value","fill_variable","y_value"))
+
+#create graph
 solar_generation_time_series_line <-
   line_figure(
-    list(eia_elec_gen_sun_va_99_a[solar_utility != 0], eia_elec_gen_dpv_va_99_a),
-    "year",
+    solar_data,
     "Generation (GWh)",
     "Virginia Solar Electricity Generation",
-    list("eia_elec_gen_sun_va_99_a", "eia_elec_gen_dpv_va_99_a"),
+    list("eia_elec_gen_sun_va_99_a"),
     return_static = F,
     subtitle_description = "Utility Scale and Distributed"
   )
 solar_generation_time_series_line
-
 solar_generation_time_series_line_p <-
   ggplotly_wrapper(solar_generation_time_series_line)
 solar_generation_time_series_line_p
+rm(solar_data)
 
-# Wood generation over time
-wood_generation_time_series_line <-
-  line_figure(
-    list(melt(eia_elec_gen_www_va_99_a, id = "year")),
-    "year",
-    "Generation (GWh)",
-    "Virginia Electricity Generation from Wood",
-    list("eia_elec_gen_www_va_99_a"),
-    return_static = F,
-    modifications = theme(legend.position = "none")
-  )
-wood_generation_time_series_line
-
-wood_generation_time_series_line_p <-
-  ggplotly_wrapper(wood_generation_time_series_line)
-wood_generation_time_series_line_p
-
-# Projected wind generation overtime
+#wind_projected_gen
+wind_data <- melt(total_production_forecast_offshore_wind[Year>2019], id = "Year")
+setnames(wind_data,c("Year","variable","value"),
+         c("x_value","fill_variable","y_value"))
 wind_projected_generation_time_series_line <-
   line_figure(
-    list(melt(
-      total_production_forecast_offshore_wind, id = "Year"
-    )),
-    "Year",
+    wind_data,
     "Projected Generation (GWh)",
     "Virginia Projected Offshore Wind Electricity Generation",
     list("total_production_forecast_offshore_wind"),
     return_static = F,
     modifications =  theme(legend.position = "none"),
     subtitle_description = "Planned",
-    future_date = 2020
+    future_date = 2021
   )
 wind_projected_generation_time_series_line
 
+### Need to fix Y-axis
 #manually re-scaling y-axis so that value of 44 doesn't look like 0
-wind_projected_generation_time_series_line$figure <-
-  wind_projected_generation_time_series_line$figure +
-  scale_y_continuous(
-    breaks = c(44, 2500, 5000, 7500),
-    labels = c("44", "2500", "5000", "7500")
-  )
-wind_projected_generation_time_series_line
+#wind_projected_generation_time_series_line$figure <-
+ # wind_projected_generation_time_series_line$figure +
+  #scale_y_continuous(
+   # breaks = c(44, 2500, 5000, 7500),
+    #labels = c("44", "2500", "5000", "7500")
+#  )
+#wind_projected_generation_time_series_line
 
 wind_projected_generation_time_series_line_p <-
   ggplotly_wrapper(wind_projected_generation_time_series_line)
 wind_projected_generation_time_series_line_p
 
-# Projected wind capacity
+#wind_projected_capacity
+#data tweaking
+offshore_wind = total_mw_offshore_wind
+setnames(offshore_wind,c("Year","variable","value"),
+         c("x_value","fill_variable","y_value"))
+#plot creation
 wind_projected_capacity_line <-
   line_figure(
-    list(total_mw_offshore_wind),
-    "Year",
+    offshore_wind,
     "Projected Capacity (MW)",
     "Coastal Virginia Offshore Wind (CVOW) Capacity",
     list("total_mw_offshore_wind"),
@@ -705,956 +555,299 @@ wind_projected_capacity_line
 wind_projected_capacity_line_p <-
   ggplotly_wrapper(wind_projected_capacity_line)
 wind_projected_capacity_line_p
+rm(offshore_wind)
 
-#Stacked Annual Carbon Free Generation Broken Out by Type
-carbon_free_generation_by_type_stacked <-
-  stacked_area_figure(
-    list(
-      eia_elec_gen_nuc_va_99_a,
-      eia_elec_gen_sun_va_99_a,
-      eia_elec_gen_dpv_va_99_a,
-      eia_elec_gen_hyc_va_99_a
+#gen_goal2
+#set up data
+recent_year = eia_annual_data[!is.na(Percent_carbon_free),last(Year)]
+carbon_free_percent_gen_recent = round(eia_annual_data[!is.na(Percent_carbon_free),last(Percent_carbon_free)], 1)
+carbon_free_percent_gen_2050_goal = 100 #100% of Virginia’s electricity from carbon-free sources by 2050
+
+carbon_free_ring = data.frame(
+  category = c(
+    "2019 carbon free generation (%)",
+    "Additional progress necessary to reach goal (%)"
+  ),
+  value = c(
+    carbon_free_percent_gen_recent,
+    carbon_free_percent_gen_2050_goal - carbon_free_percent_gen_recent
+  )
+)
+
+#create the plot
+single_ring_carbon_free_donut_p <-
+  single_ring_donut_figure_p(
+    carbon_free_ring,
+    "Carbon-Free Generation",
+    paste0(recent_year,
+           " Status: ",
+           carbon_free_percent_gen_recent,
+           "% of Generation from Carbon-Free Sources"
     ),
-    "year",
-    "Generation (GWh)",
-    "Virginia Carbon-Free Electricity Generation by Source",
-    list(
-      "eia_elec_gen_nuc_va_99_a",
-      "eia_elec_gen_sun_va_99_a",
-      "eia_elec_gen_dpv_va_99_a",
-      "eia_elec_gen_hyc_va_99_a"
-    ),
-    return_static = F
+    "Goal: 100% of Generation from<br>Carbon-Free Sources by 2050",
+    "label+value",
+    c("#BE7E8A","#CEA5AC"),
+    list("eia_elec_gen_nuc_va_99_a", "VCEA_storage")
   )
-carbon_free_generation_by_type_stacked
+single_ring_carbon_free_donut_p
 
-carbon_free_generation_by_type_stacked_p <-
-  ggplotly_wrapper(carbon_free_generation_by_type_stacked)
-carbon_free_generation_by_type_stacked_p
+#annual_kwh_by_square_feet
+yearly_values_by_size <- plot_ly(year_by_building_size, x = ~year, y = ~kWh/sqft, type = 'bar', width="500px",
+                                 color = ~size_range, colors = theme_colors,
+                                 text= ~paste("Kilowatt Hours per Square Foot: ",round(kWh/sqft,digits=2),
+                                              "<br> Cost per Square Foot: $",round(cost/sqft,digits=2),
+                                              "<br> Cost per Kilowatt Hour: $", round(cost/kWh,digits=2),
+                                              "<br> Number of Buildings: ",buildings,
+                                              "<br> Annual Kilowatt Hour Savings Per Square Foot: ",round(savings/kWh,digits=2)),
+                                 hoverinfo="text") %>% 
+  layout(title="Annual Power Use by Facility Size",xaxis = list(title = "Year", tickangle = -0),yaxis = list(title = "Kilowatt Hours per Square Foot"),
+         margin = list(b = 100),
+         barmode = 'group',
+         legend = list(title=list(text='<b> Square Footage Range </b>')),
+         paper_bgcolor="#F0F0F0", plot_bgcolor="#F0F0F0")
+yearly_values_by_size
 
-# Stacked Annual Renewable Generation Broken Out by Type (hydro, utility solar, distributed solar)
-renewable_generation_by_type_stacked <-
-  stacked_area_figure(
-    list(
-      eia_elec_gen_sun_va_99_a,
-      eia_elec_gen_dpv_va_99_a,
-      eia_elec_gen_hyc_va_99_a
-    ),
-    "year",
-    "Generation (GWh)",
-    "Virginia Renewable Electricity Generation",
-    list(
-      "eia_elec_gen_sun_va_99_a",
-      "eia_elec_gen_dpv_va_99_a",
-      "eia_elec_gen_hyc_va_99_a"
-    ),
-    return_static = F
-  )
-renewable_generation_by_type_stacked
+#buildings_tracked
+agency_category_progress <- ggplot(sqft_over_5000) + 
+  geom_col(aes(agency_category,percent_done,
+               text=paste("Facilities Over 5,000 Square Feet: ",facilities_over_5000_sqft,
+                          "<br> Facilities Over 5,000 Square Feet Being Tracked: ", facilities_over_5000_sqft_tracked,
+                          "<br> Percent Complete: ", percent(percent_done))),fill="#56B4E9") + 
+  geom_hline(aes(yintercept=yearly_goal, color=yearly_goal_label))+
+  theme(axis.text.x = element_text(angle=-0, vjust=1, hjust=1))+
+  labs(x="",y='Percent of Facilties Tracked',color='Facility Tracking Goals',title='Tracking Progress by Agency Category')+
+  scale_y_continuous(labels=percent)+
+  scale_color_manual(values=theme_colors#c(paletteer_d("ggthemes::colorblind"))
+  ) +
+  coord_flip() +
+  theme(plot.background = element_rect(fill = "#F0F0F0"),legend.background = element_rect(fill="#F0F0F0"))
 
-renewable_generation_by_type_stacked_p <-
-  ggplotly_wrapper(renewable_generation_by_type_stacked)
-renewable_generation_by_type_stacked_p
+agency_category_progress_plot <- ggplotly(agency_category_progress,tooltip='text')
+agency_category_progress_plot
 
-# Stacked Renewable versus Non-renewable Generation
-renewable_vs_non_renewable <-
-  melt(va_annual_renewable_and_carbon_free_gen[, .(year, renewable, not_renewable)], id =
-         "year")
+#apco_ee_spending
+apco_ee <- ggplot(eia_standard_projections) + 
+  geom_col(aes(date,apco_ee_percent_projection,
+               text=paste('Projected Energy Savings Achievement :',apco_ee_percent_projection*100,'%'))
+           ,fill="#56B4E9") + 
+  geom_hline(aes(yintercept=apco_ee_mandated_min, color=c('2022 Mandated Minimum','2023 Mandated Minimum',
+                                                          '2024 Mandated Minimum','2025 Mandated Minimum')))+
+  labs(x="Year",y='Energy Savings as Percent of Annual Jurisdiction Sales',color="",title='Appalachian Power Company Projected Annual Savings')+
+  scale_y_continuous(labels=percent)+
+  scale_color_manual(values=theme_colors) + coord_flip() +
+  theme(plot.background = element_rect(fill = "#F0F0F0"),legend.background = element_rect(fill="#F0F0F0"))
+apco_ee_plot <- ggplotly(apco_ee,tooltip='text')
+apco_ee_plot
 
-renewable_versus_non_renewable_stacked <-
-  stacked_area_figure(
-    list(renewable_vs_non_renewable),
-    "year",
-    "Generation (GWh)",
-    "Virginia Renewable and Non-Renewable Electricity Generation",
-    list(
-      "eia_elec_gen_cow_va_99_a",
-      "eia_elec_gen_pel_va_99_a",
-      "eia_elec_gen_ng_va_99_a",
-      "eia_elec_gen_nuc_va_99_a",
-      "eia_elec_gen_sun_va_99_a",
-      "eia_elec_gen_dpv_va_99_a",
-      "eia_elec_gen_hyc_va_99_a",
-      "eia_elec_gen_www_va_99_a",
-      "eia_elec_gen_was_va_99_a"
-    ),
-    return_static = F
-  )
-renewable_versus_non_renewable_stacked
+#apco_mandates_and_progress
+apco_plot <- plot_ly(apco_reshaped,x=~spending_to_date,y=~spending_goal, type='bar',orientation='h',
+                     name='Spending To Date',color=as.factor('Spending To Date'),colors=theme_colors) %>%
+  add_trace(apco_reshaped,x=~spending_requirements,y=~spending_goal,type='bar',orientation='h',
+            name='Spending Requirements by 2028',color=as.factor('Spending Requirements by 2028'),colors=theme_colors) %>%
+  layout(title='Appalachian Power Company Spending Targets and Progress',xaxis=list(title='Million Dollars',tickprefix='$',tickangle=-0),
+         yaxis=list(title=''),
+         paper_bgcolor="#F0F0F0", plot_bgcolor="#F0F0F0")
+apco_plot
 
-renewable_versus_non_renewable_stacked_p <-
-  ggplotly_wrapper(renewable_versus_non_renewable_stacked)
-renewable_versus_non_renewable_stacked_p
+#dominion_ee_spending
+dom_ee <- ggplot(eia_standard_projections) + 
+  geom_col(aes(date,dominion_ee_percent_projection,
+               text=paste('Projected Energy Savings Achievement :',dominion_ee_percent_projection*100,'%'))
+           ,fill="#56B4E9") + 
+  geom_hline(aes(yintercept=dominion_ee_mandated_min, color=c('2022 Mandated Minimum','2023 Mandated Minimum',
+                                                              '2024 Mandated Minimum','2025 Mandated Minimum')))+
+  labs(x="Year",y='Energy Savings as Percent of Annual Jurisdiction Sales',color="",title='Dominion Energy Projected Annual Savings')+
+  scale_y_continuous(labels=percent)+
+  scale_color_manual(values=theme_colors) + coord_flip() +
+  theme(plot.background = element_rect(fill = "#F0F0F0"),legend.background = element_rect(fill="#F0F0F0"))
+dom_ee_plot <- ggplotly(dom_ee,tooltip='text')
+dom_ee_plot
 
-# Stacked Carbon versus Carbon Free Generation
-carbon_vs_carbon_free <-
-  melt(va_annual_renewable_and_carbon_free_gen[, .(year, carbon_free, carbon_emitting)], id =
-         "year")
+#dominion_mandates_and_progress
+dominion_plot <- plot_ly(dom_reshaped,x=~spending_to_date,y=~spending_goal, type='bar', orientation='h',
+                         name='Spending To Date',color=as.factor('Spending To Date'),colors=theme_colors) %>%
+  add_trace(apco_plot,x=~spending_requirements,y=~spending_goal,type='bar', orientation='h',
+            name='Spending Requirements by 2028',color=as.factor('Spending Requirements by 2028'),colors=theme_colors) %>%
+  layout(title='Dominion Energy Spending Targets and Progress',xaxis=list(title='Million Dollars',tickprefix='$',tickangle=-0),
+         yaxis=list(title=''),
+         paper_bgcolor="#F0F0F0", plot_bgcolor="#F0F0F0")
+dominion_plot
 
-carbon_versus_carbon_free_stacked <-
-  stacked_area_figure(
-    list(carbon_vs_carbon_free),
-    "year",
-    "Generation (GWh)",
-    "Virginia Carbon Emitting and Carbon-Free Electricity Generation",
-    list(
-      "eia_elec_gen_cow_va_99_a",
-      "eia_elec_gen_pel_va_99_a",
-      "eia_elec_gen_ng_va_99_a",
-      "eia_elec_gen_nuc_va_99_a",
-      "eia_elec_gen_sun_va_99_a",
-      "eia_elec_gen_dpv_va_99_a",
-      "eia_elec_gen_hyc_va_99_a",
-      "eia_elec_gen_www_va_99_a",
-      "eia_elec_gen_was_va_99_a"
-    ),
-    return_static = F
-  )
-carbon_versus_carbon_free_stacked
+#odp_ee_spending
+odp_ee <- ggplot(eia_standard_projections) + 
+  geom_col(aes(date,odp_ee_percent_projection,
+               text=paste('Projected Energy Savings Achievement :',odp_ee_percent_projection*100,'%'))
+           ,fill="#56B4E9") + 
+  geom_hline(aes(yintercept=odp_ee_mandated_min, color=c('2022 Mandated Minimum','2023 Mandated Minimum',
+                                                         '2024 Mandated Minimum','2025 Mandated Minimum')))+
+  labs(x="Year",y='Energy Savings as Percent of Annual Jurisdiction Sales',color="",title='Old Dominion Power Projected Annual Savings')+
+  scale_y_continuous(labels=percent)+
+  scale_color_manual(values=theme_colors) + coord_flip() +
+  theme(plot.background = element_rect(fill = "#F0F0F0"),legend.background = element_rect(fill="#F0F0F0"))
+odp_ee_plot <- ggplotly(odp_ee,tooltip='text')
+odp_ee_plot
 
-carbon_versus_carbon_free_stacked_p <-
-  ggplotly_wrapper(carbon_versus_carbon_free_stacked)
-carbon_versus_carbon_free_stacked_p
+#odp_mandates_and_progress
+odp_plot <- plot_ly(odp_reshaped,x=~spending_to_date,y=~spending_goal, type='bar', orientation='h',
+                    name='Spending To Date',color=as.factor('Spending To Date'),colors=theme_colors) %>%
+  add_trace(apco_plot,x=~spending_requirements,y=~spending_goal,type='bar',orientation='h',
+            name='Spending Requirements by 2028',color=as.factor('Spending Requirements by 2028'),colors=theme_colors) %>%
+  layout(title='Old Dominion Power Spending Targets and Progress',xaxis=list(title='Million Dollars',tickprefix='$',tickangle=-0),
+         yaxis=list(title=''),
+         paper_bgcolor="#F0F0F0", plot_bgcolor="#F0F0F0")
+odp_plot
 
-# Total Renewable and Total Carbon Free Generation Over Time
-renewable_and_carbon_free <-
-  melt(va_annual_renewable_and_carbon_free_gen[, .(year, carbon_free, renewable, total)], id =
-         "year")
-
-renewable_and_carbon_free_line <-
-  line_figure(
-    list(renewable_and_carbon_free),
-    "year",
-    "Generation (GWh)",
-    "Virginia Renewable and Carbon-Free Electricity Generation",
-    list(
-      "eia_elec_gen_cow_va_99_a",
-      "eia_elec_gen_pel_va_99_a",
-      "eia_elec_gen_ng_va_99_a",
-      "eia_elec_gen_nuc_va_99_a",
-      "eia_elec_gen_sun_va_99_a",
-      "eia_elec_gen_dpv_va_99_a",
-      "eia_elec_gen_hyc_va_99_a",
-      "eia_elec_gen_www_va_99_a",
-      "eia_elec_gen_was_va_99_a"
-    ),
-    return_static = F
-  )
-renewable_and_carbon_free_line
-
-renewable_and_carbon_free_line_p <-
-  ggplotly_wrapper(renewable_and_carbon_free_line)
-renewable_and_carbon_free_line_p
-
-# VA Electricity Net Imports
-va_elec_net_imports_line <-
-  line_figure(
-    list(melt(va_elec_import, id = "year")),
-    "year",
-    "Interstate Electricity Flow (GWh)",
-    "Virginia Net Interstate Electricity Flow",
-    return_static = F,
-    source_citation = "Source: U.S. Energy Information Administration",
-    subtitle_description = "Positive Values = Imports",
-    modifications = theme(legend.position = "none")
-  )
-va_elec_net_imports_line
-
-va_elec_net_imports_line_p <-
-  ggplotly_wrapper(va_elec_net_imports_line)
-va_elec_net_imports_line_p
-
-#--------------------------PLOTTING WIND AND SOLAR PROJECTED CAPACITY ADDITIONS (AND STORAGE)----------------------------------
-
-apco_dom_target_vs_projected_capacity <-
-  line_figure(
-    list(lf_apco_dom_onwind_and_solar[date <= '2040-01-01']),
-    "date",
-    "Capacity (MW)",
-    "Appalachian Power & Dominion Utility Onshore Wind and Solar",
-    list("pjm_solar", "pjm_wind", "VCEA_onshore_wind_solar"),
-    return_static = F,
-    subtitle_description = "Current and Projected Capacity vs VCEA Target Capacity",
-    x_label = "Date"
-  )
-apco_dom_target_vs_projected_capacity
-
-apco_dom_target_vs_projected_capacity_p <-
-  ggplotly_wrapper(apco_dom_target_vs_projected_capacity)
-apco_dom_target_vs_projected_capacity_p
-
-future_date <- format(Sys.Date(), "%Y-%m-%d") %>% as.Date() %m+% years(5)
-
-apco_dom_projected_capacity <-
-  line_figure(
-    list(lf_apco_dom_onwind_and_solar[variable != "target_apco_onshore_wind_and_solar" &
-                                        variable != "target_dom_onshore_wind_and_solar" & date < "2024-01-01"]),
-    "date",
-    "Capacity (MW)",
-    "Appalachian Power & Dominion Utility Onshore Wind and Solar",
-    list("pjm_solar", "pjm_wind"),
-    return_static = F,
-    subtitle_description = "Current and Projected Capacity",
-    x_label = "Date"
-  )
-apco_dom_projected_capacity
-
-apco_dom_projected_capacity_p <-
-  ggplotly_wrapper(apco_dom_projected_capacity)
-apco_dom_projected_capacity_p
-
-apco_dom_target_capacity <-
-  line_figure(
-    list(melt(VCEA_onshore_wind_solar[, .(year,
-                                          target_apco_onshore_wind_and_solar,
-                                          target_dom_onshore_wind_and_solar)], id = "year")),
-    "year",
-    "Capacity (MW)",
-    "Appalachian Power & Dominion Utility Onshore Wind and Solar",
-    list("VCEA_onshore_wind_solar"),
-    return_static = F,
-    subtitle_description = "VCEA Target Capacity",
-    x_label = "Year"
-  )
-apco_dom_target_capacity
-
-apco_dom_target_capacity_p <-
-  ggplotly_wrapper(apco_dom_target_capacity)
-apco_dom_target_capacity_p
-
-on_off_wind_solar_line <-
-  line_figure(
-    list(lf_wind_and_solar_capacity_projections),
-    "date",
-    "Capacity (MW)",
-    "Virginia Current and Projected Utility Wind and Solar Capacity",
-    list("pjm_wind", "pjm_solar"),
-    return_static = F,
-    x_label = "Date"
-  )
-on_off_wind_solar_line
-
-on_off_wind_solar_line_p <- ggplotly_wrapper(on_off_wind_solar_line)
-on_off_wind_solar_line_p
-
-on_off_wind_solar_area <-
-  stacked_area_figure(
-    list(lf_wind_and_solar_capacity_projections),
-    "date",
-    "Capacity (MW)",
-    "Virginia Current and Projected Utility Wind and Solar Capacity",
-    list("pjm_wind", "pjm_solar"),
-    return_static = F,
-    x_label = "Date"
-  )
-on_off_wind_solar_area
-
-on_off_wind_solar_area_p <- ggplotly_wrapper(on_off_wind_solar_area)
-on_off_wind_solar_area_p
-
-dominion_offshore_wind_projected_capacity <-
-  line_figure(
-    list(lf_wind_and_solar_capacity_projections %>% filter(variable =="offshore_wind") %>% filter(!is.na(value))),
-    "date",
-    "Capacity (MW)",
-    "Dominion Projected Offshore Wind Capacity",
-    list("pjm_wind", "VCEA_onshore_wind_solar"),
-    return_static = F,
-    x_label = "Date",
-    subtitle_description = "Note: VCEA requires Dominion to develop 5,200 MW of offshore wind by 2034",
-    modifications = theme(legend.position = "none")
-  )
-dominion_offshore_wind_projected_capacity
-
-dominion_offshore_wind_projected_capacity_p <-
-  ggplotly_wrapper(dominion_offshore_wind_projected_capacity)
-dominion_offshore_wind_projected_capacity_p
-
-storage_projected_capacity_line <-
-  line_figure(
-    list(lf_storage_capacity_projections),
-    "date",
-    "Capacity (MW)",
-    "Virginia Current and Projected Utility Storage Capacity",
-    list("pjm_solar"),
-    #using pjm_solar instead of pjm_storage because its not yet in metadata
-    return_static = F,
-    modifications = theme(legend.position = "none"),
-    x_label = "Date"
-  )
-storage_projected_capacity_line
-
-storage_projected_capacity_line_p <-
-  ggplotly_wrapper(storage_projected_capacity_line)
-storage_projected_capacity_line_p
-
-#--------------------------------PLOTTING EMISSIONS FIGURES--------------------------------------------------------
-
+#electric_emissions_plot2
 # CO2 total emissions & CO2 emissions from electric sector on same figure
+# The SEDS data is greatly delayed. Maybe we can think of a better presentation here.
+# Two more years of data is available beyond what SEDS has. I don't think that includes
+#    total energy related CO2 emissions.
+all_CO2_emissions = eia_annual_data[Total_CO2_emissions!=0,
+                                    .(Year=year(date),
+                                      All_sectors = Total_CO2_emissions,
+                                      Electricity_sector = Electric_sector_CO2_emissions)]
+#CO2_emissions = merge(electricity_CO2_emissions,all_CO2_emissions,by="Year",all=TRUE)
+CO2_emissions <- melt(all_CO2_emissions,id="Year")
+CO2_emissions[,variable := gsub("_"," ",variable)]
+setnames(CO2_emissions,c("Year","variable","value"),
+         c("x_value","fill_variable","y_value"))
+#generate the plot
 co2_combined_emissions_line <-
   line_figure(
-    list(
-      eia_emiss_co2_totv_ec_to_va_a,
-      eia_emiss_co2_totv_tt_to_va_a
-    ),
-    "year",
+    CO2_emissions,
     "Emissions (million metric tons CO2)",
     "Virginia CO2 Emissions from Electricity Production",
     list(
-      "eia_emiss_co2_totv_ec_to_va_a",
-      "eia_emiss_co2_totv_tt_to_va_a"
+      "eia_emiss_co2_totv_ec_to_va_a"
     ),
     return_static = F
   )
 co2_combined_emissions_line
-
 co2_combined_emissions_line_p <-
   ggplotly_wrapper(co2_combined_emissions_line)
 co2_combined_emissions_line_p
+rm(CO2_emissions)
 
-# Emissions by compound
-# note: to convert from short tons to million metric tons, divide short tons by 1102311.31 & to convert from thousand metric tons to million metric tons, divide by 1000
-emissions_line <-
-  line_figure(
-    list(
-      emissions_co2_by_source_va[, .(year = year, CO2 = total / 1000)],
-      emissions_no_by_source_va[, .(year = year, NO = total / 1102311.31)],
-      emissions_so2_by_source_va[, .(year = year, SO2 = total / 1102311.31)]
-    ),
-    "year",
-    "Emissions (million metric tons)",
-    "Virginia Emissions",
-    list(
-      "emissions_co2_by_source_va",
-      "emissions_no_by_source_va",
-      "emissions_so2_by_source_va"
-    ),
-    return_static = F
-  )
-emissions_line
+#co2_emissions_by_fuel
+#set the parameter data
+emission_data_by_fuel = melt(va_electricity_emissions_by_fuel[, .(
+  Year = Year,
+  Coal = CO2_Coal / 1000,
+  Natural_gas = CO2_Natural_gas / 1000,
+  Petroleum = CO2_Petroleum / 1000,
+  Other = CO2_Other / 1000
+)], id = "Year")
 
-emissions_line_p <- ggplotly_wrapper(emissions_line)
-emissions_line_p
-
-# CO2 emissions by fuel type
+emission_data_by_fuel[,variable:=gsub('_',' ',variable)]
+setnames(emission_data_by_fuel,c("Year","variable","value"),
+         c("x_value","fill_variable","y_value"))
+#create the graph
 carbon_by_fuel_emissions_stacked <-
   stacked_area_figure(
-    list(melt(emissions_co2_by_source_va[, .(
-      year,
-      coal = coal / 1000,
-      natural_gas = natural_gas / 1000,
-      petroleum = petroleum / 1000,
-      other = other / 1000
-    )], id = "year")),
-    "year",
+    emission_data_by_fuel,
     "Emissions (million metric tons)",
     "Virginia CO2 Emissions From Electricity Production By Fuel Type",
     list("emissions_co2_by_source_va"),
     return_static = F
   )
 carbon_by_fuel_emissions_stacked
-
 carbon_by_fuel_emissions_stacked_p <-
   ggplotly_wrapper(carbon_by_fuel_emissions_stacked)
 carbon_by_fuel_emissions_stacked_p
+rm(emission_data_by_fuel)
 
-#-------------------------------------PLOTTING ENERGY EFFICIENCY FIGURES--------------------------------------
-
-consumption_per_gdp_line <-
-  line_figure(
-    list(melt(energy_consumption_per_unit_gdp_va, id = "year")),
-    "year",
-    "Consumption per GDP (Btu/$)",
-    "Virginia Electricity Consumption per GDP",
-    list("fred_vangsp", "eia_seds_tetcb_va_a"),
-    #for now, may change to derived values table name at some point
-    return_static = F,
-    modifications = theme(legend.position = "none")
-  )
-consumption_per_gdp_line
-
-consumption_per_gdp_line_p <-
-  ggplotly_wrapper(consumption_per_gdp_line)
-consumption_per_gdp_line_p
-
-consumption_per_capita_line <-
-  line_figure(
-    list(melt(energy_consumption_per_capita_va, id = "year")),
-    "year",
-    "Consumption per Capita (Billion Btu/Person)",
-    "Virginia Electricity Consumption per Capita",
-    list("fred_vapop", "eia_seds_tetcb_va_a"),
-    #for now, may change to derived values table names at some point
-    return_static = F,
-    modifications = theme(legend.position = "none")
-  )
-consumption_per_capita_line
-
-consumption_per_capita_line_p <-
-  ggplotly_wrapper(consumption_per_capita_line)
-consumption_per_capita_line_p
-
-emissions_per_gdp_line <-
-  line_figure(
-    list(
-      melt(co2_emission_per_thousand_dollars_of_gdp_va, id = "year")
-    ),
-    "year",
-    "Emissions/GDP (Metric Tons/Thousand $)",
-    "Virginia CO2 Emissions per unit of GDP",
-    list("fred_vangsp", "eia_emiss_co2_totv_tt_to_va_a"),
-    return_static = F,
-    modifications = theme(legend.position = "none")
-  )
-emissions_per_gdp_line
-
-emissions_per_gdp_line_p <- ggplotly_wrapper(emissions_per_gdp_line)
-emissions_per_gdp_line_p
-
+#emissions_per_capita
+co2_per_capita <- intensity_data[!is.na(co2_per_capita),
+                                 .(x_value=as.factor(year(date)),y_value=co2_per_capita,
+                                   fill_variable="co2_per_capita")]
+#create plot
 emissions_per_capita_line <-
   line_figure(
-    list(melt(co2_emission_per_capita_va, id = "year")),
-    "year",
+    co2_per_capita,
     "Emissions per Capita (Metric Tons/Person)",
     "Virginia CO2 Emissions per Capita",
     list("fred_vangsp", "eia_emiss_co2_totv_tt_to_va_a"),
     return_static = F,
-    modifications = theme(legend.position = "none")
+    modifications = theme(legend.position = "none"),
+    modifications2 = scale_x_discrete(breaks=c(1980,1990,2000,2010,2020))
   )
 emissions_per_capita_line
-
 emissions_per_capita_line_p <-
   ggplotly_wrapper(emissions_per_capita_line)
 emissions_per_capita_line_p
+rm(co2_per_capita)
 
-#APCO and Dominion historic sales vs goals
-apco_dom_historic_sales_line <-
+#emissions_per_gdp
+co2_per_GDP <- intensity_data[!is.na(co2_per_gdp),
+                              .(x_value=as.factor(year(date)),y_value=co2_per_gdp,
+                                fill_variable="co2_per_gdp")]
+#create plot
+emissions_per_gdp_line <-
   line_figure(
-    list(lf_apco_dom_historic_sales),
-    "year",
-    "Sales (GWh)",
-    "APCO and Dominion Historic Sales",
+    co2_per_GDP,
+    "Emissions/GDP (Metric Tons/Thousand $)",
+    "Virginia CO2 Emissions per Dollar of GDP",
+    list("fred_vangsp", "eia_emiss_co2_totv_tt_to_va_a"),
     return_static = F,
-    source_citation = "Source: U.S. Energy Information Administration, Virgina Clean Economy Act"
+    modifications = theme(legend.position = "none"),
+    modifications2=scale_x_discrete(breaks=c(1995,2000,2005,2010,2015,2020))
   )
-apco_dom_historic_sales_line
+emissions_per_gdp_line
+emissions_per_gdp_line_p <- ggplotly_wrapper(emissions_per_gdp_line)
+emissions_per_gdp_line_p
+rm(co2_per_GDP)
 
-apco_dom_historic_sales_line_p <-
-  ggplotly_wrapper(apco_dom_historic_sales_line)
-apco_dom_historic_sales_line_p
-
-apco_dom_sales_goal_line <-
-  line_figure(
-    list(lf_VCEA_goal_sales_reduction),
-    "year",
-    "Sales (GWh)",
-    "APCO and Dominion VCEA Sales Goals, 2022-2025",
-    return_static = F,
-    source_citation = "Source: U.S. Energy Information Administration, Virgina Clean Economy Act",
-    modifications = geom_line(linetype =
-                                "dashed", size = 1.3)
-  )
-apco_dom_sales_goal_line
-
-apco_dom_sales_goal_line_p <-
-  ggplotly_wrapper(apco_dom_sales_goal_line)
-apco_dom_sales_goal_line_p
-
-apco_dom_historic_goal_sales_combined_line <-
-  line_figure(
-    list(lf_apco_dom_sales_combined_dt),
-    "year",
-    "Total Retail Sales (GWh/year)",
-    "Mandated Electricity Reduction Under Virginia Clean Economy Act",
-    return_static = F,
-    source_citation = "Source: U.S. Energy Information Administration, Dominion Energy Inc.",
-    future_date = as.numeric(format(Sys.Date(), "%Y")) + 1
-  )
-apco_dom_historic_goal_sales_combined_line
-
-apco_dom_historic_goal_sales_combined_line_p <-
-  ggplotly_wrapper(apco_dom_historic_goal_sales_combined_line)
-apco_dom_historic_goal_sales_combined_line_p
-
-#facet grid
-apco_dom_sales_facet_graph <-
-  ggplot(data = lf_apco_dom_sales_combined,
-         mapping = aes(x = year, y = value, color = variable)) +
-  geom_line(aes(
-    group = variable,
-    text = paste0("Year: ", year, "\n", "Value: ", value, "\n", "Variable: ", variable)
-  )) +
-  facet_grid(. ~ category, scales = "free") +
-  scale_color_manual(name = NULL, values = ceps_pal[1:4]) +
-  xlab("Year") + ylab("Sales (GWh)") + ylim(0, NA) +
-  labs(title = "Electricty Sales",
-       subtitle = "Historic vs Goal",
-       caption = "Source:  U.S. Energy Information Administration, Virginia Clean Economy Act") +
-  theme_ceps()
-apco_dom_sales_facet_graph
-
-
-#Note: below figures come from ACEEE data - no metadata entries yet so manual citations are used
-annual_savings_2020_pie_chart_p <-
-  pie_chart_figure_p(
-    list(virginia_annual_savings_through_2020[variable != "Total Needed"]),
-    title_name = "Virginia Savings through 2020 (MWh)",
-    character_list = list("virginia_annual_savings_through_2020"),
-    source_citation = "Source: The American Council for an Energy-Efficient Economy"
-  )
-annual_savings_2020_pie_chart_p
-
-annual_savings_2020_pie_chart_p_with_legend <-
-  pie_chart_figure_p(
-    list(virginia_annual_savings_through_2020[variable != "Total Needed"]),
-    title_name = "Virginia Savings through 2020 (MWh)",
-    character_list = list("virginia_annual_savings_through_2020"),
-    legend_shown = T,
-    source_citation = "Source: The American Council for an Energy-Efficient Economy"
-  )
-annual_savings_2020_pie_chart_p_with_legend
-
-annual_savings_2022_pie_chart_p <-
-  pie_chart_figure_p(
-    list(virginia_annual_savings_through_2022[variable != "Total Needed"]),
-    title_name = "Virginia Savings through 2022 (MWh)",
-    character_list = list("virginia_annual_savings_through_2020"),
-    source_citation = "Source: The American Council for an Energy-Efficient Economy"
-  )
-annual_savings_2022_pie_chart_p
-
-annual_savings_2022_pie_chart_p_with_legend <-
-  pie_chart_figure_p(
-    list(virginia_annual_savings_through_2022[variable != "Total Needed"]),
-    title_name = "Virginia Savings through 2022 (MWh)",
-    character_list = list("virginia_annual_savings_through_2020"),
-    legend_shown = T,
-    source_citation = "Source: The American Council for an Energy-Efficient Economy"
-  )
-annual_savings_2022_pie_chart_p_with_legend
-
-annual_savings_2020_2022_stacked_bar_chart <-
-  ggplot(virginia_annual_savings_2020_2022,
-         mapping = aes(x = year, y = value, fill = variable)) +
-  geom_bar(
-    position = "stack",
-    stat = "identity",
-    color = "black",
-    size = .2,
-    aes(
-      group = variable,
-      text = paste0(
-        "Year: ",
-        year,
-        "\n",
-        "Value: ",
-        round(value, 4),
-        "\n",
-        "Variable: ",
-        variable
-      )
-    )
-  ) +
-  scale_x_continuous(breaks = c(2020, 2022)) +
-  scale_y_continuous(labels = comma) +
-  labs(
-    x = "Year",
-    y = "Projected energy savings (MWh)",
-    title = "Projected Future Savings From Energy Efficiency Programs",
-    caption = "Source: The American Council for an Energy-Efficient Economy"
-  ) +
-  scale_fill_manual(
-    name = NULL,
-    values = c(
-      "#D3D3D3",
-      "#00A087B2",
-      "#3C5488B2",
-      "#CEA5AC",
-      "#BE7E8A",
-      "#4DBBD5B2",
-      "#91D1C2B2"
-    )
-  ) +
-  theme_ceps()
-annual_savings_2020_2022_stacked_bar_chart
-
-annual_savings_2020_2022_stacked_bar_chart_p <-
-  ggplotly_wrapper(
-    list(
-      figure = annual_savings_2020_2022_stacked_bar_chart,
-      x_label = "Year",
-      source_description = "Source: The American Council for an Energy-Efficient Economy",
-      title_name = "Virginia Energy Savings through 2020 and 2022",
-      subtitle_description = NULL,
-      y_label = "Savings (MWh)"
-    )
-  ) %>%
-  layout(legend = list(x = 1, y = 0.5))
-annual_savings_2020_2022_stacked_bar_chart_p
-
-#----------------------------------------PLOTTING GEOSPATIAL DATA----------------------------------------------------------
-#energy equity figures
-
-#OPTION A--------------------------------------------------------------------------------------------------------------
-#energy burden map showing average energy expenditures by county
-#va_avg_annual_energy_cost <- ggplot() +
-#  geom_sf(data = virginia_outline, fill = NA,color="dimgrey") +
-#  geom_sf(data = va_energy_equity_by_county, aes(fill = avg_annual_energy_cost)) +
-#  geom_sf(data = va_energy_equity_by_county, aes(fill = number1,text=paste0(county,"\nEnergy Expenditures: $",avg_annual_energy_cost)),alpha=0) +
-#  scale_fill_gradientn(name="Average Annual Energy Cost \nin Dollars\n",colors=ceps_pal[1:5]) +
-#  coord_sf(xlim = c(-84, -75), ylim = c(36, 40), expand = FALSE)+
-#  labs(title = "Average Annual Energy Cost ($) for Counties in Virginia", caption = "Source: U.S. Department of Energy") +
-#  theme(panel.background = element_rect(fill = "#F0F0F0"),
-#        panel.grid = element_line(color="#F0F0F0"),
-#        axis.text = element_blank(),
-#        axis.ticks = element_blank(),
-#        plot.background=element_rect(fill="#F0F0F0"),
-#        plot.caption=element_text(hjust = 0.5,face="italic"),
-#        plot.subtitle = element_text(family="Helvetica",hjust=0.5,color="dimgrey"),
-#        plot.title =element_text(family="Helvetica",hjust=0.5,color="dimgrey"),
-#        legend.title=element_text(size=7),
-#        legend.text=element_text(size=7),
-#        legend.justification = "center",
-#        legend.background = element_rect(fill = "#F0F0F0"),
-#        text = element_text(family = "Helvetica",color = "dimgrey"))
-#va_avg_annual_energy_cost
-
-#energy burden map showing average energy expenditures as percent of income by county
-#va_avg_annual_energy_percent_exp <-  ggplot() +
-#  geom_sf(data = virginia_outline, fill = NA,color="dimgrey") +
-#  geom_sf(data = va_energy_equity_by_county, aes(fill = avg_energy_burden_as_percent_income)) +
-#  geom_sf(data = va_energy_equity_by_county, aes(fill = number2,text=paste0(county,"\nEnergy Expenditures: ",avg_energy_burden_as_percent_income,"%")),alpha=0) +
-#  scale_fill_gradientn(name="Average Annual Energy Cost \nas Percentage of Income\n",colors=ceps_pal[1:5]) +
-#  coord_sf(xlim = c(-84, -75), ylim = c(36, 40), expand = FALSE) +
-#  labs(title = "Average Energy Burden (% income) for Counties in Virginia", caption = "Source: U.S. Department of Energy") +
-#  theme(panel.background = element_rect(fill = "#F0F0F0"),
-#        panel.grid = element_line(color="#F0F0F0"),
-#        axis.text = element_blank(),
-#        axis.ticks = element_blank(),
-#        plot.background=element_rect(fill="#F0F0F0"),
-#        plot.caption=element_text(hjust = 0.5,face="italic"),
-#        plot.subtitle = element_text(family="Helvetica",hjust=0.5,color="dimgrey"),
-#        plot.title =element_text(family="Helvetica",hjust=0.5,color="dimgrey"),
-#        legend.title=element_text(size=7),
-#        legend.text=element_text(size=7),
-#        legend.justification = "center",
-#        legend.background = element_rect(fill = "#F0F0F0"),
-#        text = element_text(family = "Helvetica",color = "dimgrey"))
-#va_avg_annual_energy_percent_exp
-
-#va_avg_annual_energy_cost_p <- ggplotly(va_avg_annual_energy_cost,tooltip =c("text")) %>%
-#  layout(title = list(text=paste0("Average Annual Energy Cost ($) for Counties in Virginia"),titlefont=list(size=15)),
-#         xaxis=list(title = paste0("<i>","<sub>","Source: U.S. Department of Energy","<sub>","<i>"),titlefont=list(size=14)))%>%
-#  config(displaylogo = FALSE,
-#         modeBarButtonsToRemove = c("pan2d","select2d","lasso2d","zoom2d","autoScale2d","resetScale2d","toggleSpikelines"))%>%
-#  style(hoveron = "fills")
-#va_avg_annual_energy_cost_p
-
-#va_avg_annual_energy_percent_exp_p <- ggplotly(va_avg_annual_energy_percent_exp,tooltip = c("text")) %>%
-#  layout(title = list(text=paste0("Average Energy Burden (% income) for Counties in Virginia"),titlefont=list(size=15)),
-#         xaxis=list(title = paste0("<i>","<sub>","Source: U.S. Department of Energy","<sub>","<i>"),titlefont=list(size=14)))%>%
-#  config(displaylogo = FALSE,
-#         modeBarButtonsToRemove = c("pan2d","select2d","lasso2d","zoom2d","autoScale2d","resetScale2d","toggleSpikelines"))%>%
-#  style(hoveron = "fills")
-#va_avg_annual_energy_percent_exp_p
-#-------------------------------------------------------------------------------------
-#OR
-#OPTION B---------------------------------------------------------------------------
-#energy burden map showing average energy expenditures by county
-va_avg_annual_energy_cost <- ggplot() +
-  geom_sf(data = virginia_outline, fill = NA, color = "dimgrey") +
-  geom_sf(data = va_energy_equity_by_county, aes(
-    fill = avg_annual_energy_cost,
-    text = paste0(county, "\nEnergy Expenditures: $", avg_annual_energy_cost)
-  )) +
-  scale_fill_gradientn(name = "Average Annual Energy Cost \nin Dollars\n", colors =
-                         ceps_pal[1:5]) + #setting alpha adds some transparency
-  coord_sf(xlim = c(-84,-75),
-           ylim = c(36, 40),
-           expand = FALSE) +
-  labs(title = "Average Annual Energy Cost ($) for Counties in Virginia", caption = "Source: U.S. Department of Energy") +
-  theme(
-    panel.background = element_rect(fill = "#F0F0F0"),
-    panel.grid = element_line(color = "#F0F0F0"),
-    axis.text = element_blank(),
-    axis.ticks = element_blank(),
-    plot.background = element_rect(fill = "#F0F0F0"),
-    plot.caption = element_text(hjust = 0.5, face = "italic"),
-    plot.subtitle = element_text(
-      family = "Helvetica",
-      hjust = 0.5,
-      color = "dimgrey"
-    ),
-    plot.title = element_text(
-      family = "Helvetica",
-      hjust = 0.5,
-      color = "dimgrey"
-    ),
-    legend.title = element_text(size = 7),
-    legend.text = element_text(size = 7),
-    legend.justification = "center",
-    legend.background = element_rect(fill = "#F0F0F0"),
-    text = element_text(family = "Helvetica", color = "dimgrey")
-  )
-va_avg_annual_energy_cost
-
-#energy burden map showing average energy expenditures as percent of income by county
-va_avg_annual_energy_percent_exp <- ggplot() +
-  geom_sf(data = virginia_outline, fill = NA, color = "dimgrey") +
-  geom_sf(data = va_energy_equity_by_county,
-          aes(
-            fill = avg_energy_burden_as_percent_income,
-            text = paste0(
-              county,
-              "\nEnergy Expenditures: ",
-              avg_energy_burden_as_percent_income,
-              "%"
-            )
-          )) +
-  scale_fill_gradientn(name = "Average Annual Energy Cost \nas Percentage of Income\n", colors =
-                         ceps_pal[1:5]) + #setting alpha adds some transparency
-  coord_sf(xlim = c(-84,-75),
-           ylim = c(36, 40),
-           expand = FALSE) +
-  labs(title = "Average Energy Burden (% income) for Counties in Virginia", caption = "Source: U.S. Department of Energy") +
-  theme(
-    panel.background = element_rect(fill = "#F0F0F0"),
-    panel.grid = element_line(color = "#F0F0F0"),
-    axis.text = element_blank(),
-    axis.ticks = element_blank(),
-    plot.background = element_rect(fill = "#F0F0F0"),
-    plot.caption = element_text(hjust = 0.5, face = "italic"),
-    plot.subtitle = element_text(
-      family = "Helvetica",
-      hjust = 0.5,
-      color = "dimgrey"
-    ),
-    plot.title = element_text(
-      family = "Helvetica",
-      hjust = 0.5,
-      color = "dimgrey"
-    ),
-    legend.title = element_text(size = 7),
-    legend.text = element_text(size = 7),
-    legend.justification = "center",
-    legend.background = element_rect(fill = "#F0F0F0"),
-    text = element_text(family = "Helvetica", color = "dimgrey")
-  )
-va_avg_annual_energy_percent_exp
-
-va_avg_annual_energy_cost_p <-
-  ggplotly(va_avg_annual_energy_cost, tooltip = "text") %>%
-  layout(
-    title = list(
-      text = paste0("Average Annual Energy Cost ($) for Counties in Virginia"),
-      titlefont = list(size = 15)
-    ),
-    xaxis = list(
-      title = paste0(
-        "<br>",
-        "<i>",
-        "<sub>",
-        "Source: U.S. Department of Energy",
-        "<sub>",
-        "<i>"
-      ),
-      titlefont = list(size = 14)
-    )
-  ) %>%
-  config(
-    displaylogo = FALSE,
-    modeBarButtonsToRemove = c(
-      "pan2d",
-      "select2d",
-      "lasso2d",
-      "zoom2d",
-      "autoScale2d",
-      "resetScale2d",
-      "toggleSpikelines"
-    )
-  )
-va_avg_annual_energy_cost_p
-
-va_avg_annual_energy_percent_exp_p <-
-  ggplotly(va_avg_annual_energy_percent_exp, tooltip = "text") %>%
-  layout(
-    title = list(
-      text = paste0("Average Energy Burden (% income) for Counties in Virginia"),
-      titlefont = list(size = 15)
-    ),
-    xaxis = list(
-      title = paste0(
-        "<br>",
-        "<i>",
-        "<sub>",
-        "Source: U.S. Department of Energy",
-        "<sub>",
-        "<i>"
-      ),
-      titlefont = list(size = 14)
-    )
-  ) %>%
-  config(
-    displaylogo = FALSE,
-    modeBarButtonsToRemove = c(
-      "pan2d",
-      "select2d",
-      "lasso2d",
-      "zoom2d",
-      "autoScale2d",
-      "resetScale2d",
-      "toggleSpikelines"
-    )
-  )
-va_avg_annual_energy_percent_exp_p
-#----------------------------------------------------------------------------------------
-
-#creating reference figures
-#data not currently in db, so assigning values manually
-#2018 energy expenditure per capita from EIA data (https://www.eia.gov/state/seds/data.php?incfile=/state/seds/sep_sum/html/rank_pr.html&sid=US)
-#median income from Census data (https://www.census.gov/search-results.html?q=2018+income&page=1&stateGeo=none&searchtype=web&cssp=SERP&_charset_=UTF-8)
-virginia_2018_energy_expenditures_per_capita = 3601
-us_2018_energy_expenditures_per_capita = 3891
-
-virginia_median_income = 71564
-us_median_income = 60293
-
-dollar_reference_table <- data.table(
-  category = c("Virginia", "U.S."),
-  value = c(
-    virginia_2018_energy_expenditures_per_capita,
-    us_2018_energy_expenditures_per_capita
-  )
-)
-
-percentage_of_income_reference_table <-
-  data.table(
-    category = c("Virginia", "U.S."),
-    value = c(
-      virginia_2018_energy_expenditures_per_capita / virginia_median_income *
-        100,
-      us_2018_energy_expenditures_per_capita / us_median_income * 100
-    )
-  )
-
-dollar_reference_figure <-
-  ggplot(dollar_reference_table,
-         mapping = aes(x = category, y = value, fill = category)) +
-  geom_bar(position = "dodge",
-           stat = "identity",
-           aes(
-             group = category,
-             text = paste0("Value: ", value, "\n", "Variable: ", category)
-           )) +
-  xlab(NULL) + ylab("Energy Cost (Dollars)") +
-  labs(title = "2018 Energy Expenditures per Capita in Dollars",
-       caption = "Source: U.S. Energy Information Administration",
-       subtitle = "U.S. vs Virginia") +
-  scale_fill_manual(values = ceps_pal[1:2]) +
-  theme_ceps() +
-  theme(legend.position = "none")
-dollar_reference_figure
-
-dollar_reference_figure_p <-
-  ggplotly_wrapper(
-    list(
-      figure = dollar_reference_figure,
-      x_label = NULL,
-      source_description = "Source: U.S. Energy Information Administration",
-      title_name = "2018 Energy Expenditures per Capita in Dollars",
-      subtitle_description = "U.S. vs Virginia",
-      y_label = "Energy Cost (Dollars)"
-    )
-  )
-dollar_reference_figure_p
-
-percent_income_reference_figure <-
-  ggplot(
-    percentage_of_income_reference_table,
-    mapping = aes(x = category, y = value, fill = category)
-  ) +
-  geom_bar(position = "dodge",
-           stat = "identity",
-           aes(
-             group = category,
-             text = paste0("Value: ", round(value, 3), "\n", "Variable: ", category)
-           )) +
-  xlab(NULL) + ylab("Energy Cost (Percentage of Income)") +
-  labs(title = "2018 Energy Expenditures per Capita as a Percentage of Median Income",
-       caption = "Source: U.S. Census Bureau, U.S. Energy Information Administration",
-       subtitle = "U.S. vs Virginia") +
-  scale_fill_manual(values = ceps_pal[1:2]) +
-  theme_ceps() +
-  theme(legend.position = "none")
-percent_income_reference_figure
-
-percent_income_reference_figure_p <-
-  ggplotly_wrapper(
-    list(
-      figure = percent_income_reference_figure,
-      x_label = NULL,
-      source_description = "Source: U.S. Census Bureau, U.S. Energy Information Administration",
-      title_name = "2018 Energy Expenditures per Capita as a Percentage of Median Income",
-      subtitle_description = "U.S. vs Virginia",
-      y_label = "Energy Cost (Percentage of Income)"
-    )
-  )
-percent_income_reference_figure_p
-
-#------------------------------------------------------------------------------------------------------------------------------------------------------
-#Saving only the plots that the dashboard uses. This will save R image file into cep-viz folder. Move that R image file into the dashboard file and
-#open those objects into the global environment in the dashboard project.
+#save plot objects to dashboard_output.Rdata
 save(
   single_ring_renewable_donut_p,
   single_ring_carbon_free_donut_p,
-  single_ring_renewable_donut_p,
-  single_ring_carbon_free_donut_p,
+  single_ring_storage_capacity_donut_p,
+  va_annual_production_pie_chart_p_with_legend,
   va_annual_production_area_p,
-  va_annual_production_2019_pie_chart_p_with_legend,
-  co2_combined_emissions_line_p,
-  co2_combined_emissions_line_p,
-  carbon_by_fuel_emissions_stacked_p,
+  va_annual_consumption_pie_chart_p_with_legend,
   va_annual_consumption_area_p,
-  va_annual_consumption_area_p,
-  va_annual_consumption_2018_pie_chart_p_with_legend,
-  percent_renewable_and_carbon_free_line_p,
-  percent_carbon_free_line_p,
-  percent_renewable_and_schedule_goal_combined_line_p,
-  va_gen_w_commas,
-  va_con_w_commas,
-  virginia_emissions_electric_commas,
   single_ring_sw_capacity_donut_p,
-  percent_renewable_and_carbon_free_goal_combined_line_p,
+  single_ring_renewable_donut_p,
+  single_ring_offshore_wind_capacity_donut_p,
+  percent_renewable_and_carbon_free_line_p,
+  rps_renewable_line_p,
+  va_elec_net_imports_line_p,
   annual_carbon_free_generation_by_type_line_p,
   solar_generation_time_series_line_p,
   wind_projected_generation_time_series_line_p,
   wind_projected_capacity_line_p,
-  single_ring_offshore_wind_capacity_donut_p,
-  pjm_solar,
-  investment_by_IOUs,
-  pjm_storage,
-  single_ring_storage_capacity_donut_p,
-  consumption_per_capita_line_p,
-  consumption_per_gdp_line_p,
+  single_ring_carbon_free_donut_p,
+  yearly_values_by_size,
+  agency_category_progress_plot,
+  apco_ee_plot,
+  apco_plot,
+  dom_ee_plot,
+  dominion_plot,
+  odp_ee_plot,
+  odp_plot,
+  co2_combined_emissions_line_p,
+  carbon_by_fuel_emissions_stacked_p,
   emissions_per_capita_line_p,
   emissions_per_gdp_line_p,
-  pjm_wind,
-  va_elec_net_imports_line_p,
-  rps_renewable_line_p,
-  
-  #va_avg_annual_energy_cost_p,
-  #va_avg_annual_energy_percent_exp_p,
-  va_avg_annual_energy_cost,
-  va_avg_annual_energy_percent_exp,
-  
-  dollar_reference_figure,
-  dollar_reference_figure_p,
-  percent_income_reference_figure,
-  percent_income_reference_figure_p,
-  
-  annual_savings_2020_2022_stacked_bar_chart,
-  annual_savings_2020_2022_stacked_bar_chart_p,
-  apco_dom_historic_goal_sales_combined_line_p,
+  #energy efficiency data for the reactive visualizations
+  size_1_use,
+  size_2_use,
+  size_3_use,
+  size_4_use,
+  size_5_use,
+  culture,
+  health_and_human_svs,
+  transportation,
+  natural_resources,
+  agriculture_and_forestry,
+  education,
+  administration,
+  public_safety_and_homeland_security,
+  independent_agencies,
+  commerce_and_trade,
+  veterans_and_defense_affairs,
+  other,
+  theme_colors,
   file = "dashboard_output.RData"
 )
 
