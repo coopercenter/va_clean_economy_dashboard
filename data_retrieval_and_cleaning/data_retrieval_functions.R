@@ -60,7 +60,7 @@ updateEIA826Data <- function(database="postgres") {
   library(readxl);library(lubridate); library(data.table)
   library(RMySQL);library(stringr); library(arrow)
   library(RPostgres)
-  #  database="postgres" 
+#  database="postgres" 
   # Set table name
   table="eia_f826_data"
   # db_driver = dbDriver("MySQL")
@@ -90,7 +90,7 @@ updateEIA826Data <- function(database="postgres") {
   #length(update_years)
   for (year in update_years) {
     # In 2017, EIA changed the way the file are stored
-    #    year = 2020
+#    year = 2020
     if(year>=2017) {
       if(year == this_year) {
         path = "https://www.eia.gov/electricity/data/eia861m/xls/"
