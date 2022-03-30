@@ -43,9 +43,7 @@ pie_chart_figure_p <- function(data_table,title_name=NULL,character_list=NULL,le
              showlegend=F,
              annotations=list(x=0.5,y=-0.1,text=paste0("<i>","<sub>",source_description,"<sub>","</i>"),showarrow=F,xref='paper',yref='paper',font=list(size=14,family = "Helvetica",color="dimgrey")),
              font = list(family="Helvetica",color="dimgrey"),
-             paper_bgcolor="#F0F0F0", plot_bgcolor="#F0F0F0")%>%
-      config(displaylogo = FALSE,
-             modeBarButtonsToRemove = c("zoomIn2d", "zoomOut2d","pan2d","select2d","lasso2d","hoverCompareCartesian","zoom2d","autoScale2d","resetScale2d"))
+             paper_bgcolor="#F0F0F0", plot_bgcolor="#F0F0F0")
   }
   else{
     figure <- plot_ly(data_table,labels=~variable,values=~value,type='pie',hoverinfo="percent+label",marker=list(colors=theme_colors),sort=F,text=pct,textposition = "inside",textinfo = "text") %>%
@@ -53,9 +51,7 @@ pie_chart_figure_p <- function(data_table,title_name=NULL,character_list=NULL,le
              annotations=list(x=0.5,y=-0.1,text=paste0("<i>","<sub>",source_description,"<sub>","</i>"),showarrow=F,xref='paper',yref='paper',font=list(size=14,family = "Helvetica",color="dimgrey")),
              font = list(family="Helvetica",color="dimgrey"),
              paper_bgcolor="#F0F0F0", plot_bgcolor="#F0F0F0",
-             legend = list(x = 100, y = 0.5))%>%
-      config(displaylogo = FALSE,
-             modeBarButtonsToRemove = c("zoomIn2d", "zoomOut2d","pan2d","select2d","lasso2d","hoverCompareCartesian","zoom2d","autoScale2d","resetScale2d"))
+             legend = list(x = 100, y = 0.5))
   }
   return(figure)
 }
