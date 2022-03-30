@@ -2,6 +2,8 @@ lbry<-c("data.table", "RPostgreSQL",  "tidyr", "dplyr","arrow","stringr",
         "tools","lubridate", "Hmisc", "here", "readxl","read_xlsx")
 test <- suppressMessages(lapply(lbry, require, character.only=TRUE, warn.conflicts = FALSE, quietly = TRUE))
 rm(test,lbry)
+
+#A lot of data retrieval functionality is in these data retrieval functions
 source(here("data_retrieval_and_cleaning","data_retrieval_functions.R"))
 #
 # Update EIA time series; saving to the db is done inside the sourced code
@@ -24,7 +26,7 @@ setnames(va_real_gsp,2,"va_rgsp")
 va_state_info = merge(va_pop,va_real_gsp,by="date",all=TRUE)
 dbRemoveTable(db,"va_state_info")
 dbWriteTable(db,"va_state_info",va_state_info,append=F,row.names=F)
-# Do not remove this dqta.table yet. It is used to calculate intensities.
+# Do not remove this data table yet. It is used to calculate intensities.
 #------------------------------------------------------#
 #Next, update EIA_f826 data
 # This function pulls EIA data and updates the postgres data tables:
@@ -73,10 +75,59 @@ rm(annual_va_utility_data)
 # Currently (2021) the dashboard displays energy per capita
 # maybe this should be changed
 #Energy intensity
+#
+# Map local names to EIA data series (copied from dashboard_calculations.R)
+#
+eia_name=c("ELEC_GEN_COW_VA_99_A",
+           "ELEC_GEN_PEL_VA_99_A",
+           "ELEC_GEN_NG_VA_99_A",
+           "ELEC_GEN_NUC_VA_99_A",
+           "ELEC_GEN_SUN_VA_99_A",
+           "ELEC_GEN_DPV_VA_99_A",
+           "ELEC_GEN_HYC_VA_99_A",
+           "ELEC_GEN_HPS_VA_99_A",
+           "ELEC_GEN_WND_VA_99_A",
+           "ELEC_GEN_WWW_VA_99_A",
+           "ELEC_GEN_WAS_VA_99_A",
+           "ELEC_GEN_ALL_VA_99_A",
+           "SEDS_TETCB_VA_A",
+           "SEDS_TERCB_VA_A",
+           "SEDS_TECCB_VA_A",
+           "SEDS_TEICB_VA_A",
+           "SEDS_TEACB_VA_A",
+           "SEDS_ELISP_VA_A",
+           "EMISS_CO2_TOTV_EC_TO_VA_A",
+           "EMISS_CO2_TOTV_TT_TO_VA_A")
+local_name=c("Coal",
+             "Oil",
+             "Gas",
+             "Nuclear",
+             "Solar_utility", 
+             "Solar_distributed",
+             "Hydropower",
+             "Pumped_storage",
+             "Wind",
+             "Wood",
+             "Other_biomass",
+             "Total_gen",
+             "Total_energy_cons",
+             "Residential",
+             "Commercial",
+             "Industrial",
+             "Transportation",
+             "Imported_electricity",
+             "Electric_sector_CO2_emissions",
+             "Total_CO2_emissions")
+
+setnames(eia_annual_data,
+         eia_name, local_name)
+
+
 intensity_data = merge(eia_annual_data[Total_energy_cons!=0 & Total_CO2_emissions != 0,
                             .(date,Total_energy_cons,Total_CO2_emissions)],
                        va_state_info,by="date",all=TRUE)
 intensity_data[,energy_consumption_per_capita := Total_energy_cons/va_pop]
+
 #### Need to work out the units to report
 intensity_data[!is.na(va_rgsp),
                energy_consumption_per_gdp := Total_energy_cons*1000/va_rgsp]
@@ -169,34 +220,34 @@ rm(electricity_emissions_by_fuel)
 ### The origins of this spreadsheet are not documented and the data is 
 ###    pertty worthless
 #read in dataset
-file_name = here('raw_data','energy_efficiency_programs.xlsx')
-current_EE_programs <- data.table(read_excel(file_name, col_names = TRUE))
-rm(file_name)
+#file_name = here('raw_data','energy_efficiency_programs.xlsx')
+#current_EE_programs <- data.table(read_excel(file_name, col_names = TRUE))
+#rm(file_name)
 # This next line does not appear to be used
 # dominion_current_EE_data_through_2018 <- current_EE_programs[c(2,4:8),]
 
 #upload to db
-dbWriteTable(db, 'current_ee_programs', current_EE_programs, row.names=FALSE, overwrite = TRUE)
-rm(current_EE_programs)
+#dbWriteTable(db, 'current_ee_programs', current_EE_programs, row.names=FALSE, overwrite = TRUE)
+#rm(current_EE_programs)
 
 ### Once again, the source of this data is undocumented. Its quality is unknown and suspect
 ### This part of the dashboard needs to be completely restructured.
 #read in dataset
-file_name = here('raw_data','virginia_annual_savings_through_2020.xlsx')
-virginia_annual_savings_through_2020 <- data.table(read_excel(file_name, col_names = FALSE))
-file_name = here('raw_data','virginia_annual_savings_through_2022.xlsx')
-virginia_annual_savings_through_2022 <- data.table(read_excel(file_name, col_names = FALSE))
-rm(file_name)
+#file_name = here('raw_data','virginia_annual_savings_through_2020.xlsx')
+#virginia_annual_savings_through_2020 <- data.table(read_excel(file_name, col_names = FALSE))
+#file_name = here('raw_data','virginia_annual_savings_through_2022.xlsx')
+#virginia_annual_savings_through_2022 <- data.table(read_excel(file_name, col_names = FALSE))
+#rm(file_name)
 #replacing row names 
-setnames(virginia_annual_savings_through_2020,c("Company Name", "MWh"))
-setnames(virginia_annual_savings_through_2022,c("Company Name", "MWh"))
+#setnames(virginia_annual_savings_through_2020,c("Company Name", "MWh"))
+#setnames(virginia_annual_savings_through_2022,c("Company Name", "MWh"))
 
-dbWriteTable(db, 'virginia_annual_savings_through_2020', virginia_annual_savings_through_2020, row.names=FALSE, overwrite = TRUE)
-dbWriteTable(db, 'virginia_annual_savings_through_2022', virginia_annual_savings_through_2022, row.names=FALSE, overwrite = TRUE)
-rm(virginia_annual_savings_through_2020,virginia_annual_savings_through_2022)
+#dbWriteTable(db, 'virginia_annual_savings_through_2020', virginia_annual_savings_through_2020, row.names=FALSE, overwrite = TRUE)
+#dbWriteTable(db, 'virginia_annual_savings_through_2022', virginia_annual_savings_through_2022, row.names=FALSE, overwrite = TRUE)
+#rm(virginia_annual_savings_through_2020,virginia_annual_savings_through_2022)
 
 
-## Retrieving the EnergyCAP data for the energy efficiency part of the dashboard
+## Retrieving the EnergyCAP data for the new Energy Efficiency part of the dashboard
 
 #get the key
 key <- source(here('data_retrieval_and_cleaning/EnergyCAP_API_key.R'))

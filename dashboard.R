@@ -148,7 +148,7 @@ ui <- tagList(
           #adding in new tabs for Lead By Example and the Energy Efficiency Mandates
           tabBox(height = '800px',width='300px',
                  id='energy efficiency tabs',
-                 tabPanel('Lead By Example', style='background: #F0F0F0; border: #F0F0F0',
+                 tabPanel('Lead By Example', style='background: #F0F0F0',
                           h2('Lead by Example'),
                           h4(tags$div("This page highlights the facility tracking goals specified in",tags$a(href="https://law.lis.virginia.gov/vacode/title2.2/chapter6/section2.2-604.2/",
                                                                                                              "§2.2-604.2"),", part of Virginia Energy's",
@@ -616,7 +616,7 @@ server <- function(input, output) {
   
   #html outut for the energy efficiency program definitions
   output$ee_requirement_definitions <- renderUI({
-    HTML("<b> Total EE program costs:</b> Provide for the submission of (a) petition(s) for approval of EE programs with projected costs (for design, implementation, and operation) of min. $870M between July 1 2018 - July 1 2028.
+    HTML("<b> Total EE program costs:</b> Provide for the submission of (a) petition(s) for approval of Energy Efficiency programs with projected costs (for design, implementation, and operation) of min. $870M between July 1 2018 - July 1 2028.
          <br> <b>15% carve out:</b> At least 15 percent of proposed costs shall be allocated to programs designed to benefit low-income, elderly, or disabled individuals or veterans.
          <br> <b>HB2789:</b> Submit a petition for approval for a 3-yr EE program for LI, elderly, disabled individuals or veterans costing up to $25M (shall be deemed part of the $870M requirement)")
   })

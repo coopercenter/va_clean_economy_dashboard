@@ -1,20 +1,12 @@
-# library(groundhog)
-# groundhog.day = "2021-09-01"
-# pkgs = c("data.table", "RPostgreSQL", "scales", 'maps', "tidyr", "dplyr",
-#         "tools", "sf", "tools", "rnaturalearth", "rnaturalearthdata", "rgeos",
-#          "ggplot2", "zoo", "lubridate", "Hmisc", "here")
-# groundhog.library(pkgs, groundhog.day)
+#PREP------------------------------------------------------------------------------------------------------------------------------------
 lbry<-c("data.table", "RPostgreSQL", "scales", 'maps', "tidyr", "dplyr",
         "tools", "sf", "tools", "rnaturalearth", "rnaturalearthdata", "rgeos",
         "ggplot2", "zoo", "lubridate", "Hmisc", "here",'stringr')
 test <- suppressMessages(lapply(lbry, require, character.only=TRUE, warn.conflicts = FALSE, quietly = TRUE))
 rm(test,lbry)
 max_eia_annual_data_year = 2020
-#custom color palette
-# need a new color for wind.
-ceps_pal <- c("#00A087B2", "#3C5488B2", "#CEA5AC", "#BE7E8A", "#4DBBD5B2", "#91D1C2B2","#D9C6C9","#8491B4B2","#5868AC","#6FB3D9","#56BD96","#99A9E2","#A94F64","#B0DEFA","#99EEBB","#8FD3FE")
 
-
+#CONNECT TO DATABASE----------------------------------------------------------------------------------------------------------------------
 # Open database connection, load in all saved data tables then close db connection
 
 db_driver = dbDriver("PostgreSQL")
@@ -23,23 +15,21 @@ db <- dbConnect(db_driver,user=db_user, password=ra_pwd,dbname="postgres", host=
 #load in metadata
 metadata <- data.table(dbGetQuery(db,"select * from metadata ;"))
 
-#load in data on SO2, NOx and CO2 
+#Emissions Page Data Loading--------------------------------------------------------------------------------------------------------------
+#load in data on SO2, NOx and CO2
 va_electricity_emissions_by_fuel <- data.table(dbGetQuery(db, "select * from va_electricity_emissions_by_fuel ;")) #units = short tons
-#va_annual_emissions <- data.table(dbGetQuery(db, "select * from va_annual_emissions ;")) #units = short tons
 
 #load in energy efficiency data: energy and CO2 per capita and per GDP
 intensity_data <- data.table(dbGetQuery(db,"select * from intensity_data ;"))
 
-# Energy efficiency data: rework this material from scratch.
-virginia_annual_savings_through_2022 <- data.table(dbGetQuery(db,"select * from virginia_annual_savings_through_2022 ;"))
-virginia_annual_savings_through_2020 <- data.table(dbGetQuery(db,"select * from virginia_annual_savings_through_2020 ;"))
-apco_dom_VCEA_goals<-data.table(dbGetQuery(db,"select * from \"VCEA_energy_efficiency\" ;"))
+#Energy Efficiency Page Data Loading------------------------------------------------------------------------------------------------------
+lead_by_example_data <- data.table(dbGetQuery(db,"select * from energycap_place_meter_and_savings_data ;"))
+#the rest of the data for this page is currently in spreadsheets, for now
 
+#Generation and Capacity Page Data Loading------------------------------------------------------------------------------------------------
 #load in offshore wind projections
 # This data is suspect and needs to be vetted carefully
 offshore_wind_data <- data.table(dbGetQuery(db,"select * from offshore_wind ;"))
-# total_mw_offshore_wind <- data.table(dbGetQuery(db,"select * from total_mw_offshore_wind ;"))
-# total_production_forecast_offshore_wind <- data.table(dbGetQuery(db,"select * from total_production_forecast_offshore_wind ;"))
 
 #load in pjm solar and wind data & apco/dominion goals
 # Replace the subsequent 3 lines with 
@@ -47,8 +37,7 @@ plant_capacities = data.table(dbGetQuery(db,"select * from eia_plant_capacities 
 
 VCEA_onshore_wind_solar <- data.table(dbGetQuery(db,"select * from \"VCEA_onshore_wind_solar\" ;"))
 
-#load in APCO and Dominion historic sales (also ROS is in there)
-#apco_dom_sales<-data.table(dbGetQuery(db,"select apco_total_gwh,dom_total_gwh from elec_sales_through_2019_annual ;"))
+#load in Virginia annual utility sales
 va_utility_sales<-data.table(dbGetQuery(db,"select * from va_annual_utility_sales ;"))
 setnames(va_utility_sales,"year","Year")
 
@@ -57,41 +46,17 @@ setnames(va_utility_sales,"year","Year")
 VCEA <- data.table(dbGetQuery(db,"select * from vcea_provisions ;"))
 setnames(VCEA,"year","Year")
 
-rps_mandate_schedule <- data.table(dbGetQuery(db,"select * from clean_energy_renewable_goals ;"))
+#rps_mandate_schedule <- data.table(dbGetQuery(db,"select * from clean_energy_renewable_goals ;"))
 
-###
+#EIA Data Loading for Summary and Generation and Capacity Pages---------------------------------------------------------------------------
 # Load EIA annual time series table
 eia_annual_data <-data.table(dbGetQuery(db,"select * from eia_annual_data ;"))
-
-#-----------------------------#
-# Unused code
-#-----------------------------#
-# Energy Efficiency dataset
-# Not used. This data is worthless.
-#investment_by_IOUs <- data.table(dbGetQuery(db,"select * from current_ee_programs ;"))
-
-#load in capacity by fuel type data (likely will be replaced if we find better solar data)
-### This data is not used. It is essentially worthless.
-#whole_electric_industry_capacity <- data.table(dbGetQuery(db,"select * from whole_electric_industry_capacity ;"))
-
-#load in VA electricity imports
-# This is in the EIA_annual data table.
-#va_elec_import<-data.table(dbGetQuery(db,"select * from eia_seds_elisp_va_a ;"))[,date:=NULL]
-#setnames(va_elec_import,"year","Year")
-
-#load in energy equity data
-#energy_burden_county_percent_income <- data.table(dbGetQuery(db,"select * from energy_burden_county_percent_income ;"))
-#energy_burden_county_expenditures <- data.table(dbGetQuery(db,"select * from energy_burden_county_expenditures ;"))
-#load in utility sales data
-#va_utility_sales <- data.table(dbGetQuery(db,"select * from va_utility_sales ;"))
-#setnames(va_utility_sales,"year","Year")
-
-#-----------------------------#
-
 
 # End of db access for now
 dbDisconnect(db)
 # All data saved in the database is now loaded.
+
+#CLEANING AND RESTRUCTURING EIA DATA------------------------------------------------------------------------------------------------------
 
 #
 # Map local names to EIA data series
@@ -181,89 +146,6 @@ rps_mandate_schedule = melt(VCEA[,.(Year,apco_rps,dominion_rps)], id = "Year")
 rps_mandate_schedule[,variable := gsub("apco_rps","APCO",variable)]
 rps_mandate_schedule[,variable := gsub("dominion_rps","Dominion",variable)]
 
-lf_percent_renewable_and_schedule_combined_dt <- merge(lf_percent_renewable,
-                                                       rps_mandate_schedule,
-                                                       by=c("Year","variable","value"),all=T)
-#manually creating table of overall generation goals
-#creating table for facet grid 
-VCEA_goal_percent_gen = data.table(Year=c(2030,2040,2050,2060),
-                                   Percent_renewable_goal=c(30,30,30,30),
-                                   Percent_carbon_free_goal=c(NA,NA,100,100))
-lf_VCEA_goal_percent_gen    <- melt(VCEA_goal_percent_gen,id="Year")
-#creating table for regular line plot 
-lf_VCEA_goal_percent_gen_dt <- melt(VCEA_goal_percent_gen,id="Year")
-
-
-percent_renewable_carbon_free_combined <- merge(lf_percent_renewable_and_carbon_free[,.(Year,category=variable,historic=value)],
-                                                lf_VCEA_goal_percent_gen[,.(Year,category=variable,goal=value)],by=c("Year","category"),all=T)
-lf_percent_renewable_carbon_free_combined <- melt(percent_renewable_carbon_free_combined,id=c("Year","category"))
-lf_percent_renewable_carbon_free_combined <- lf_percent_renewable_carbon_free_combined[!is.na(value)]
-setnames(lf_percent_renewable_carbon_free_combined,old=c("variable","category"),new=c("category","variable"))
-
-lf_percent_renewable_carbon_free_combined[,variable:=gsub("Percent_renewable","Renewable",variable)]
-lf_percent_renewable_carbon_free_combined[,variable:=gsub("Percent_carbon_free","Carbon free",variable)]
-lf_percent_renewable_carbon_free_combined[,category:=gsub("goal","Goal",category)]
-lf_percent_renewable_carbon_free_combined[,category:=gsub("historic","Historic",category)]
-
-# This code ensures that historic data will appear first then goal data
-lf_percent_renewable_carbon_free_combined = lf_percent_renewable_carbon_free_combined[,category:=as.factor(category)]
-setattr(lf_percent_renewable_carbon_free_combined$category,"levels",c("Historic","Goal"))
-
-# Calculate the percent share of Dom & Apco sales of total sales in 2019
-###    This set of calculations needs to be vetted - wms 1/16/2022
-recent_year = max(va_utility_sales$Year)
-dom_percent_share = va_utility_sales[Year==recent_year,dom_total_gwh/va_total_sales_gwh]
-apco_percent_share = va_utility_sales[Year==recent_year,apco_total_gwh/va_total_sales_gwh]
-
-#calculating weighted average of DOM and APCO rps
-### Check the math here!!
-VCEA_RPS = VCEA[,
-        dom_and_apco_renewable:=(dominion_rps*100*dom_percent_share)+
-          (apco_rps*100*apco_percent_share)]
-#VCEA_renewable_portfolio_standards <- rbind(VCEA_renewable_portfolio_standards,list(2019,NA,NA,NA)) #adding a NA historic value so plot legend label is solid instead of dashed
-lf_dom_apco_rps <- melt(VCEA_RPS[Year<=2030,.(Year,dom_and_apco_renewable)],id="Year")
-
-lf_percent_renewable_carbon_free_combined_dt <- merge(lf_percent_renewable_and_carbon_free,
-                                                      lf_VCEA_goal_percent_gen_dt,by=c("Year","variable","value"),all=T)
-lf_percent_renewable_carbon_free_combined_dt <- merge(lf_percent_renewable_carbon_free_combined_dt,lf_dom_apco_rps,
-                                                      by=c("Year","variable","value"),all=T)
-
-lf_percent_renewable_carbon_free_combined_dt[variable=="Percent_renewable"|variable=="Percent_renewable_goal",variable:="VA renewable"]
-lf_percent_renewable_carbon_free_combined_dt[variable=="Percent_carbon_free"|variable=="Percent_carbon_free_goal",variable:="VA carbon free"]
-
-# APCO and Dominion historic sales vs VCEA goals----------------------------------------------------------------------------
-# Retrieve apco and dom sales from va_utility_sales
-apco_dom_historic_sales <- va_utility_sales[apco_total_gwh!=0,.(year, apco_total_gwh,dom_total_gwh)]
-lf_apco_dom_historic_sales <- melt(apco_dom_historic_sales,id="year")
-
-#manually creating table of sales goals (UPDATE 03/07/22: Comment out as this no longer seems to be used)
-#VCEA_goal_sales_reduction = data.table(year=c(2022,2023,2024,2025),
- #                                      apco_goal=c(14720.05985,14646.0897,14572.11955,14498.1494),
-  #                                     dom_goal=c(79655.137125,78646.84425,77638.551375,76630.2585))
-#lf_VCEA_goal_sales_reduction <- melt(VCEA_goal_sales_reduction,id="year")
-#lf_VCEA_goal_sales_reduction_dt <- melt(VCEA_goal_sales_reduction,id="year")
-
-#apco_dom_sales_combined <- merge(lf_apco_dom_historic_sales[,.(year,category=variable,historic=value)],lf_VCEA_goal_sales_reduction[,.(year,category=variable,goal=value)],by=c("year","category"),all=T)
-#lf_apco_dom_sales_combined <- melt(apco_dom_sales_combined,id=c("year","category"))
-#lf_apco_dom_sales_combined <- lf_apco_dom_sales_combined[!is.na(value)]
-
-#setnames(lf_apco_dom_sales_combined,old=c("variable","category"),new=c("category","variable"))
-
-#lf_apco_dom_sales_combined[,variable:=gsub("apco_total_gwh","APCO, historic",variable)]
-#lf_apco_dom_sales_combined[,variable:=gsub("dom_total_gwh","Dominion, historic",variable)]
-#lf_apco_dom_sales_combined[,variable:=gsub("apco_goal","APCO, goal",variable)]
-#lf_apco_dom_sales_combined[,variable:=gsub("dom_goal","Dominion, goal",variable)]
-#lf_apco_dom_sales_combined[,category:=gsub("goal","Goal",category)]
-#lf_apco_dom_sales_combined[,category:=gsub("historic","Historic",category)]
-
-
-#lf_apco_dom_sales_combined_dt <- merge(lf_apco_dom_historic_sales,lf_VCEA_goal_sales_reduction_dt,by=c("year","variable","value"),all=T)
-#lf_apco_dom_sales_combined_dt[variable=="apco_total_gwh"|variable=="apco_goal",variable:="APCO"]
-#lf_apco_dom_sales_combined_dt[variable=="dom_total_gwh"|variable=="dom_goal",variable:="Dominion"]
-
-# below code ensures that historic data will appear first then goal data
-#lf_apco_dom_sales_combined = lf_apco_dom_sales_combined[,category:=as.factor(category)]
-#setattr(lf_apco_dom_sales_combined$category,"levels",c("Historic","Goal"))
 
 # Solar & Wind Capacity vs VCEA goals -----------------------------------------------------------------------------------------------------
 # Creating working versions to keep formatting of tables intact when they are uploaded to dashboard
@@ -274,7 +156,7 @@ lf_apco_dom_historic_sales <- melt(apco_dom_historic_sales,id="year")
 #
 va_solar = plant_capacities[Prime_Mover=="PV",
                             .(id,capacity_mw = Nameplate_Capacity_MW,
-                               Plant_Name,Operating_Year)]
+                              Plant_Name,Operating_Year)]
 #Energy Storage
 # Currently this is battery storage only. VCEA specifies battery storage amounts
 # The display of storage may benefit from a little rethinking
@@ -282,30 +164,12 @@ va_storage <- plant_capacities[Prime_Mover=="BA",
                                .(id,capacity_mw = Nameplate_Capacity_MW,
                                  Plant_Name,Operating_Year)]
 
-# the storage_capacity_projections calculations do not appear to be used
-# storage_capacity_projections <- pjm_storage_working[status=="In Service",.(date=actual_in_service_date,storage=mfo)]
-# storage_capacity_projections <- merge(storage_capacity_projections,pjm_storage_working[status=="Active",.(date=projected_in_service_date,storage=mfo)],by=c("date","storage"),all=T)
-# 
-# storage_capacity_projections <- storage_capacity_projections[,.(storage=sum(storage)),by=date]
-# storage_capacity_projections <- storage_capacity_projections[,.(date,storage=cumsum(storage))]
-# 
-# lf_storage_capacity_projections <- melt(storage_capacity_projections,id="date")
-
-
 # Need to fix how on-shore and off-shore wind are derived
 # Currently there is no on-shore wind in Virginia
 # The 12 MW of off-shore wind in service in 2021 is handled manually at the plot
 va_wind <- plant_capacities[Prime_Mover=="WT",
-                                     .(id,capacity_mw = Nameplate_Capacity_MW,
-                                        Plant_Name,Operating_Year)]
-# Utility target values for onshore wind and solar
-#apco_onshore_wind_and_solar_mw doesn't exist
-#UPDATE 03/07/22, comment this section out as it is currently not used and needs overhaul
-#VCEA_onshore_wind_solar = VCEA[,.(date=as.Date(paste0(year,"-01-01")),
-#                apco_onshore_wind_and_solar_mw,dominion_onshore_wind_and_solar_mw)]
-#VCEA_onshore_wind_solar %>% tidyr::fill(everything())
-#setnames(VCEA_onshore_wind_solar,old=c("apco_onshore_wind_and_solar_mw","dominion_onshore_wind_and_solar_mw"),
-         #new=c("target_apco_onshore_wind_and_solar","target_dom_onshore_wind_and_solar"))
+                            .(id,capacity_mw = Nameplate_Capacity_MW,
+                              Plant_Name,Operating_Year)]
 
 # Projected Offshore Wind Capacity
 total_mw_offshore_wind = offshore_wind_data[,.(Year,CVOW_Pilot,CVOW_Stage_I,CVOW_Stage_II,CVOW_Stage_III,Total=Total_mw)]  #,
@@ -319,25 +183,6 @@ total_mw_offshore_wind<-melt(total_mw_offshore_wind,id="Year")
 # Remove underscores from variable names
 total_mw_offshore_wind[,variable:=gsub("_"," ",variable)]
 
-#---------------------------------------------------------------------------------------------------------
-
-#For energy efficiency figures--------------------------------------------------------------------------------------------
-#renaming columns so it can be accepted as input into piechart function
-#setnames(virginia_annual_savings_through_2020,old=c("Company Name","MWh"),new=c("variable","value"))
-#virginia_annual_savings_through_2020 = virginia_annual_savings_through_2020[,year:=2020
-                                                     #][variable!="Total Needed"]
-
-#setnames(virginia_annual_savings_through_2022,old=c("Company Name","MWh"),new=c("variable","value"))
-#virginia_annual_savings_through_2022 = virginia_annual_savings_through_2022[ ,`:=`(year=2022,
-                                                       # variable = gsub("Dominion$","Dominion (Gross savings)",variable)
-                                                      #)][variable!="Total Needed"]
-
-#manipulating datasets for stacked bar chart
-#virginia_annual_savings_2020_2022<-rbind(virginia_annual_savings_through_2020,virginia_annual_savings_through_2022)
-#virginia_annual_savings_2020_2022[,variable := gsub("DMME programs","Virginia Energy programs",variable)]
-#setattr(virginia_annual_savings_2020_2022$variable,"levels",
- #       c("Remaining Needed","APCO","C-PACE", "Virginia Energy programs","Dominion (Gross savings)","Energy Codes (modeled, adoption of 2015 IECC)","ESPCs  (modeled, MUSH and private)"))
-
 
 #-----------------------------------------REFORMATTING DATASETS--------------------------------------------------------------------
 #
@@ -347,43 +192,19 @@ cols = c("Year", "Coal", "Oil", "Gas", "Nuclear",
          "Wind", "Wood", "Other_biomass", "Total_gen")
 va_annual_generation = eia_annual_data[,..cols]
 va_gen_w_commas <- va_annual_generation[,lapply(.SD,format,big.mark=",",scientific=FALSE,trim=TRUE),
-                                                .SDcols = cols[2:length(cols)],by=Year]
+                                        .SDcols = cols[2:length(cols)],by=Year]
 gen_names <- names(va_gen_w_commas)
 good_gen_names <- capitalize(gsub("_"," ", gen_names))
 names(va_gen_w_commas) <- good_gen_names
 
-# reformatting the consumption dataset
-cols = c("Year","Residential","Commercial","Industrial","Transportation")
-va_annual_consumption <- eia_annual_data[,..cols]
-va_con_w_commas <- va_annual_consumption[,lapply(.SD,format,big.mark=",",scientific=FALSE,trim=TRUE),
-                                        .SDcols = cols[2:length(cols)],by=Year]
-#   
-# 
+
 #reformatting carbon emissions from electricity sector
 virginia_emissions_electric <- eia_annual_data[Electric_sector_CO2_emissions!=0,.(Year,Electric_sector_CO2_emissions)]
 virginia_emissions_electric_commas <- virginia_emissions_electric[,
-            Electric_sector_CO2_emissions:=signif(Electric_sector_CO2_emissions, digits=4)]
+                                                                  Electric_sector_CO2_emissions:=signif(Electric_sector_CO2_emissions, digits=4)]
 setnames(virginia_emissions_electric_commas,c('Year','Million Metric Tons of CO2'))
 
-#reformatting emissions compounds data
-### CHECK UNITS in display. The EIA data is in metric tons
-# Not sure why data is limited to after year 2000. May want to change this.
-# This data is redundant. Equivalent but more detailed data is in va_electricity_emissions_by_fuel
-# va_annual_emissions = va_annual_emissions[Year>=2000,.(Year,CO2=CO2_Metric_Tons,
-#                                                 SO2=SO2_Metric_Tons,
-#                                                 NOx=SO2_Metric_Tons)]
-#reformatting emissions compounds dataset
-
-# Data is in metric tons (emission rates are also adjusted to be based on metric tons)
-#va_electricity_emissions_by_fuel = va_electricity_emissions_by_fuel[Year >= 2000] #limit data to baseline year of 2000
-
-#CLEANING AND RESTRUCTURING THE ENERGYCAP API DATA
-#load in the energyCAP data from the database here
-db_driver = dbDriver("PostgreSQL")
-source(here::here("my_postgres_credentials.R"))
-db <- dbConnect(db_driver,user=db_user, password=ra_pwd,dbname="postgres", host=db_host)
-lead_by_example_data <- data.table(dbGetQuery(db,"select * from energycap_place_meter_and_savings_data ;"))
-dbDisconnect(db)
+#CLEANING AND RESTRUCTURING THE ENERGYCAP API DATA----------------------------------------------------------------------------------------------
 
 #filter by square footage greater than 5000 square feet
 lead_by_example_data <- lead_by_example_data %>% filter(size.value >= 5000.0)
@@ -476,12 +297,12 @@ LBE_building_tracker$agency_code <- trimws(LBE_building_tracker$agency_code)
 
 #make a new column of categories to assign to the agency names for more readable aggregation
 education <- c("CHRISTOPHER NEWPORT UNIVERSITY","GEORGE MASON UNIVERSITY","JAMES MADISON UNIVERSITY",
-                               "LONGWOOD COLLEGE","MARY WASHINGTON COLLEGE","NORFOLK STATE UNIVERSITY","OLD DOMINION UNIVERSITY",
-                               "Radford University","UNIVERSITY OF VIRGINIA","University of Virginia's College at Wise","Central Virginia Community College",
-                               'New River Community College','Patrick Henry Community College','Southwest Virginia Community College',
-                               'Virginia Community College System','Virginia Highlands Community College','Virginia Western Community College',
-                               'Wytheville Community College','VIRGINIA COMMONWEALTH UNIVERSITY','Virginia Polytechnic Institute and State University',
-                               'VIRGINIA STATE UNIVERSITY','WILLIAM AND MARY, COLLEGE OF','VIRGINIA MILITARY INSTITUTE',
+               "LONGWOOD COLLEGE","MARY WASHINGTON COLLEGE","NORFOLK STATE UNIVERSITY","OLD DOMINION UNIVERSITY",
+               "Radford University","UNIVERSITY OF VIRGINIA","University of Virginia's College at Wise","Central Virginia Community College",
+               'New River Community College','Patrick Henry Community College','Southwest Virginia Community College',
+               'Virginia Community College System','Virginia Highlands Community College','Virginia Western Community College',
+               'Wytheville Community College','VIRGINIA COMMONWEALTH UNIVERSITY','Virginia Polytechnic Institute and State University',
+               'VIRGINIA STATE UNIVERSITY','WILLIAM AND MARY, COLLEGE OF','VIRGINIA MILITARY INSTITUTE',
                "Roanoke Higher Education Authority",
                'VIRGINIA INSTITUTE OF MARINE SCIENCE',
                "Southwest Virginia 4-H Educational Center",
@@ -507,7 +328,7 @@ natural_resources <- c('VIRGINIA DEPARTMENT OF CONSERVATION AND RECREATION',
 agriculture_and_forestry <- c('Department of Forestry','VIRGINIA DEPARTMENT OF AGRICULTURE AND CONSUMER SERVICES')
 
 culture <- c('FRONTIER DISCOVERY MUSEUM','SCIENCE MUSEUM OF VIRGINIA','VIRGINIA MUSEUM OF FINE ARTS',
-               'THE BOARD OF REGENTS/GUNSTON','JAMESTOWN FOUNDATION')
+             'THE BOARD OF REGENTS/GUNSTON','JAMESTOWN FOUNDATION')
 
 administration <- c('VIRGINIA DEPARTMENT OF GENERAL SERVICES')
 
@@ -615,22 +436,22 @@ rm(LBE_building_tracker)
 
 #factor the agency categories for cleaner plotting
 sqft_over_5000$agency_category <- factor(sqft_over_5000$agency_category,levels=c("Administration",
-                                                 "Agriculture and Forestry",
-                                                 "Commerce and Trade",
-                                                 "Culture",
-                                                 "Education",
-                                                 "Health and Human Services",
-                                                 "Natural Resources",
-                                                "Public Safety and Homeland Security",
-                                                "Transportation",
-                                                "Veterans and Defense Affairs",
-                                                "Total"))
+                                                                                 "Agriculture and Forestry",
+                                                                                 "Commerce and Trade",
+                                                                                 "Culture",
+                                                                                 "Education",
+                                                                                 "Health and Human Services",
+                                                                                 "Natural Resources",
+                                                                                 "Public Safety and Homeland Security",
+                                                                                 "Transportation",
+                                                                                 "Veterans and Defense Affairs",
+                                                                                 "Total"))
 
 #load and reshape the new mandate data
 #eventually to be moved to the database
-eia_spending_prog <- read.csv(here('raw_data/eia_energy_efficiency_spending_progress.csv'))
-eia_standard_projections <- read.csv(here('raw_data/eia_energy_efficiency_resource_standard_projections.csv'))
-eia_spending_requirements <- read.csv(here('raw_data/eia_energy_efficiency_spending_requirements.csv'))
+eia_spending_prog <- read.csv(here('raw_data/energy_efficiency_spending_progress.csv'))
+eia_standard_projections <- read.csv(here('raw_data/energy_efficiency_resource_standard_projections.csv'))
+eia_spending_requirements <- read.csv(here('raw_data/energy_efficiency_spending_requirements.csv'))
 
 #filter by the max date on the spending progress data
 current <- eia_spending_prog %>% filter(date==max(date))
@@ -657,3 +478,183 @@ odp_reshaped <- melt(odp, 'date',c('odp_ee_costs','odp_15_percent_carve_out','od
   bind_cols(spending_goal = eia_spending_requirements$spending_category,
             spending_requirements = eia_spending_requirements$odp_required_2028)
 
+#UNUSED CODE-------------------------------------------------------------------------------------------------------------------------------------
+
+# library(groundhog)
+# groundhog.day = "2021-09-01"
+# pkgs = c("data.table", "RPostgreSQL", "scales", 'maps', "tidyr", "dplyr",
+#         "tools", "sf", "tools", "rnaturalearth", "rnaturalearthdata", "rgeos",
+#          "ggplot2", "zoo", "lubridate", "Hmisc", "here")
+# groundhog.library(pkgs, groundhog.day)
+
+# Energy Efficiency dataset
+# Not used. This data is worthless.
+#investment_by_IOUs <- data.table(dbGetQuery(db,"select * from current_ee_programs ;"))
+
+#load in capacity by fuel type data (likely will be replaced if we find better solar data)
+### This data is not used. It is essentially worthless.
+#whole_electric_industry_capacity <- data.table(dbGetQuery(db,"select * from whole_electric_industry_capacity ;"))
+
+#load in VA electricity imports
+# This is in the EIA_annual data table.
+#va_elec_import<-data.table(dbGetQuery(db,"select * from eia_seds_elisp_va_a ;"))[,date:=NULL]
+#setnames(va_elec_import,"year","Year")
+
+#load in energy equity data
+#energy_burden_county_percent_income <- data.table(dbGetQuery(db,"select * from energy_burden_county_percent_income ;"))
+#energy_burden_county_expenditures <- data.table(dbGetQuery(db,"select * from energy_burden_county_expenditures ;"))
+#load in utility sales data
+#va_utility_sales <- data.table(dbGetQuery(db,"select * from va_utility_sales ;"))
+#setnames(va_utility_sales,"year","Year")
+
+#va_annual_emissions <- data.table(dbGetQuery(db, "select * from va_annual_emissions ;")) #units = short tons
+
+
+# Energy efficiency data: rework this material from scratch.
+#virginia_annual_savings_through_2022 <- data.table(dbGetQuery(db,"select * from virginia_annual_savings_through_2022 ;"))
+#virginia_annual_savings_through_2020 <- data.table(dbGetQuery(db,"select * from virginia_annual_savings_through_2020 ;"))
+#apco_dom_VCEA_goals<-data.table(dbGetQuery(db,"select * from \"VCEA_energy_efficiency\" ;"))
+
+# total_mw_offshore_wind <- data.table(dbGetQuery(db,"select * from total_mw_offshore_wind ;"))
+# total_production_forecast_offshore_wind <- data.table(dbGetQuery(db,"select * from total_production_forecast_offshore_wind ;"))
+
+#apco_dom_sales<-data.table(dbGetQuery(db,"select apco_total_gwh,dom_total_gwh from elec_sales_through_2019_annual ;"))
+
+#lf_percent_renewable_and_schedule_combined_dt <- merge(lf_percent_renewable,
+#rps_mandate_schedule,
+#by=c("Year","variable","value"),all=T)
+#manually creating table of overall generation goals
+#creating table for facet grid 
+#VCEA_goal_percent_gen = data.table(Year=c(2030,2040,2050,2060),
+#                                  Percent_renewable_goal=c(30,30,30,30),
+#                                 Percent_carbon_free_goal=c(NA,NA,100,100))
+#lf_VCEA_goal_percent_gen    <- melt(VCEA_goal_percent_gen,id="Year")
+#creating table for regular line plot 
+#lf_VCEA_goal_percent_gen_dt <- melt(VCEA_goal_percent_gen,id="Year")
+
+
+#percent_renewable_carbon_free_combined <- merge(lf_percent_renewable_and_carbon_free[,.(Year,category=variable,historic=value)],
+#                                               lf_VCEA_goal_percent_gen[,.(Year,category=variable,goal=value)],by=c("Year","category"),all=T)
+#lf_percent_renewable_carbon_free_combined <- melt(percent_renewable_carbon_free_combined,id=c("Year","category"))
+#lf_percent_renewable_carbon_free_combined <- lf_percent_renewable_carbon_free_combined[!is.na(value)]
+#setnames(lf_percent_renewable_carbon_free_combined,old=c("variable","category"),new=c("category","variable"))
+
+#lf_percent_renewable_carbon_free_combined[,variable:=gsub("Percent_renewable","Renewable",variable)]
+#lf_percent_renewable_carbon_free_combined[,variable:=gsub("Percent_carbon_free","Carbon free",variable)]
+#lf_percent_renewable_carbon_free_combined[,category:=gsub("goal","Goal",category)]
+#lf_percent_renewable_carbon_free_combined[,category:=gsub("historic","Historic",category)]
+
+# This code ensures that historic data will appear first then goal data
+#lf_percent_renewable_carbon_free_combined = lf_percent_renewable_carbon_free_combined[,category:=as.factor(category)]
+#setattr(lf_percent_renewable_carbon_free_combined$category,"levels",c("Historic","Goal"))
+
+# Calculate the percent share of Dom & Apco sales of total sales in 2019
+###    This set of calculations needs to be vetted - wms 1/16/2022
+#recent_year = max(va_utility_sales$Year)
+#dom_percent_share = va_utility_sales[Year==recent_year,dom_total_gwh/va_total_sales_gwh]
+#apco_percent_share = va_utility_sales[Year==recent_year,apco_total_gwh/va_total_sales_gwh]
+
+#calculating weighted average of DOM and APCO rps
+### Check the math here!!
+#VCEA_RPS = VCEA[,
+#               dom_and_apco_renewable:=(dominion_rps*100*dom_percent_share)+
+#                (apco_rps*100*apco_percent_share)]
+#VCEA_renewable_portfolio_standards <- rbind(VCEA_renewable_portfolio_standards,list(2019,NA,NA,NA)) #adding a NA historic value so plot legend label is solid instead of dashed
+#lf_dom_apco_rps <- melt(VCEA_RPS[Year<=2030,.(Year,dom_and_apco_renewable)],id="Year")
+
+#lf_percent_renewable_carbon_free_combined_dt <- merge(lf_percent_renewable_and_carbon_free,
+#                                                     lf_VCEA_goal_percent_gen_dt,by=c("Year","variable","value"),all=T)
+#lf_percent_renewable_carbon_free_combined_dt <- merge(lf_percent_renewable_carbon_free_combined_dt,lf_dom_apco_rps,
+#                                                     by=c("Year","variable","value"),all=T)
+
+#lf_percent_renewable_carbon_free_combined_dt[variable=="Percent_renewable"|variable=="Percent_renewable_goal",variable:="VA renewable"]
+#lf_percent_renewable_carbon_free_combined_dt[variable=="Percent_carbon_free"|variable=="Percent_carbon_free_goal",variable:="VA carbon free"]
+
+# APCO and Dominion historic sales vs VCEA goals----------------------------------------------------------------------------
+# Retrieve apco and dom sales from va_utility_sales
+#apco_dom_historic_sales <- va_utility_sales[apco_total_gwh!=0,.(year, apco_total_gwh,dom_total_gwh)]
+#lf_apco_dom_historic_sales <- melt(apco_dom_historic_sales,id="year")
+
+#manually creating table of sales goals (UPDATE 03/07/22: Comment out as this no longer seems to be used)
+#VCEA_goal_sales_reduction = data.table(year=c(2022,2023,2024,2025),
+#                                      apco_goal=c(14720.05985,14646.0897,14572.11955,14498.1494),
+#                                     dom_goal=c(79655.137125,78646.84425,77638.551375,76630.2585))
+#lf_VCEA_goal_sales_reduction <- melt(VCEA_goal_sales_reduction,id="year")
+#lf_VCEA_goal_sales_reduction_dt <- melt(VCEA_goal_sales_reduction,id="year")
+
+#apco_dom_sales_combined <- merge(lf_apco_dom_historic_sales[,.(year,category=variable,historic=value)],lf_VCEA_goal_sales_reduction[,.(year,category=variable,goal=value)],by=c("year","category"),all=T)
+#lf_apco_dom_sales_combined <- melt(apco_dom_sales_combined,id=c("year","category"))
+#lf_apco_dom_sales_combined <- lf_apco_dom_sales_combined[!is.na(value)]
+
+#setnames(lf_apco_dom_sales_combined,old=c("variable","category"),new=c("category","variable"))
+
+#lf_apco_dom_sales_combined[,variable:=gsub("apco_total_gwh","APCO, historic",variable)]
+#lf_apco_dom_sales_combined[,variable:=gsub("dom_total_gwh","Dominion, historic",variable)]
+#lf_apco_dom_sales_combined[,variable:=gsub("apco_goal","APCO, goal",variable)]
+#lf_apco_dom_sales_combined[,variable:=gsub("dom_goal","Dominion, goal",variable)]
+#lf_apco_dom_sales_combined[,category:=gsub("goal","Goal",category)]
+#lf_apco_dom_sales_combined[,category:=gsub("historic","Historic",category)]
+
+
+#lf_apco_dom_sales_combined_dt <- merge(lf_apco_dom_historic_sales,lf_VCEA_goal_sales_reduction_dt,by=c("year","variable","value"),all=T)
+#lf_apco_dom_sales_combined_dt[variable=="apco_total_gwh"|variable=="apco_goal",variable:="APCO"]
+#lf_apco_dom_sales_combined_dt[variable=="dom_total_gwh"|variable=="dom_goal",variable:="Dominion"]
+
+# below code ensures that historic data will appear first then goal data
+#lf_apco_dom_sales_combined = lf_apco_dom_sales_combined[,category:=as.factor(category)]
+#setattr(lf_apco_dom_sales_combined$category,"levels",c("Historic","Goal"))
+
+# Utility target values for onshore wind and solar
+#apco_onshore_wind_and_solar_mw doesn't exist
+#UPDATE 03/07/22, comment this section out as it is currently not used and needs overhaul
+#VCEA_onshore_wind_solar = VCEA[,.(date=as.Date(paste0(year,"-01-01")),
+#                apco_onshore_wind_and_solar_mw,dominion_onshore_wind_and_solar_mw)]
+#VCEA_onshore_wind_solar %>% tidyr::fill(everything())
+#setnames(VCEA_onshore_wind_solar,old=c("apco_onshore_wind_and_solar_mw","dominion_onshore_wind_and_solar_mw"),
+#new=c("target_apco_onshore_wind_and_solar","target_dom_onshore_wind_and_solar"))
+
+# the storage_capacity_projections calculations do not appear to be used
+# storage_capacity_projections <- pjm_storage_working[status=="In Service",.(date=actual_in_service_date,storage=mfo)]
+# storage_capacity_projections <- merge(storage_capacity_projections,pjm_storage_working[status=="Active",.(date=projected_in_service_date,storage=mfo)],by=c("date","storage"),all=T)
+# 
+# storage_capacity_projections <- storage_capacity_projections[,.(storage=sum(storage)),by=date]
+# storage_capacity_projections <- storage_capacity_projections[,.(date,storage=cumsum(storage))]
+# 
+# lf_storage_capacity_projections <- melt(storage_capacity_projections,id="date")
+
+#For energy efficiency figures--------------------------------------------------------------------------------------------
+#renaming columns so it can be accepted as input into piechart function
+#setnames(virginia_annual_savings_through_2020,old=c("Company Name","MWh"),new=c("variable","value"))
+#virginia_annual_savings_through_2020 = virginia_annual_savings_through_2020[,year:=2020
+#][variable!="Total Needed"]
+
+#setnames(virginia_annual_savings_through_2022,old=c("Company Name","MWh"),new=c("variable","value"))
+#virginia_annual_savings_through_2022 = virginia_annual_savings_through_2022[ ,`:=`(year=2022,
+# variable = gsub("Dominion$","Dominion (Gross savings)",variable)
+#)][variable!="Total Needed"]
+
+#manipulating datasets for stacked bar chart
+#virginia_annual_savings_2020_2022<-rbind(virginia_annual_savings_through_2020,virginia_annual_savings_through_2022)
+#virginia_annual_savings_2020_2022[,variable := gsub("DMME programs","Virginia Energy programs",variable)]
+#setattr(virginia_annual_savings_2020_2022$variable,"levels",
+#       c("Remaining Needed","APCO","C-PACE", "Virginia Energy programs","Dominion (Gross savings)","Energy Codes (modeled, adoption of 2015 IECC)","ESPCs  (modeled, MUSH and private)"))
+
+# reformatting the consumption dataset
+#cols = c("Year","Residential","Commercial","Industrial","Transportation")
+#va_annual_consumption <- eia_annual_data[,..cols]
+#va_con_w_commas <- va_annual_consumption[,lapply(.SD,format,big.mark=",",scientific=FALSE,trim=TRUE),
+#.SDcols = cols[2:length(cols)],by=Year]
+#   
+# 
+
+#reformatting emissions compounds data
+### CHECK UNITS in display. The EIA data is in metric tons
+# Not sure why data is limited to after year 2000. May want to change this.
+# This data is redundant. Equivalent but more detailed data is in va_electricity_emissions_by_fuel
+# va_annual_emissions = va_annual_emissions[Year>=2000,.(Year,CO2=CO2_Metric_Tons,
+#                                                 SO2=SO2_Metric_Tons,
+#                                                 NOx=SO2_Metric_Tons)]
+#reformatting emissions compounds dataset
+
+# Data is in metric tons (emission rates are also adjusted to be based on metric tons)
+#va_electricity_emissions_by_fuel = va_electricity_emissions_by_fuel[Year >= 2000] #limit data to baseline year of 2000

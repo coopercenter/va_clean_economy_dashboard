@@ -58,7 +58,7 @@ eiaSeriesGroup = function(series_id_list) {
 # The annual data is simply the sum of the monthly series by year
 series_id_vec <- read_file(here("data_retrieval_and_cleaning","series_ids.txt"))
 ## transform the content to a list that we can later feed into the fetch function
-series_id_list <- unlist(strsplit(series_id_vec,'\n'))
+series_id_list <- unlist(strsplit(series_id_vec,'\r\n')) #had to change from "\n" to "\r\n" on my system, reasons unclear
 annual_list = series_id_list[grepl(".A$",series_id_list)]
 monthly_list = series_id_list[grepl(".M$",series_id_list)]
 # for testing purposes use short lists
@@ -106,7 +106,7 @@ setkey(eia_annual_data,date)
 
 # store both data tables in the database
 db_driver = dbDriver("PostgreSQL")
-db <- dbConnect(db_driver,user="wms5f", password="manx(0)Rose",dbname="postgres", host="localhost")
+db <- dbConnect(db_driver,user=db_user, password=ra_pwd,dbname="postgres", host=db_host)
 # My postgres instance will only accept lower case column names
 #   The tolower function can be removed if not needed in production
 #
@@ -122,7 +122,7 @@ dbExecute(db, "alter table eia_annual_data add primary key (date);")
 dbWriteTable(db, "eia_monthly_data", value = eia_monthly_data, append = FALSE, overwrite = TRUE, row.names = FALSE)
 dbExecute(db, "alter table eia_monthly_data add primary key (date);")
 
-test_output = dbGetQuery(db, "SELECT ELEC_SALES_VA_ALL_M from monthly_data")
+#test_output = dbGetQuery(db, "SELECT ELEC_SALES_VA_ALL_M from eia_monthly_data")
 # Close connection
 dbDisconnect(db)
 #dbUnloadDriver(db_driver)
