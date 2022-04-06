@@ -76,7 +76,7 @@ rm(annual_va_utility_data)
 # maybe this should be changed
 #Energy intensity
 #
-# Map local names to EIA data series (copied from dashboard_calculations.R)
+# Map local names to EIA data series (copied from dashboard_calculations.R because the local names are referenced here)
 #
 eia_name=c("ELEC_GEN_COW_VA_99_A",
            "ELEC_GEN_PEL_VA_99_A",
@@ -90,11 +90,11 @@ eia_name=c("ELEC_GEN_COW_VA_99_A",
            "ELEC_GEN_WWW_VA_99_A",
            "ELEC_GEN_WAS_VA_99_A",
            "ELEC_GEN_ALL_VA_99_A",
-           "SEDS_TETCB_VA_A",
-           "SEDS_TERCB_VA_A",
-           "SEDS_TECCB_VA_A",
-           "SEDS_TEICB_VA_A",
-           "SEDS_TEACB_VA_A",
+           "TOTAL_CON_ALL_SECTORS_A",
+           "TOTAL_TERCBUS_A",
+           "TOTAL_TECCBUS_A",
+           "TOTAL_TEICBUS_A",
+           "TOTAL_TEACBUS_A",
            "SEDS_ELISP_VA_A",
            "EMISS_CO2_TOTV_EC_TO_VA_A",
            "EMISS_CO2_TOTV_TT_TO_VA_A")
