@@ -156,13 +156,14 @@ setnames(generation_stacked_area_data,c("Year","variable","value"),
 va_annual_production_area <-
   stacked_area_figure(
     generation_stacked_area_data,
-    "Generation (GWh)",
+    "Total Generation (GWh)",
     "Virginia Electricity Generation by Fuel Type",
     list(
       "eia_elec_gen_cow_va_99_a"
     ),
     lower_limit = -1900,
-    return_static = F
+    return_static = F,
+    modifications = scale_y_continuous(labels = comma)
   )
 va_annual_production_area
 
@@ -193,17 +194,19 @@ va_annual_production_pie_chart_p_with_legend
 #con_area
 #set up the data
 annual_consumption_data = melt(eia_annual_data[,.(Year,Residential,
-                                                  Commercial,Transportation,Industrial)],
+                                                  Commercial ,Transportation,Industrial)],
                                id="Year")
 setnames(annual_consumption_data,c("Year","variable","value"),
          c("x_value","fill_variable","y_value")
-)
+) 
+
+annual_consumption_data <- annual_consumption_data %>% filter(y_value !=0)
 
 #generate the plot
 va_annual_consumption_area <-
   stacked_area_figure(
     annual_consumption_data,
-    "Consumption (Billion Btu)",
+    "Total Consumption (Trillion Btu)",
     "Virginia Energy Consumption by Sector",
     list(
       "eia_seds_tercb_va_a"
