@@ -71,6 +71,10 @@ response = eiaSeriesGroup(series_id_list.m)
 eia_monthly_data = response$data
 eia_monthly_metadata = data.table(response$metaData)
 setkey(eia_monthly_data,date)
+
+#create a new calculated field for total energy consumption for all sectors (need this for the new consumption data sources, didn't need when we use SEDS for this)
+eia_monthly_data$TOTAL_CON_ALL_SECTORS_M <- eia_monthly_data$TOTAL_TECCBUS_M + eia_monthly_data$TOTAL_TEACBUS_M + eia_monthly_data$TOTAL_TEICBUS_M + eia_monthly_data$TOTAL_TERCBUS_M
+
 #one time: store the series ids and names in an excel spreadsheet
 # in the future, read this table either from a spreadsheet file or from the database
 eia_series_names = response$metaData$name
@@ -78,7 +82,7 @@ eiaSeriesInfo = data.table(series_ids = monthly_list,
                            series_names = eia_series_names)
 # store series names
 #library(xlsx)
-#write.xlsx(eiaSeriesInfo, here("eiaSeriesInfo.xlsx"))
+#writexl::write_xlsx(eiaSeriesInfo, here("eiaSeriesInfo.xlsx"))
 # Sum monthly data to annual data
 # Annual data must not include incomplete years.
 # !!!This filter needs fixing. Probably the best way is to count months
