@@ -39,7 +39,7 @@ stacked_area_figure <- function(data_table,y_value_unit,title_name,character_lis
 
   figure <- ggplot(data_table,aes(x=x_value,y=y_value,fill=fill_variable)) +
     geom_area(aes(group=fill_variable,
-                  text=paste0(x_label,": ",x_value,"\n","Variable: ",fill_variable,"\n","Value: ",round(y_value,4)))) + 
+                  text=paste0(x_label,": ",x_value,"\n","Variable: ",fill_variable,"\n","Value: ",label_comma(accuracy=1,big.mark = ",")(y_value)))) + 
     ylab(y_value_unit) + xlab(x_label) + ylim(lower_limit,upper_limit) +
     labs(title=title_name,subtitle=subtitle_description,caption=source_description) +
     scale_fill_manual(name=NULL,values=ceps_pal[1:category_count]) +
