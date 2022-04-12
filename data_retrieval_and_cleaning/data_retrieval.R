@@ -1,5 +1,5 @@
 lbry<-c("data.table", "RPostgreSQL",  "tidyr", "dplyr","arrow","stringr",
-        "tools","lubridate", "Hmisc", "here", "readxl","read_xlsx")
+        "tools","lubridate", "Hmisc", "here", "readxl","read_xlsx",'httr','jsonlite')
 test <- suppressMessages(lapply(lbry, require, character.only=TRUE, warn.conflicts = FALSE, quietly = TRUE))
 rm(test,lbry)
 
@@ -90,11 +90,11 @@ eia_name=c("ELEC_GEN_COW_VA_99_A",
            "ELEC_GEN_WWW_VA_99_A",
            "ELEC_GEN_WAS_VA_99_A",
            "ELEC_GEN_ALL_VA_99_A",
-           "TOTAL_CON_ALL_SECTORS_A",
-           "TOTAL_TERCBUS_A",
-           "TOTAL_TECCBUS_A",
-           "TOTAL_TEICBUS_A",
-           "TOTAL_TEACBUS_A",
+           "SEDS_TETCB_VA_A",
+           "SEDS_TERCB_VA_A",
+           "SEDS_TECCB_VA_A",
+           "SEDS_TEICB_VA_A",
+           "SEDS_TEACB_VA_A",
            "SEDS_ELISP_VA_A",
            "EMISS_CO2_TOTV_EC_TO_VA_A",
            "EMISS_CO2_TOTV_TT_TO_VA_A")
@@ -297,20 +297,26 @@ energyCAP_data <- full_join(energyCAP_building_data,energyCAP_meter_data,by='met
 #join the meter and building data with the savings data on meterId and year
 energyCAP_data <- full_join(energyCAP_data,energyCAP_savings_data,by=c('meterId','year'))
 
+#filter by electric meter
+energyCAP_data <- energyCAP_data %>% filter(commodity.commodityCode=='ELECTRIC')
+
 #pare the data down to just the important parts to explore for visualizations
-columns_to_keep <- c('placeId','commodity.commodityCode','parent.placeInfo','placeInfo','parent.placeType.placeTypeInfo',
-                     'parent.placeType.structure','placeType.placeTypeInfo',
-                     'placeType.structure','primaryUse.primaryUseInfo',
-                     'size.value','year','totalCost.x','commonUse.x','nativeUse.x','allTimeSavingsNativeUse',
-                     'allTimeSavingsCommonUse','allTimeSavingsTotalCost','savingsStartDate','savingsCommonUse')
+columns_to_keep <- c('placeId','parent.placeInfo','placeInfo',
+                     'primaryUse.primaryUseInfo',
+                     'size.value','year','totalCost.x','commonUse.x','savingsCommonUse')
 
 energyCAP_data <- energyCAP_data %>% select(all_of(columns_to_keep))
 rm(energyCAP_building_data,energyCAP_meter_data,energyCAP_savings_data,columns_to_keep)
 
-#rename the ambiguous or repeated columns to something more descriptive
-energyCAP_data  <- energyCAP_data  %>% 
-  #rename(year=year.x) %>% rename(savings_year=year.y) %>%
-  rename(totalCost = totalCost.x) %>% rename(commonUse = commonUse.x) %>% rename(nativeUse = nativeUse.x)
+#delete the duplicate data that will pop up from multiple joins
+energyCAP_data <- distinct(energyCAP_data)
+
+#filter to buildings with 5000 or greater square feet
+energyCAP_data <- energyCAP_data %>% filter(as.numeric(size.value) >= 5000)
+
+#rename a couple of the columns for clarity
+energyCAP_data <- energyCAP_data %>% rename(commonUse=commonUse.x) %>% rename(totalCost=totalCost.x)
+
 
 #write to the database
 db_driver = dbDriver("PostgreSQL")
@@ -318,5 +324,21 @@ source(here::here("my_postgres_credentials.R"))
 db <- dbConnect(db_driver,user=db_user, password=ra_pwd,dbname="postgres", host=db_host)
 dbRemoveTable(db,"energycap_place_meter_and_savings_data")
 dbWriteTable(db,"energycap_place_meter_and_savings_data",energyCAP_data)
+
+#loading the new energy efficiency spending mandates into the database from their CSV files
+#this will be updated once their structure is finalized and we have a more formalized data sharing setup with Virginia Energy
+
+ee_resource_standard_projections <- read.csv(here('raw_data/energy_efficiency_resource_standard_projections.csv'))
+ee_spending_progress <- read.csv(here('raw_data/energy_efficiency_spending_progress.csv'))
+ee_spending_requirements <- read.csv(here('raw_data/energy_efficiency_spending_requirements.csv')) 
+
+dbWriteTable(db,'energy_efficiency_resource_standard_projections',ee_resource_standard_projections)
+dbWriteTable(db,'energy_efficiency_spending_progress', ee_spending_progress)
+dbWriteTable(db,'energy_efficiency_spending_requirements',ee_spending_requirements)
+
+#add the facility tracker spreadsheet into the database
+agency_facility_tracking <- read.csv(here('raw_data/COVA_Facility_Tracker_Simplified.csv'))
+
+dbWriteTable(db,'agency_facility_tracking',agency_facility_tracking)
 
 dbDisconnect(db)

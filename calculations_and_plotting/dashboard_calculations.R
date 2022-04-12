@@ -24,7 +24,11 @@ intensity_data <- data.table(dbGetQuery(db,"select * from intensity_data ;"))
 
 #Energy Efficiency Page Data Loading------------------------------------------------------------------------------------------------------
 lead_by_example_data <- data.table(dbGetQuery(db,"select * from energycap_place_meter_and_savings_data ;"))
-#the rest of the data for this page is currently in spreadsheets, for now
+LBE_building_tracker <- data.table(dbGetQuery(db,'select * from agency_facility_tracking ;'))
+eia_spending_prog <- data.table(dbGetQuery(db,'select * from energy_efficiency_spending_progress ;'))
+eia_standard_projections <- data.table(dbGetQuery(db,'select * from energy_efficiency_resource_standard_projections'))
+eia_spending_requirements <- data.table(dbGetQuery(db,'select * from energy_efficiency_spending_requirements'))
+
 
 #Generation and Capacity Page Data Loading------------------------------------------------------------------------------------------------
 #load in offshore wind projections
@@ -73,11 +77,11 @@ eia_name=c("ELEC_GEN_COW_VA_99_A",
            "ELEC_GEN_WWW_VA_99_A",
            "ELEC_GEN_WAS_VA_99_A",
            "ELEC_GEN_ALL_VA_99_A",
-           "TOTAL_CON_ALL_SECTORS_A",
-           "TOTAL_TERCBUS_A",
-           "TOTAL_TECCBUS_A",
-           "TOTAL_TEICBUS_A",
-           "TOTAL_TEACBUS_A",
+           "SEDS_TETCB_VA_A",
+           "SEDS_TERCB_VA_A",
+           "SEDS_TECCB_VA_A",
+           "SEDS_TEICB_VA_A",
+           "SEDS_TEACB_VA_A",
            "SEDS_ELISP_VA_A",
            "EMISS_CO2_TOTV_EC_TO_VA_A",
            "EMISS_CO2_TOTV_TT_TO_VA_A")
@@ -205,13 +209,6 @@ virginia_emissions_electric_commas <- virginia_emissions_electric[,
 setnames(virginia_emissions_electric_commas,c('Year','Million Metric Tons of CO2'))
 
 #CLEANING AND RESTRUCTURING THE ENERGYCAP API DATA----------------------------------------------------------------------------------------------
-
-#filter by square footage greater than 5000 square feet
-lead_by_example_data <- lead_by_example_data %>% filter(size.value >= 5000.0)
-
-#filter by electric meter
-lead_by_example_data <- lead_by_example_data %>% filter(commodity.commodityCode=='ELECTRIC')
-
 #create a categorical size range column
 lead_by_example_data$size_range <- lead_by_example_data$size.value
 breaks <- c(5000.0,50000.0,100000.0,250000.0,500000.0,990000.0)
@@ -258,7 +255,7 @@ rm(agency_indices,item)
 year_by_building_size <- lead_by_example_data %>% group_by(year,size_range) %>%
   dplyr::summarize(cost=sum(unique(totalCost),na.rm=TRUE),kWh=sum(unique(commonUse),na.rm=TRUE),
                    sqft=sum(unique(size.value),na.rm=TRUE),buildings=n_distinct(placeId),
-                   savings=sum(unique(allTimeSavingsCommonUse),na.rm = TRUE))
+                   savings=sum(unique(savingsCommonUse),na.rm = TRUE))
 
 #write a function to filter by specified building size
 filter_by_building_size <- function(set_size_range){
@@ -272,7 +269,7 @@ group_by_place_use <- function(set_size_range){
   data_by_use <- base_data %>% group_by(year,primaryUse.primaryUseInfo) %>%
     dplyr::summarize(cost=sum(unique(totalCost),na.rm=TRUE),kWh=sum(unique(commonUse),na.rm=TRUE),sqft=sum(unique(size.value),na.rm=TRUE),
                      buildings=n_distinct(placeId),size=size_range,
-                     savings=sum(unique(allTimeSavingsCommonUse),na.rm = TRUE))
+                     savings=sum(unique(savingsCommonUse),na.rm = TRUE))
   data_by_use <- distinct(data_by_use)
   return(data_by_use)
 }
@@ -285,8 +282,6 @@ size_4_use <- group_by_place_use('250,001 - 500,000')
 size_5_use <- group_by_place_use('500,001 - 990,000')
 
 #clean and restructure the building tracking data for the LBE data
-
-LBE_building_tracker <- read.csv(here('raw_data/COVA_Facility_Tracker_Simplified.csv'))
 
 #replace #VALUE! with NA's
 LBE_building_tracker[LBE_building_tracker=='#VALUE!'] <- NA
@@ -448,11 +443,6 @@ sqft_over_5000$agency_category <- factor(sqft_over_5000$agency_category,levels=c
                                                                                  "Total"))
 
 #load and reshape the new mandate data
-#eventually to be moved to the database
-eia_spending_prog <- read.csv(here('raw_data/energy_efficiency_spending_progress.csv'))
-eia_standard_projections <- read.csv(here('raw_data/energy_efficiency_resource_standard_projections.csv'))
-eia_spending_requirements <- read.csv(here('raw_data/energy_efficiency_spending_requirements.csv'))
-
 #filter by the max date on the spending progress data
 current <- eia_spending_prog %>% filter(date==max(date))
 
