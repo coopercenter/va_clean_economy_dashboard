@@ -206,7 +206,7 @@ annual_consumption_data <- annual_consumption_data %>% filter(y_value !=0)
 va_annual_consumption_area <-
   stacked_area_figure(
     annual_consumption_data,
-    "Total Consumption (Trillion Btu)",
+    "Total Consumption (Billion Btu)",
     "Virginia Energy Consumption by Sector",
     list(
       "eia_seds_tercb_va_a"
