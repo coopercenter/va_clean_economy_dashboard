@@ -1,22 +1,12 @@
-library(dplyr)
-#library(tidyverse)
-library(stringr) # for replacing strings
-library(here)
-library(httr)
-library(readr)
-library("RPostgreSQL")
-library(readxl)
-library(data.table)
-library(eia)
-# groundhog.day = "2022-01-14"
-# pkgs = c("httr", "here", "dplyr", "readr", "RPostgreSQL",
-#          "eia", "stringr","data.table")
-# groundhog.library(pkgs, groundhog.day)
+#Load necessary packages----------------------------------------------------------------------------------
+lbry<-c("dplyr","stringr", "here",'httr','readr', "RPostgreSQL","tidyr",
+         "readxl","data.table",'eia')
+test <- suppressMessages(lapply(lbry, require, character.only=TRUE, warn.conflicts = FALSE, quietly = TRUE))
+rm(test,lbry)
 
+#Load the database credentials----------------------------------------------------------------------------
 db_driver = dbDriver("PostgreSQL")
 source(here('my_postgres_credentials.R'))
-#db <- dbConnect(db_driver,user=db_user, password=ra_pwd,dbname="postgres", host=db_host)
-#db <- dbConnect(db_driver,user="wms5f", password="manx(0)Rose",dbname="postgres", host="localhost")
 
 # Fetching a large number of datasets
 #all_data_series <-lapply(series_id_list,eia_series)
@@ -27,9 +17,12 @@ source(here('my_postgres_credentials.R'))
 #   data: a data.table with a date column and a column for each item in the list
 #   metaData: the non-data part of the EIA response: vectors of series info
 #      including name, f(requency), units, description, etc. <- currently not used
+
+#Set the key for the EIA API------------------------------------------------------------------------------
 eiaKey <- '7ee3cdbf1ded6bcfb9de1e50d722ebd4'
 eia_set_key(eiaKey)
 
+#Create a function that will accept a list of series names and fetch them from the API--------------------
 eiaSeriesGroup = function(series_id_list) {
   # Request one or multiple series in one call to eia::eia_series
   return_list = eia_series(series_id_list)
@@ -56,60 +49,75 @@ eiaSeriesGroup = function(series_id_list) {
 
 # Return both monthly and annual versions of each monthly series
 # The annual data is simply the sum of the monthly series by year
+
+#Read in the list of series names we want to fetch from the API
 series_id_vec <- read_file(here("data_retrieval_and_cleaning","series_ids.txt"))
-## transform the content to a list that we can later feed into the fetch function
+
+#Transform the content to a list that we can later feed into the fetch function
 series_id_list <- unlist(strsplit(series_id_vec,'\r\n')) #had to change from "\n" to "\r\n" on my system, reasons unclear
-annual_list = series_id_list[grepl(".A$",series_id_list)]
-monthly_list = series_id_list[grepl(".M$",series_id_list)]
-# for testing purposes use short lists
-#monthly_list <- c("ELEC.GEN.ALL-VA-1.M","ELEC.GEN.COW-VA-1.M")
-#annual_list <- c("SEDS.TERCB.VA.A","SEDS.TECCB.VA.A")
 
-# monthly along with annual totals for each monthly series
-series_id_list.m <- monthly_list
-response = eiaSeriesGroup(series_id_list.m)
-eia_monthly_data = response$data
-eia_monthly_metadata = data.table(response$metaData)
+#Get separate lists for monthly and annual series
+series_id_list.a  <-  series_id_list[grepl(".A$",series_id_list)]
+series_id_list.m <-  series_id_list[grepl(".M$",series_id_list)]
+
+# Fetch the monthly data---------------------------------------------------
+response <- eiaSeriesGroup(series_id_list.m)
+#Separate out the data from the API request results
+eia_monthly_data <- response$data
+#Separate out the metadata from the API request results
+eia_monthly_metadata <- data.table(response$metaData)
 setkey(eia_monthly_data,date)
-
-#create a new calculated field for total energy consumption for all sectors (need this for the new consumption data sources, didn't need when we use SEDS for this)
-eia_monthly_data$TOTAL_CON_ALL_SECTORS_M <- eia_monthly_data$TOTAL_TECCBUS_M + eia_monthly_data$TOTAL_TEACBUS_M + eia_monthly_data$TOTAL_TEICBUS_M + eia_monthly_data$TOTAL_TERCBUS_M
 
 #one time: store the series ids and names in an excel spreadsheet
 # in the future, read this table either from a spreadsheet file or from the database
-eia_series_names = response$metaData$name
-eiaSeriesInfo = data.table(series_ids = monthly_list,
-                           series_names = eia_series_names)
+#eia_series_names <- response$metaData$name
+#eiaSeriesInfo <- data.table(series_ids = monthly_list,
+                           #series_names = eia_series_names)
 # store series names
 #library(xlsx)
 #writexl::write_xlsx(eiaSeriesInfo, here("eiaSeriesInfo.xlsx"))
-# Sum monthly data to annual data
+
+
+#Sum monthly data to annual data-----------------------------------------------------------------
 # Annual data must not include incomplete years.
-# !!!This filter needs fixing. Probably the best way is to count months
-cols = names(eia_monthly_data)[names(eia_monthly_data)!= "date"]
+
+#grabbing the series names that made it to column names (not all monthly series names from the request list made it into the data table apparently. Why is that?)
+cols <- names(eia_monthly_data)[names(eia_monthly_data)!= "date"]
+
+#create a new column that just has the year, pulled from the 'date' column, used for summing the values by year
 eia_monthly_data[,year := year(date)]
-annual_data.fromMonthly = eia_monthly_data[year<=2021, lapply(.SD,sum), .SDcols = cols,by=year]
-annual_data.fromMonthly[,`:=`(date = as.Date(paste0(year,"-01-01")),year=NULL)]
-eia_monthly_data[,year := NULL]
-# 
-cols = grep("_M$",names(annual_data.fromMonthly))
-setnames(annual_data.fromMonthly,cols,
-         str_replace_all(names(annual_data.fromMonthly)[cols], "_M$", "_A"))
+
+#Select the latest full year of data
+#all the years with December values
+latest_year <- eia_monthly_data %>% filter(month(date) == 12)
+#latest year with a December value, the latest full year
+latest_year <- as.numeric(year(max(latest_year$date)))
+
+#summarize the monthly data by year
+annual_data.fromMonthly <- eia_monthly_data[year<=latest_year, lapply(.SD,sum), .SDcols = cols,by=year] %>% #groups all the columns of the monthly data by year, with the max year the latest year calculated in the previous step
+  #rebuild the date column 
+  mutate(date=as.Date(paste0(year,"-01-01"))) %>% 
+  #remove the year column as we are done with it
+  select(-year) %>% 
+  #replace the M suffix for 'Monthly' with an A suffix for 'Annual'
+  setnames(cols, str_replace_all(cols, "_M$", "_A"))
+
 setkey(annual_data.fromMonthly,date)
 
+#Tidy up the extra column now that we're done using it
+eia_monthly_data <- eia_monthly_data %>% select(-year)
+
 # Retrieve the annual series that are not available by month
-series_id_list.a <- annual_list
-response = eiaSeriesGroup(series_id_list.a)
-eia_annual_data = response$data
-eia_annual_metadata = data.table(response$metaData)
+response <- eiaSeriesGroup(series_id_list.a)
+eia_annual_data <- response$data
+eia_annual_metadata <- data.table(response$metaData)
 setkey(eia_annual_data,date)
 
 #  Merge all annual series
-eia_annual_data = merge(eia_annual_data,annual_data.fromMonthly, by="date",all=TRUE)
+eia_annual_data <- merge(eia_annual_data,annual_data.fromMonthly, by="date",all=TRUE)
 setkey(eia_annual_data,date)
 
 # store both data tables in the database
-db_driver = dbDriver("PostgreSQL")
 db <- dbConnect(db_driver,user=db_user, password=ra_pwd,dbname="postgres", host=db_host)
 # My postgres instance will only accept lower case column names
 #   The tolower function can be removed if not needed in production
