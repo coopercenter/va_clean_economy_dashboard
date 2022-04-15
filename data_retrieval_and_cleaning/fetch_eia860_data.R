@@ -1,13 +1,13 @@
-#Fetch the latest EIA860 survey data
+#Write a function to fetch the latest EIA860 survey data------------------------------------------------------------------------------
 readEIA860sheet <- function(year,local_directory,
                             xlsx_file="3_1_Generator") {
   # Downoads EIA zip file, unzips it to local_directory,
   #     then extracts the named sheet. Column labels are cleaned up
   #     into valid variable names
-  lbry<-c("data.table", "RPostgreSQL",  "tidyr", "dplyr","arrow",
-          "tools","lubridate", "Hmisc", "here", "readxl","stringr")
-  test <- suppressMessages(lapply(lbry, require, character.only=TRUE, warn.conflicts = FALSE, quietly = TRUE))
-  rm(test,lbry)
+  #lbry<-c("data.table", "RPostgreSQL",  "tidyr", "dplyr","arrow",
+         # "tools","lubridate", "Hmisc", "here", "readxl","stringr")
+  #test <- suppressMessages(lapply(lbry, require, character.only=TRUE, warn.conflicts = FALSE, quietly = TRUE))
+  #rm(test,lbry)
   #  year = 2020
   #  local_directory = here("raw_data")
   EIA_path = "https://www.eia.gov/electricity/data/eia860/xls/"
