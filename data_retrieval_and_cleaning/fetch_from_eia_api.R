@@ -91,7 +91,7 @@ eia_monthly_data[,year := year(date)]
 #all the years with December values
 latest_year <- eia_monthly_data %>% filter(month(date) == 12)
 #latest year with a December value, the latest full year
-latest_year <- as.numeric(year(max(latest_year$date)))
+latest_year <- as.numeric(max(latest_year$year))
 
 #summarize the monthly data by year
 annual_data.fromMonthly <- eia_monthly_data[year<=latest_year, lapply(.SD,sum), .SDcols = cols,by=year] %>% #groups all the columns of the monthly data by year, with the max year the latest year calculated in the previous step

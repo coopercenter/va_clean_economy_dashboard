@@ -1,25 +1,48 @@
+#things I want to update about this document:
+#Too long, hard to find the right data to update. I dislike files that contain too many different functions at once, it makes them hard to track. 
+#Also gross about this document is that things are partially covered in other documents, and the rest are covered in this document
+#not enough documentation on what data sources are used for what visualizations
+#Plan: Have separate files for the code for updating each data source
+#turn this file into a terminal for sourcing the different code files as the new way to update the code
+
+
+#data sources loaded in this file and sourced files: 
+#EnergyCAP
+#EIA (EIA, EIA F826, EIA F860, SEDS)
+#FRED
+#VE mandate data
+#COVA Facility Tracker spreadsheet
+
+#Load necessary packages----------------------------------------------------------------------------------
 lbry<-c("data.table", "RPostgreSQL",  "tidyr", "dplyr","arrow","stringr",
         "tools","lubridate", "Hmisc", "here", "readxl","read_xlsx",'httr','jsonlite')
 test <- suppressMessages(lapply(lbry, require, character.only=TRUE, warn.conflicts = FALSE, quietly = TRUE))
 rm(test,lbry)
 
-#A lot of data retrieval functionality is in these data retrieval functions
-source(here("data_retrieval_and_cleaning","data_retrieval_functions.R"))
-#
-# Update EIA time series; saving to the db is done inside the sourced code
-source(here("data_retrieval_and_cleaning","fetch_from_eia_api.R"))
-
+#Connect to the database--------------------------------------------------------------------------------
 db_driver = dbDriver("PostgreSQL")
 source(here::here("my_postgres_credentials.R"))
 db <- dbConnect(db_driver,user=db_user, password=ra_pwd,dbname="postgres", host=db_host)
 
-# First, retrieve Virginia economic and demographic data from FRED
+#Source data retrieval functions-------------------------------------------------------------------------
+#A lot of data retrieval functionality is in these data retrieval functions
+source(here("data_retrieval_and_cleaning","data_retrieval_functions.R"))
+
+#Source the main EIA data via a separate file------------------------------------------------------------
+# Update EIA time series; saving to the db is done inside the sourced code
+source(here("data_retrieval_and_cleaning","fetch_from_eia_api.R"))
+
+# Retrieve Virginia economic and demographic data from FRED--------------------------------------------
+#source('FRED_series_retrieval.R')
 #    These could be stored in one table, but we'll leave it this way for now
 va_pop = fetch_fred_series("VAPOP","1960-01-01") 
 setnames(va_pop,2,"va_pop")
+
+#This bit of commented code is obsolete and can probably be deleted now since its solution is right below
 # The dashboard currently uses nominal GDP. This is incorrect, it should use real GDP
 # va_nom_gsp = fetch_fred_series("VANGSP","1990-01-01") 
 # setnames(va_nom_gsp,2,"va_ngsp")
+
 # Here is the real GDP data
 va_real_gsp = fetch_fred_series("VARGSP","1960-01-01") 
 setnames(va_real_gsp,2,"va_rgsp")
@@ -27,48 +50,52 @@ va_state_info = merge(va_pop,va_real_gsp,by="date",all=TRUE)
 dbRemoveTable(db,"va_state_info")
 dbWriteTable(db,"va_state_info",va_state_info,append=F,row.names=F)
 # Do not remove this data table yet. It is used to calculate intensities.
-#------------------------------------------------------#
-#Next, update EIA_f826 data
+
+#Update EIA f826 data----------------------------------------------------------------------------------
+#source('EIAF826_data_retrieval.R')
+
 # This function pulls EIA data and updates the postgres data tables:
 #   virginia_eia_f826 with the raw data for Virginia and
 #   va_monthly_utility_sales with clean data for dominion, apco and ros (rest of state)
-updateEIA826Data(database="postgres")
+# This data is not currently used in the dashboard
+#updateEIA826Data(database="postgres")
 # Now sum to annual data
-  script = paste0("select * from virginia_monthly_utility_sales;")  
-  virginia_utility_sales = data.table(dbGetQuery(db, script))
-setkey(virginia_utility_sales,date)
+#script = paste0("select * from virginia_monthly_utility_sales;")  
+#virginia_utility_sales = data.table(dbGetQuery(db, script))
+#setkey(virginia_utility_sales,date)
 #
-virginia_utility_sales[,`:=`(total_sales_mwh = total_sales_mwh.apco + total_sales_mwh.dominion + total_sales_mwh.rest_of_state)]
+#virginia_utility_sales[,`:=`(total_sales_mwh = total_sales_mwh.apco + total_sales_mwh.dominion + total_sales_mwh.rest_of_state)]
 # Create variables in gwh units (note we combine dom.com and dom.other)
-monthly_utility_data = virginia_utility_sales[,.(date,year=year(date), month=month(date),
-  va_total_sales_gwh = total_sales_mwh/1000,
-  dom_com_gwh = (commercial_sales_mwh.dominion+other_sales_mwh.dominion)/1000,
-  dom_res_gwh = residential_sales_mwh.dominion/1000,
-  dom_ind_gwh = industrial_sales_mwh.dominion/1000,
-  dom_total_gwh = total_sales_mwh.dominion/1000,
-  ros_total_gwh = total_sales_mwh.rest_of_state/1000,
-  apco_total_gwh = total_sales_mwh.apco/1000)]
+#monthly_utility_data = virginia_utility_sales[,.(date,year=year(date), month=month(date),
+#  va_total_sales_gwh = total_sales_mwh/1000,
+#  dom_com_gwh = (commercial_sales_mwh.dominion+other_sales_mwh.dominion)/1000,
+#  dom_res_gwh = residential_sales_mwh.dominion/1000,
+#  dom_ind_gwh = industrial_sales_mwh.dominion/1000,
+#  dom_total_gwh = total_sales_mwh.dominion/1000,
+#  ros_total_gwh = total_sales_mwh.rest_of_state/1000,
+#  apco_total_gwh = total_sales_mwh.apco/1000)]
 # Find last full year
-recent = monthly_utility_data[order(year,month),.(last_year=last(year),last_month=last(month))]
-if (recent$last_month != 12) {
-  latest.year = recent$last_year - 1
-} else {
-  latest.year = recent$last_year
-} 
+#recent = monthly_utility_data[order(year,month),.(last_year=last(year),last_month=last(month))]
+#if (recent$last_month != 12) {
+#  latest.year = recent$last_year - 1
+#} else {
+#  latest.year = recent$last_year
+#} 
 # Aggregate from monthly to annual data
-annual_va_utility_data = monthly_utility_data[year<=latest.year,.(
-  va_total_sales_gwh = sum(va_total_sales_gwh,na.rm=TRUE),
-  apco_total_gwh = sum(apco_total_gwh,na.rm=TRUE),
-  ros_total_gwh = sum(ros_total_gwh,na.rm=TRUE),
-  dom_total_gwh = sum(dom_total_gwh,na.rm=TRUE),
-  dom_com_gwh = sum(dom_com_gwh,na.rm=TRUE),
-  dom_res_gwh = sum(dom_res_gwh,na.rm=TRUE),
-  dom_ind_gwh = sum(dom_ind_gwh,na.rm=TRUE)
-),by=year]
-dbRemoveTable(db,"va_annual_utility_sales")
-dbWriteTable(db,"va_annual_utility_sales",annual_va_utility_data,append=F,row.names=F)
-rm(annual_va_utility_data)
-#------------------------------------------------------#
+#annual_va_utility_data = monthly_utility_data[year<=latest.year,.(
+#  va_total_sales_gwh = sum(va_total_sales_gwh,na.rm=TRUE),
+#  apco_total_gwh = sum(apco_total_gwh,na.rm=TRUE),
+#  ros_total_gwh = sum(ros_total_gwh,na.rm=TRUE),
+#  dom_total_gwh = sum(dom_total_gwh,na.rm=TRUE),
+#  dom_com_gwh = sum(dom_com_gwh,na.rm=TRUE),
+#  dom_res_gwh = sum(dom_res_gwh,na.rm=TRUE),
+#  dom_ind_gwh = sum(dom_ind_gwh,na.rm=TRUE)
+#),by=year]
+#dbRemoveTable(db,"va_annual_utility_sales")
+#dbWriteTable(db,"va_annual_utility_sales",annual_va_utility_data,append=F,row.names=F)
+#rm(annual_va_utility_data)
+
+#Calculate energy and emission intensity--------------------------------------------------------------
 # Energy and emission intensity 
 # Beware: energy consumption versus electricity consumption. 
 ### Work out the proper scaling for appropriate units.
@@ -76,7 +103,7 @@ rm(annual_va_utility_data)
 # maybe this should be changed
 #Energy intensity
 #
-# Map local names to EIA data series (copied from dashboard_calculations.R because the local names are referenced here)
+# Map local names to EIA data series (copied from dashboard_calculations.R because the local names are referenced here but weren't previously set except by running the calculations first)
 #
 eia_name=c("ELEC_GEN_COW_VA_99_A",
            "ELEC_GEN_PEL_VA_99_A",
@@ -138,8 +165,9 @@ intensity_data = intensity_data[!is.na(Total_energy_cons)]
 dbRemoveTable(db,"intensity_data")
 dbWriteTable(db,"intensity_data",intensity_data,append=F,row.names=F)
 rm(intensity_data)
-#------------------------------------------------------#
-#VCEA provisions
+
+
+#Read in VCEA provisions from Excel sheet-------------------------------------------------------------------------
 VCEA <- data.table(read_excel(here('raw_data','VCEA_goals.xlsx')))
 # Multiply the two decimal percent columns by 100
 cols = c("apco_energy_efficiency_as_share_of_2019_sales",
@@ -149,8 +177,8 @@ VCEA[,(cols) := lapply(.SD,"*",100),.SDcols=cols]
 dbRemoveTable(db,"vcea_provisions")
 dbWriteTable(db,"vcea_provisions",VCEA,append=F,row.names=F)
 rm(VCEA)
-#------------------------------------------------------#
-# Retrieve EIA860 survey data for the latest year
+
+#Retrieve EIA860 survey data for the latest year-----------------------------------------------------------------
 #    EIA posts this data in around June of the subsequent year
 # Then filter for solar (PV) and wind (WT)  and storage (BA)
 #    Virginia doesn't have wind or storage up to 2020
@@ -173,8 +201,8 @@ va_solar[,id:=paste0(Plant_Code,"_",Generator_ID)]
 setkey(va_solar,id)
 
 
-#------------------------------------------------------#
-# Read in current estimates on offshore wind capacity and capacity factor
+
+#Read in current estimates on offshore wind capacity and capacity factor from spreadsheet-------------------------------------------
 ### The source of this data is not documented.
 ## This needs to be fixed.
 
@@ -191,8 +219,11 @@ setnames(total_production_forecast_offshore_wind,'Total_gen','Total_Production')
 dbRemoveTable(db,"offshore_wind")
 dbWriteTable(db,"offshore_wind",offshore_wind,append=F,row.names=F)
 rm(offshore_wind)
-#------------------------------------------------------#
-# Retrieve latest EIA annual emission data for Virginia
+
+#Retrieve latest EIA annual emission data for Virginia downloaded from SEDS----------------------------------------------------------------------
+
+#Why is this read from an Excel sheet THEN written to the database? Should just write it directly to the database on sourcing. 
+#Where is this spreadsheet orginally sourced from? What function?
 
 # I'm pretty sure that this data is redundant. The same data, but with more detail
 #                        is in electricity_emissions_by_fuel
@@ -247,7 +278,7 @@ rm(electricity_emissions_by_fuel)
 #rm(virginia_annual_savings_through_2020,virginia_annual_savings_through_2022)
 
 
-## Retrieving the EnergyCAP data for the new Energy Efficiency part of the dashboard
+#Retrieving the EnergyCAP data for the Energy Efficiency page---------------------------------------------------------------------
 
 #get the key
 key <- source(here('data_retrieval_and_cleaning/EnergyCAP_API_key.R'))
@@ -262,31 +293,54 @@ energyCAP_building_data <- GET("https://app.energycap.com/api/v3/place",
 pages <- as.numeric(energyCAP_building_data$headers$totalpages)
 
 #flatten the request results
-energyCAP_building_data <- energyCAP_building_data %>% content("text") %>% 
+energyCAP_building_data <- energyCAP_building_data %>% 
+  content("text") %>% 
   fromJSON(flatten=TRUE) %>%
-  as.data.frame() %>% unnest(cols=c(meters))
+  as.data.frame() %>% 
+  unnest(cols=c(meters))
 
 #use a for-loop to go through the places page by page to capture all the building data
 for(i in (2:pages)){
   next_page <- GET(paste("https://app.energycap.com/api/v3/place?pageNumber=",i,sep=""), 
-                   add_headers(.headers=c('ECI-ApiKey'=energycap_key))) %>% content("text") %>% 
+                   add_headers(.headers=c('ECI-ApiKey'=energycap_key))) %>% 
+    content("text") %>% 
     fromJSON(flatten=TRUE) %>% 
-    as.data.frame() %>% unnest(cols=c(meters))
+    as.data.frame() %>% 
+    unnest(cols=c(meters))
   energyCAP_building_data <- rbind(energyCAP_building_data,next_page)
   
 }
 
+#create a function to process the API results for a given query
+fetch_from_energyCAP <- function(query, unnest_col){
+  GET(query,add_headers(.headers=c('ECI-ApiKey'=energycap_key))) %>% 
+    content("text") %>% 
+    fromJSON(flatten=TRUE) %>% 
+    as.data.frame() %>% 
+    unnest(cols=all_of(unnest_col))
+}
+
 #get the meter data which has use and cost, convert to dataframe then unnest the deeper columns
-energyCAP_meter_data <- GET("https://app.energycap.com/api/v3/meter/digest/actual/yearly", 
-                            add_headers(.headers=c('ECI-ApiKey'=energycap_key)))  %>% content("text") %>% 
-  fromJSON(flatten=TRUE) %>%
-  as.data.frame() %>% unnest(cols=results)
+meter_query <- "https://app.energycap.com/api/v3/meter/digest/actual/yearly"
+energyCAP_meter_data <- fetch_from_energyCAP(meter_query,'results')
 
 #get the savings data
-energyCAP_savings_data <- GET("https://app.energycap.com/api/v3/meter/digest/savings/yearly", 
-                              add_headers(.headers=c('ECI-ApiKey'=energycap_key))) %>% content("text") %>% 
-  fromJSON(flatten=TRUE) %>%
-  as.data.frame() %>% unnest(cols=results)
+savings_query <- "https://app.energycap.com/api/v3/meter/digest/savings/yearly"
+energyCAP_savings_data <- fetch_from_energyCAP(savings_query,'results')
+
+#energyCAP_meter_data <- GET("https://app.energycap.com/api/v3/meter/digest/actual/yearly", 
+ #                           add_headers(.headers=c('ECI-ApiKey'=energycap_key)))  %>% 
+  #content("text") %>% 
+  #fromJSON(flatten=TRUE) %>%
+  #as.data.frame() %>% 
+  #unnest(cols=results)
+
+#energyCAP_savings_data <- GET("https://app.energycap.com/api/v3/meter/digest/savings/yearly", 
+ #                             add_headers(.headers=c('ECI-ApiKey'=energycap_key))) %>% 
+  #content("text") %>% 
+  #fromJSON(flatten=TRUE) %>%
+  #as.data.frame() %>% 
+  #unnest(cols=results)
 
 #remove the excess variables
 rm(energycap_key,key)
@@ -297,35 +351,31 @@ energyCAP_data <- full_join(energyCAP_building_data,energyCAP_meter_data,by='met
 #join the meter and building data with the savings data on meterId and year
 energyCAP_data <- full_join(energyCAP_data,energyCAP_savings_data,by=c('meterId','year'))
 
-#filter by electric meter
-energyCAP_data <- energyCAP_data %>% filter(commodity.commodityCode=='ELECTRIC')
-
 #pare the data down to just the important parts to explore for visualizations
 columns_to_keep <- c('placeId','parent.placeInfo','placeInfo',
                      'primaryUse.primaryUseInfo',
                      'size.value','year','totalCost.x','commonUse.x','savingsCommonUse')
 
-energyCAP_data <- energyCAP_data %>% select(all_of(columns_to_keep))
+#filter by electric meter
+energyCAP_data <- energyCAP_data %>% filter(commodity.commodityCode=='ELECTRIC') %>% 
+  #filter by size
+  filter(as.numeric(size.value) >= 5000) %>%
+  #pare down to just the columns we want
+  select(all_of(columns_to_keep)) %>%
+  #clear up any duplicates that may have come from merging
+  distinct() %>%
+  #rename a couple of columns
+  rename(commonUse=commonUse.x) %>% 
+  rename(totalCost=totalCost.x)
+
 rm(energyCAP_building_data,energyCAP_meter_data,energyCAP_savings_data,columns_to_keep)
-
-#delete the duplicate data that will pop up from multiple joins
-energyCAP_data <- distinct(energyCAP_data)
-
-#filter to buildings with 5000 or greater square feet
-energyCAP_data <- energyCAP_data %>% filter(as.numeric(size.value) >= 5000)
-
-#rename a couple of the columns for clarity
-energyCAP_data <- energyCAP_data %>% rename(commonUse=commonUse.x) %>% rename(totalCost=totalCost.x)
 
 
 #write to the database
-db_driver = dbDriver("PostgreSQL")
-source(here::here("my_postgres_credentials.R"))
-db <- dbConnect(db_driver,user=db_user, password=ra_pwd,dbname="postgres", host=db_host)
 dbRemoveTable(db,"energycap_place_meter_and_savings_data")
 dbWriteTable(db,"energycap_place_meter_and_savings_data",energyCAP_data)
 
-#loading the new energy efficiency spending mandates into the database from their CSV files
+#Loading the new energy efficiency spending mandates into the database from their CSV files------------------------------------------
 #this will be updated once their structure is finalized and we have a more formalized data sharing setup with Virginia Energy
 
 ee_resource_standard_projections <- read.csv(here('raw_data/energy_efficiency_resource_standard_projections.csv'))
@@ -336,9 +386,11 @@ dbWriteTable(db,'energy_efficiency_resource_standard_projections',ee_resource_st
 dbWriteTable(db,'energy_efficiency_spending_progress', ee_spending_progress)
 dbWriteTable(db,'energy_efficiency_spending_requirements',ee_spending_requirements)
 
-#add the facility tracker spreadsheet into the database
+#Writing the COVA facility tracker sheet from VE into the database----------------------------------------------------------------
+#hopefully a more streamlined process soon
 agency_facility_tracking <- read.csv(here('raw_data/COVA_Facility_Tracker_Simplified.csv'))
 
 dbWriteTable(db,'agency_facility_tracking',agency_facility_tracking)
 
+#Disconnect from the database and finish----------------------------------------------------------------------------------------
 dbDisconnect(db)
