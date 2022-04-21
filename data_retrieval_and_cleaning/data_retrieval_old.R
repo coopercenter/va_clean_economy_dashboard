@@ -1,9 +1,9 @@
 #things I want to update about this document:
-#Too long, hard to find the right data to update. I dislike files that contain too many different functions at once, it makes them hard to track. 
-#Also gross about this document is that things are partially covered in other documents, and the rest are covered in this document
-#not enough documentation on what data sources are used for what visualizations
+#Too long, hard to find the right data to update. Contains many different functions at once, it makes them hard to track. 
+#Things are partially covered in other scripts, and the rest are covered in this script. An incompleteness and inconsistency to it.
+#Not enough documentation on what data sources are used for what visualizations
 #Plan: Have separate files for the code for updating each data source
-#turn this file into a terminal for sourcing the different code files as the new way to update the code
+#turn the data retrieval process into a terminal for sourcing the different code files as the new way to update the code
 
 
 #data sources loaded in this file and sourced files: 
@@ -195,7 +195,7 @@ va_gen_plants = readEIA860sheet(year,local_directory,xlsx_file="3_1_Generator")
 dbRemoveTable(db,"eia_plant_capacities")
 dbWriteTable(db,"eia_plant_capacities",va_gen_plants,append=F,row.names=F)
 
-# You can filter for solar, wind or storage
+# You can filter for solar, wind or storage (why is this done here, but not saved to the DB? Just gets lost.)
 va_solar = va_gen_plants[Prime_Mover=="PV"]
 va_solar[,id:=paste0(Plant_Code,"_",Generator_ID)]
 setkey(va_solar,id)
