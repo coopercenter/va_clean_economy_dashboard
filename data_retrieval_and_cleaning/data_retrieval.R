@@ -16,7 +16,7 @@ db <- dbConnect(db_driver,user=db_user, password=ra_pwd,dbname="postgres", host=
 
 #EIA DATA------------------------------------------------------------------------------------------------------------------
 #updates eia_annual_data, most heavily used in the dashboard
-source(here("data_retrieval_and_cleaning/fetch_from_eia_api.R")) 
+source(here("data_retrieval_and_cleaning/fetch_from_eia_api.R"))
 
 #fetch the plant capacity data
 source(here('data_retrieval_and_cleaning/fetch_eia860_data.R'))
@@ -40,6 +40,9 @@ source(here('data_retrieval_and_cleaning/retrieving_energycap_data.R'))
 #ENERGY EFFICIENCY MANDATE DATA--------------------------------------------------------------------------------------------
 #used for the energy efficiency page, tracking progress on a number of state mandates
 source(here('data_retrieval_and_cleaning/read_ve_mandate_sheets.R')) 
+
+#FACILITY TRACKING SPREADSHEET
+source(here("data_retrieval_and_cleaning/update_cova_facility_tracker_data.R"))
 
 #OFFSHORE WIND DATA--------------------------------------------------------------------------------------------------------
 #used for the offshore wind capacity values
