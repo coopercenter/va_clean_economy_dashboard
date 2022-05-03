@@ -207,6 +207,22 @@ virginia_emissions_electric_commas <- virginia_emissions_electric[,
                                                                   Electric_sector_CO2_emissions:=signif(Electric_sector_CO2_emissions, digits=4)]
 setnames(virginia_emissions_electric_commas,c('Year','Million Metric Tons of CO2'))
 
+# reformatting the generation dataset (this doesn't even get used! And I just cleaned it up, too!)
+#va_annual_generation <- eia_annual_data %>% select(c(Year,Coal,Oil,Gas,Nuclear,`Solar, utility`=Solar_utility,
+#`Solar, distributed`=Solar_distributed,Hydropower,
+#Wind,Wood,`Other biomass` = Other_biomass,`Total Gen`=Total_gen))
+#cols <- names(va_annual_generation)
+#va_annual_generation <- va_annual_generation[,lapply(.SD,format,big.mark=",",scientific=FALSE,trim=TRUE),
+#.SDcols = cols[2:length(cols)],by=Year]
+
+#va_annual_generation <- va_annual_generation %>% melt(id="Year") %>%  filter(Year>2000)
+
+#reformatting carbon emissions from electricity sector (ALSO NOT USED)
+#virginia_emissions_electric <- eia_annual_data[Electric_sector_CO2_emissions!=0,.(Year,Electric_sector_CO2_emissions)]
+#virginia_emissions_electric_commas <- virginia_emissions_electric[,
+#                                                                  Electric_sector_CO2_emissions:=signif(Electric_sector_CO2_emissions, digits=4)]
+#setnames(virginia_emissions_electric_commas,c('Year','Million Metric Tons of CO2'))
+
 #CLEANING AND RESTRUCTURING THE ENERGYCAP API DATA----------------------------------------------------------------------------------------------
 #create a categorical size range column
 lead_by_example_data$size_range <- lead_by_example_data$size.value
