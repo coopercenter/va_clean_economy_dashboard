@@ -75,31 +75,31 @@ ui <- tagList(
           h4("This dashboard includes interactive elements. Move your mouse around to discover them. For visualizations with legends, click a legend item once to remove it or double click to isolate it. Double click on the legend to restore all items. For more information, click on the 'About' tab."),
           h2("Goals"),
           fluidRow(
-            box(width = 4, plotlyOutput("renewable_progress_donut"), align = "center"),
-            box(width = 4, plotlyOutput("carbon_free_donut"), align = "center"),
-            box(width = 4, plotlyOutput("energy_storage_donut"), align = "center"),
+            box(width = 4, plotlyOutput("single_ring_renewable_donut_p"), align = "center"),
+            box(width = 4, plotlyOutput("single_ring_carbon_free_donut_p"), align = "center"),
+            box(width = 4, plotlyOutput("single_ring_storage_capacity_donut_p"), align = "center"),
           ),
           h2("Electricity Production by Fuel Type"),
-          fluidRow(box(plotlyOutput("gen_pie")),
-                   box(plotlyOutput("gen_area"))),
+          fluidRow(box(plotlyOutput("va_annual_production_pie_chart_p_with_legend")),
+                   box(plotlyOutput("va_annual_production_area_p"))),
           h2("Energy Consumption by Sector"),
-          fluidRow(box(plotlyOutput("con_pie")),
-                   box(plotlyOutput("con_area")))
+          fluidRow(box(plotlyOutput("va_annual_consumption_pie_chart_p_with_legend")),
+                   box(plotlyOutput("va_annual_consumption_area_p")))
         ),
         tabItem(
           tabName = "generation",
           h1("Electricity Capacity and Generation"),
           h2("Goals"),
           fluidRow(
-            box(width = 4, plotlyOutput("sw_donut"), align = "center"),
-            box(width = 4, plotlyOutput("gen_goal1"), align = "center"),
-            box(width = 4, plotlyOutput("offshore_wind_progress"), align = "center")
+            box(width = 4, plotlyOutput("single_ring_sw_capacity_donut_p"), align = "center"),
+            box(width = 4, plotlyOutput("single_ring_renewable_donut_p"), align = "center"),
+            box(width = 4, plotlyOutput("single_ring_offshore_wind_capacity_donut_p"), align = "center")
           ),
           h2("Progress on Renewable and Carbon-Free Generation"),
           h4("The renewable portfolio standard (RPS) is a mandate from the Virginia Clean Economy Act that requires Dominion Power and APCO to have a percentage of its energy production from the existing definition of 'renewable energy' as defined in Va. Code 56-576. More information in the 'About Tab'."),
           fluidRow(box(
             width = 6,
-            plotlyOutput("renewable_timeline_plot")
+            plotlyOutput("percent_renewable_and_carbon_free_line_p")
           ),
           box(
             width = 6,
@@ -114,22 +114,22 @@ ui <- tagList(
           
           
           h2("Breakdown of Carbon Free Generation by Source"),
-          fluidRow(box(plotlyOutput("rc_break_line"),align = "center")),
+          fluidRow(box(plotlyOutput("annual_carbon_free_generation_by_type_line_p"),align = "center")),
           h3("Virginia Solar Electric Generation: Utility Scale and Distributed"),
-          fluidRow(box(width = 6, plotlyOutput("solar_gen"))),
+          fluidRow(box(width = 6, plotlyOutput("solar_generation_time_series_line_p"))),
           h3("Offshore Wind"),
           fluidRow(box(
             width = 6,
-            plotlyOutput("wind_projected_gen")
+            plotlyOutput("wind_projected_generation_time_series_line_p")
           ),
           box(
             width = 6,
-            plotlyOutput("wind_projected_capacity") )
+            plotlyOutput("wind_projected_capacity_line_p") )
           ),
           h3("Carbon-Free Generation Progress"),
           fluidRow(box(
             width = 6,
-            plotlyOutput("gen_goal2") 
+            plotlyOutput("single_ring_carbon_free_donut_p") 
           ), align = "center")
           
           
@@ -150,7 +150,7 @@ ui <- tagList(
                           #plot the building tracking progress compared to the mandated goals, by category
                          h3("Facility Tracking by Agency Category"),
                          h4("See how different categories of state agencies are meeting the building tracking targets"),
-                          fluidRow(box(width=10,plotlyOutput('buildings_tracked'))),
+                          fluidRow(box(width=10,plotlyOutput('agency_category_progress_plot'))),
                           h4('Select a category to see how many facilities each state agency oversees and how many are currently in the database'),
                           fluidRow(box(width=3,
                                        #select a category of building owners to see how progress is going
@@ -174,7 +174,7 @@ ui <- tagList(
                          h3('Tracking annual energy use for facilities recorded in the Virginia Energy database'),
                          h4('Measured in Kilowatt Hours per Square Foot to better understand how facilities of different sizes are using energy, and how their energy savings compare to each other'),
                          #plot the annual bar chart broken down by square foot range
-                         fluidRow(box(width=8,plotlyOutput('annual_kwh_by_square_feet'))),
+                         fluidRow(box(width=8,plotlyOutput('yearly_values_by_size'))),
                          #plot the detailed annual kWh by building use for a chosen square foot range
                          h4('Select a size to see how the facilities are used and how their energy use is changing over time'),
                          h5("Dot size reflects the number of facilities in a category"),
@@ -235,18 +235,18 @@ ui <- tagList(
           tabName = "emissions",
           h1("Virginia Greenhouse Gas Emissions From Power Production"),
           fluidRow(box(
-            plotlyOutput('electric_emissions_plot2')
+            plotlyOutput('co2_combined_emissions_line_p')
           ),
           box(plotlyOutput(
-            'co2_emissions_by_fuel'
+            'carbon_by_fuel_emissions_stacked_p'
           ))),
           br(),
           h2("Emissions"), 
           fluidRow(box(
-            plotlyOutput('emissions_per_capita') 
+            plotlyOutput('emissions_per_capita_line_p') 
           ),
           box(plotlyOutput(
-            'emissions_per_gdp'
+            'emissions_per_gdp_line_p'
           )))
           
         ),
@@ -441,27 +441,27 @@ ui <- tagList(
 )
 
 server <- function(input, output) {
-  output$renewable_progress_donut <- renderPlotly({
+  output$single_ring_renewable_donut_p <- renderPlotly({
     single_ring_renewable_donut_p
   })
   
-  output$carbon_free_donut <- renderPlotly({
+  output$single_ring_carbon_free_donut_p <- renderPlotly({
     single_ring_carbon_free_donut_p
   })
   
-  output$gen_goal1 <- renderPlotly({
-    single_ring_renewable_donut_p
-  })
+  #output$single_ring_renewable_donut_p <- renderPlotly({
+   # single_ring_renewable_donut_p
+  #})
   
-  output$gen_goal2 <- renderPlotly({
-    single_ring_carbon_free_donut_p
-  })
+  #output$single_ring_carbon_free_donut_p <- renderPlotly({
+   # single_ring_carbon_free_donut_p
+  #})
   
-  output$gen_area <- renderPlotly({
+  output$va_annual_production_area_p <- renderPlotly({
     va_annual_production_area_p
   })
   
-  output$gen_pie <- renderPlotly({
+  output$va_annual_production_pie_chart_p_with_legend <- renderPlotly({
     va_annual_production_pie_chart_p_with_legend
   })
   
@@ -469,31 +469,31 @@ server <- function(input, output) {
   # co2_combined_emissions_line_p
   #})
   
-  output$electric_emissions_plot2 <- renderPlotly({
+  output$co2_combined_emissions_line_p <- renderPlotly({
     co2_combined_emissions_line_p
   })
   
-  output$co2_emissions_by_fuel <- renderPlotly({
+  output$carbon_by_fuel_emissions_stacked_p <- renderPlotly({
     carbon_by_fuel_emissions_stacked_p
   })
   
-  output$con_area <- renderPlotly({
+  output$va_annual_consumption_area_p <- renderPlotly({
     va_annual_consumption_area_p
   })
   #output$con_ts <- renderPlotly({
   #va_annual_consumption_area_p
   #})
   
-  output$con_pie <- renderPlotly({
+  output$va_annual_consumption_pie_chart_p_with_legend <- renderPlotly({
     va_annual_consumption_pie_chart_p_with_legend
   })
   
-  output$renewable_timeline_plot <- renderPlotly({
+  output$percent_renewable_and_carbon_free_line_p <- renderPlotly({
     percent_renewable_and_carbon_free_line_p
     
   })
   
-  output$sw_donut <- renderPlotly(single_ring_sw_capacity_donut_p)
+  output$single_ring_sw_capacity_donut_p <- renderPlotly(single_ring_sw_capacity_donut_p)
   
   #output$rc_line <-
   # renderPlotly(percent_renewable_and_schedule_goal_combined_line_p)
@@ -501,19 +501,19 @@ server <- function(input, output) {
   #output$cf_line <- 
   #renderPlotly(percent_carbon_free_line_p)
   
-  output$rc_break_line <-
+  output$annual_carbon_free_generation_by_type_line_p <-
     renderPlotly(annual_carbon_free_generation_by_type_line_p)
   
-  output$solar_gen <-
+  output$solar_generation_time_series_line_p <-
     renderPlotly(solar_generation_time_series_line_p)
   
-  output$wind_projected_gen <-
+  output$wind_projected_generation_time_series_line_p <-
     renderPlotly(wind_projected_generation_time_series_line_p)
   
-  output$wind_projected_capacity <-
+  output$wind_projected_capacity_line_p <-
     renderPlotly(wind_projected_capacity_line_p)
   
-  output$offshore_wind_progress <-
+  output$single_ring_offshore_wind_capacity_donut_p <-
     renderPlotly(single_ring_offshore_wind_capacity_donut_p)
   
   #output$burden_map_expenditure <-
@@ -523,7 +523,7 @@ server <- function(input, output) {
   # renderPlotly(va_avg_annual_energy_percent_exp_p)
   
   
-  output$energy_storage_donut <-
+  output$single_ring_storage_capacity_donut_p <-
     renderPlotly(single_ring_storage_capacity_donut_p)
   
   #output$con_per_capita <-
@@ -532,10 +532,10 @@ server <- function(input, output) {
   
   #output$con_per_gdp <- renderPlotly(consumption_per_gdp_line_p)
   
-  output$emissions_per_capita <-
+  output$emissions_per_capita_line_p <-
     renderPlotly(emissions_per_capita_line_p)
   
-  output$emissions_per_gdp <- renderPlotly(emissions_per_gdp_line_p)
+  output$emissions_per_gdp_line_p <- renderPlotly(emissions_per_gdp_line_p)
   
   
   #output$annual_savings_2020_2022 <- renderPlotly(annual_savings_2020_2022_stacked_bar_chart_p)
@@ -614,7 +614,7 @@ server <- function(input, output) {
   })
   
   #plot the overall building tracking and goals
-  output$buildings_tracked <- renderPlotly({
+  output$agency_category_progress_plot <- renderPlotly({
     ggplotly(agency_category_progress_plot,tooltip='text')
   })
   
@@ -648,7 +648,7 @@ server <- function(input, output) {
   })
   
   #plot the annual kwh/square foot bar chart
-  output$annual_kwh_by_square_feet <- renderPlotly({
+  output$yearly_values_by_size <- renderPlotly({
     yearly_values_by_size
   })
   
@@ -687,29 +687,29 @@ server <- function(input, output) {
   
   #plot the energy efficiency spending and other mandates for APCO
   output$apco_ee_spending <- renderPlotly({
-    apco_ee_plot
+    apco_ee_spending
   })
   
   output$apco_mandates_and_progress <- renderPlotly(
-    apco_plot
+    apco_mandates_and_progress
   )
   
   #plot energy efficiency mandates and spending for Dominion
   output$dominion_ee_spending <- renderPlotly(
-    dom_ee_plot
+    dominion_ee_spending
   )
   output$dominion_mandates_and_progress <- renderPlotly(
-    dominion_plot
+    dominion_mandates_and_progress
   )
   
   #plot efficiency mandates and spending for odp
   
   output$odp_ee_spending <- renderPlotly(
-    odp_ee_plot
+    odp_ee_spending
   )
   
   output$odp_mandates_and_progress <- renderPlotly(
-    odp_plot
+    odp_mandates_and_progress
   )
   
 }
