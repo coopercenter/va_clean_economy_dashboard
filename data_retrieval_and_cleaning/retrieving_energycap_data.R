@@ -4,21 +4,17 @@
 key <- source(here('data_retrieval_and_cleaning/EnergyCAP_API_key.R'))
 
 #make the API requests and convert them into dataframes
-
 #get the first page of the place data so we can use the headers to tell us how many more pages we need
 energyCAP_building_data <- GET("https://app.energycap.com/api/v3/place",
                                add_headers(.headers=c('ECI-ApiKey'=energycap_key)))
-
 #store the number of pages before flattening to a JSON
 pages <- as.numeric(energyCAP_building_data$headers$totalpages)
-
 #flatten the request results
 energyCAP_building_data <- energyCAP_building_data %>% 
   content("text") %>% 
   fromJSON(flatten=TRUE) %>%
   as.data.frame() %>% 
   unnest(cols=c(meters))
-
 #use a for-loop to go through the places page by page to capture all the building data
 for(i in (2:pages)){
   next_page <- GET(paste("https://app.energycap.com/api/v3/place?pageNumber=",i,sep=""), 
@@ -30,7 +26,6 @@ for(i in (2:pages)){
   energyCAP_building_data <- rbind(energyCAP_building_data,next_page)
   
 }
-
 #create a function to process the API results for a given query for the meter and savings data
 fetch_from_energyCAP <- function(query, unnest_col){
   GET(query,add_headers(.headers=c('ECI-ApiKey'=energycap_key))) %>% 
@@ -40,7 +35,7 @@ fetch_from_energyCAP <- function(query, unnest_col){
     unnest(cols=all_of(unnest_col))
 }
 
-#get the meter data which has use and cost, convert to dataframe then unnest the deeper columns
+#get the meter data, which has use and cost, convert to dataframe then unnest the deeper columns
 meter_query <- "https://app.energycap.com/api/v3/meter/digest/actual/yearly"
 energyCAP_meter_data <- fetch_from_energyCAP(meter_query,'results')
 
@@ -85,25 +80,17 @@ energyCAP_data <- energyCAP_data %>% filter(commodity.commodityCode=='ELECTRIC')
   #clear up any duplicates that may have come from merging
   distinct() %>%
   #rename a couple of columns
-  rename(commonUse=commonUse.x) %>% 
-  rename(totalCost=totalCost.x)
+  rename(commonUse=commonUse.x,totalCost=totalCost.x) %>%
+  #create a categorical size range column
+  mutate(size_range = cut(size.value,breaks=c(5000.0,50000.0,100000.0,250000.0,500000.0,990000.0), 
+                          include.lowest=TRUE,right=FALSE,
+                          labels=c("5,000 - 50,000","50,001 - 100,000","100,001 - 250,000","250,001 - 500,000","500,001 - 990,000")),
+         #replace NA with Information Missing in the use info column
+         primaryUse.primaryUseInfo = replace_na(primaryUse.primaryUseInfo,'Information Missing'),
+         #add a new column to simplify the place information names by grouping VCCS, VCU, and VDOT names under single umbrellas
+         placeInfoSimple=parent.placeInfo)
 
 rm(energyCAP_building_data,energyCAP_meter_data,energyCAP_savings_data,columns_to_keep)
-
-#create a categorical size range column
-breaks <- c(5000.0,50000.0,100000.0,250000.0,500000.0,990000.0)
-tags <- c("5,000 - 50,000","50,001 - 100,000","100,001 - 250,000","250,001 - 500,000","500,001 - 990,000")
-energyCAP_data <- energyCAP_data %>% 
-  #create the size range column
-  mutate(size_range = cut(size.value,breaks=breaks, include.lowest=TRUE,right=FALSE,labels=tags))
-
-rm(breaks,tags)
-
-#replace NA with Information Missing
-energyCAP_data$primaryUse.primaryUseInfo <- energyCAP_data$primaryUse.primaryUseInfo %>% replace_na('Information Missing')
-
-#in parent.placeInfo, get a fresh column so that VCCS, VCU, and VDOT localities can fall under their parent umbrellas
-energyCAP_data$placeInfoSimple <- energyCAP_data$parent.placeInfo
 
 vccs <- unique(energyCAP_data$placeInfoSimple[grep("VCCS_",energyCAP_data$placeInfoSimple,perl=TRUE)])
 vcu <- unique(energyCAP_data$placeInfoSimple[grep("VCU_",energyCAP_data$placeInfoSimple,perl=TRUE)])
