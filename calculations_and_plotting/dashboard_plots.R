@@ -3,34 +3,21 @@ lbry<-c("lubridate", "devtools", "here","data.table",'plotly','ggplot2')
 test <- suppressMessages(lapply(lbry, require, character.only=TRUE, warn.conflicts = FALSE, quietly = TRUE))
 rm(test,lbry)
 
-#read in the existing RData file
+#read in the existing RData file so that not every graph needs to be remade at every update, instead we can resave the existing, unchanged graph objects at the end after we update the desired plots
 load(here('dashboard_output.RData'))
 
 #sourcing in data and reformatted data tables & calculations ready to serve as input to viz functions
 source(here::here("calculations_and_plotting", "dashboard_calculations_new.R"))
 
-# Put these in a single file to source in. Replaces most of the viz package (05/02/22, working on this)
-#source(here("calculations_and_plotting","single_ring_donut_figure_p.R"))
-#source(here("calculations_and_plotting","build_source_list.R"))
-#source(here("calculations_and_plotting","stacked_area_figure.R"))
-#source(here("calculations_and_plotting","theme_ceps.R"))
-#source(here("calculations_and_plotting","ggplotly_wrapper.R"))
-#source(here("calculations_and_plotting","pie_chart_figure_p.R"))
-#source(here("calculations_and_plotting","line_figure.R"))
+#source the plot functions
 source(here("calculations_and_plotting/plot_functions.R"))
 
-#theme colors, not a permanent solution
-theme_colors <- c("#00A087B2", "#3C5488B2", "#CEA5AC", "#BE7E8A", "#4DBBD5B2", "#91D1C2B2","#D9C6C9","#8491B4B2","#5868AC","#6FB3D9","#56BD96","#99A9E2","#A94F64","#B0DEFA","#99EEBB","#8FD3FE")
-
 #custom color palette
-# need a new color for wind.
-#should just replace the instances of this with theme_colors for consistency
-ceps_pal <- c("#00A087B2", "#3C5488B2", "#CEA5AC", "#BE7E8A", "#4DBBD5B2", "#91D1C2B2","#D9C6C9","#8491B4B2","#5868AC","#6FB3D9","#56BD96","#99A9E2","#A94F64","#B0DEFA","#99EEBB","#8FD3FE")
+theme_colors <- c("#00A087B2", "#3C5488B2", "#CEA5AC", "#BE7E8A", "#4DBBD5B2", "#91D1C2B2","#D9C6C9","#8491B4B2","#5868AC","#6FB3D9","#56BD96","#99A9E2","#A94F64","#B0DEFA","#99EEBB","#8FD3FE")
 
 #SUMMARY PAGE---------------------------------------------------------------------------------------------------------------------------------------------------
 
 #single_ring_renewable_donut_p
-#create the table as needed, from the function created in dashboard_calculations.R
 renewable_ring <- renewable_ring_data()
 single_ring_renewable_donut_p <-
   single_ring_donut_figure_p(
@@ -286,7 +273,7 @@ rps_renewable_line <-
   ylab("Percentage of Generation from RPS Eligible Sources") + xlab("Year") + ylim(0, NA) +
   labs(title = "Virginia Renewable Portfolio Standard Schedule", caption =
          paste("Source:", metadata[db_table_name == "clean_energy_renewable_goals", data_source_full_name])) +
-  scale_color_manual(name = NULL, values = ceps_pal[3:4]) +
+  scale_color_manual(name = NULL, values = theme_colors[3:4]) +
   theme_ceps()
 #put a plotly wrapper on it
 rps_renewable_line_p <-
@@ -303,7 +290,6 @@ rps_renewable_line_p <-
 rps_renewable_line_p
 
 #va_elec_net_imports_line_p
-#y-axis needs commas
 electricity_imports <- import_data()
 va_elec_net_imports_line <-
   line_figure(
@@ -313,14 +299,14 @@ va_elec_net_imports_line <-
     return_static = F,
     source_citation = "Source: U.S. Energy Information Administration",
     subtitle_description = "Positive Values = Imports",
-    modifications = theme(legend.position = "none")
+    modifications = theme(legend.position = "none"),
+    modifications2 = scale_y_continuous(label=comma,limits=c(0,54000))
   )
 va_elec_net_imports_line_p <-
   ggplotly_wrapper(va_elec_net_imports_line) 
 va_elec_net_imports_line_p
 
 #annual_carbon_free_generation_by_type_line_p
-#the y-axis needs commas
 carbon_free_data <- annual_carbon_free_data()
 annual_carbon_free_generation_by_type_line <-
   line_figure(
@@ -330,7 +316,8 @@ annual_carbon_free_generation_by_type_line <-
     list(
       "eia_elec_gen_nuc_va_99_a"
     ),
-    return_static = F
+    return_static = F,
+    modifications = scale_y_continuous(label=comma,limits=c(0,32000))
   )
 annual_carbon_free_generation_by_type_line
 
@@ -339,7 +326,6 @@ annual_carbon_free_generation_by_type_line_p <-
 annual_carbon_free_generation_by_type_line_p
 
 #solar_generation_time_series_line_p
-#y-axis needs commas
 solar_data <- solar_gen_data()
 solar_generation_time_series_line <-
   line_figure(
@@ -348,7 +334,8 @@ solar_generation_time_series_line <-
     "Virginia Solar Electricity Generation",
     list("eia_elec_gen_sun_va_99_a"),
     return_static = F,
-    subtitle_description = "Utility Scale and Distributed"
+    subtitle_description = "Utility Scale and Distributed",
+    modifications = scale_y_continuous(label=comma,limits=c(0,3500))
   )
 solar_generation_time_series_line
 solar_generation_time_series_line_p <-
@@ -357,7 +344,7 @@ solar_generation_time_series_line_p
 rm(solar_data)
 
 #wind_projected_generation_time_series_line_p
-#y-axis needs commas
+#hovertext needs commas
 wind_data <- wind_projected_generation_data()
 wind_projected_generation_time_series_line <-
   line_figure(
@@ -368,7 +355,8 @@ wind_projected_generation_time_series_line <-
     return_static = F,
     modifications =  theme(legend.position = "none"),
     subtitle_description = "Planned",
-    future_date = 2021
+    future_date = 2021,
+    modifications2 = scale_y_continuous(label=comma,limits=c(0,10000000))
   )
 wind_projected_generation_time_series_line
 
@@ -387,7 +375,6 @@ wind_projected_generation_time_series_line_p
 #wind_projected_generation_time_series_line
 
 #wind_projected_capacity_line_p
-#y-axis needs commas
 total_mw_offshore_wind <- wind_projected_capacity_data()
 wind_projected_capacity_line <-
   line_figure(
@@ -397,7 +384,9 @@ wind_projected_capacity_line <-
     list("total_mw_offshore_wind"),
     return_static = F,
     subtitle_description = "Planned",
-    future_date = as.numeric(format(Sys.Date(), "%Y")) + 1
+    future_date = as.numeric(format(Sys.Date(), "%Y")) + 1,
+    modifications = scale_y_continuous(label=comma,limits=c(0,3000))
+    
   )
 wind_projected_capacity_line
 
