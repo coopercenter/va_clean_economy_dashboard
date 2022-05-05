@@ -57,55 +57,34 @@ dbDisconnect(db)
 
 #
 # Map local names to EIA data series
-#
-eia_name=c("ELEC_GEN_COW_VA_99_A",
-           "ELEC_GEN_PEL_VA_99_A",
-           "ELEC_GEN_NG_VA_99_A",
-           "ELEC_GEN_NUC_VA_99_A",
-           "ELEC_GEN_SUN_VA_99_A",
-           "ELEC_GEN_DPV_VA_99_A",
-           "ELEC_GEN_HYC_VA_99_A",
-           "ELEC_GEN_HPS_VA_99_A",
-           "ELEC_GEN_WND_VA_99_A",
-           "ELEC_GEN_WWW_VA_99_A",
-           "ELEC_GEN_WAS_VA_99_A",
-           "ELEC_GEN_ALL_VA_99_A",
-           "SEDS_TETCB_VA_A",
-           "SEDS_TERCB_VA_A",
-           "SEDS_TECCB_VA_A",
-           "SEDS_TEICB_VA_A",
-           "SEDS_TEACB_VA_A",
-           "SEDS_ELISP_VA_A",
-           "EMISS_CO2_TOTV_EC_TO_VA_A",
-           "EMISS_CO2_TOTV_TT_TO_VA_A")
-local_name=c("Coal",
-             "Oil",
-             "Gas",
-             "Nuclear",
-             "Solar_utility", 
-             "Solar_distributed",
-             "Hydropower",
-             "Pumped_storage",
-             "Wind",
-             "Wood",
-             "Other_biomass",
-             "Total_gen",
-             "Total_energy_cons",
-             "Residential",
-             "Commercial",
-             "Industrial",
-             "Transportation",
-             "Imported_electricity",
-             "Electric_sector_CO2_emissions",
-             "Total_CO2_emissions")
 
-setnames(eia_annual_data, eia_name, local_name)
+eia_annual_data <- eia_annual_data %>% 
+  rename("Coal"="ELEC_GEN_COW_VA_99_A",
+         "Oil"="ELEC_GEN_PEL_VA_99_A",
+         "Gas"="ELEC_GEN_NG_VA_99_A",
+         "Nuclear"="ELEC_GEN_NUC_VA_99_A",
+         "Solar_utility"="ELEC_GEN_SUN_VA_99_A", 
+         "Solar_distributed"="ELEC_GEN_DPV_VA_99_A",
+         "Hydropower"="ELEC_GEN_HYC_VA_99_A",
+         "Pumped_storage"="ELEC_GEN_HPS_VA_99_A",
+         "Wind"="ELEC_GEN_WND_VA_99_A",
+         "Wood"="ELEC_GEN_WWW_VA_99_A",
+         "Other_biomass"="ELEC_GEN_WAS_VA_99_A",
+         "Total_gen"="ELEC_GEN_ALL_VA_99_A",
+         "Total_energy_cons"="SEDS_TETCB_VA_A",
+         "Residential"="SEDS_TERCB_VA_A",
+         "Commercial"="SEDS_TECCB_VA_A",
+         "Industrial"="SEDS_TEICB_VA_A",
+         "Transportation"="SEDS_TEACB_VA_A",
+         "Imported_electricity"="SEDS_ELISP_VA_A",
+         "Electric_sector_CO2_emissions"="EMISS_CO2_TOTV_EC_TO_VA_A",
+         "Total_CO2_emissions"="EMISS_CO2_TOTV_TT_TO_VA_A")
 #
 # Now calculate variables that use only EIA data and store those in the EIA data table
 #      For now, this is only annual data. No monthly data is used.
 
 # Some additions and adjustments
-eia_annual_data[Solar_utility == 0,Solar_utility:=NA] #random fix for visual purposes later on
+eia_annual_data[Solar_utility == 0,Solar_utility:=NA] #random fix for visual purposes later on (redundant, as this is redone in later data calculations)
 # Not sure if this should be done here or possibly closer to display time
 eia_annual_data[is.na(eia_annual_data)]=0
 ### Check the energy math in the "other" calculation. For one thing, why is dpv in here?
