@@ -30,7 +30,7 @@ line_figure <- function(data_table,y_value_unit,title_name,character_list=NULL,x
   if(is.null(future_date)){
     figure <- ggplot(data_table, aes(x=x_value,y=y_value,color=fill_variable)) +
       geom_line(aes(group=fill_variable,
-                    text=paste0(x_label,": ",x_value,"\n","Variable: ",fill_variable,"\n","Value: ",round(y_value,4)))) +
+                    text=paste0(x_label,": ",x_value,"\n","Variable: ",fill_variable,"\n","Value: ",format(y_value,big.mark=",",digits=4)))) +
       ylab(y_value_unit) + xlab(x_label) + ylim(lower_limit,upper_limit) +
       labs(title=title_name,subtitle=subtitle_description,caption=source_description) +
       scale_color_manual(name=NULL,values=ceps_pal[1:category_count])+
@@ -42,9 +42,9 @@ line_figure <- function(data_table,y_value_unit,title_name,character_list=NULL,x
   else{
     figure <- ggplot() +
       geom_line(data=data_table[x_value<future_date],mapping=aes(x=x_value,y=y_value,color=fill_variable,group=fill_variable,
-                                                                 text=paste0(x_label,": ",x_value,"\n","Variable: ",fill_variable,"\n","Value: ",round(y_value,4)))) +
+                                                                 text=paste0(x_label,": ",x_value,"\n","Variable: ",fill_variable,"\n","Value: ",format(y_value,big.mark=",",digits=4)))) +
       geom_line(data=data_table[x_value>=future_date],mapping=aes(x=x_value,y=y_value,color=fill_variable,group=fill_variable,
-                                                                  text=paste0(x_label,": ",x_value,"\n","Variable: ",fill_variable,"\n","Value: ",round(y_value,4))),linetype="dashed") +
+                                                                  text=paste0(x_label,": ",x_value,"\n","Variable: ",fill_variable,"\n","Value: ",format(y_value,big.mark=",",digits=4))),linetype="dashed") +
       ylab(y_value_unit) + xlab(x_label) + ylim(lower_limit,upper_limit) +
       labs(title=title_name,subtitle=subtitle_description,caption=source_description) +
       scale_color_manual(name=NULL,values=ceps_pal[1:category_count])+
