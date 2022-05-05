@@ -30,7 +30,7 @@ source(here('data_retrieval_and_cleaning/FRED_series_retrieval.R'))
 source(here('data_retrieval_and_cleaning/calculate_intensity_data.R'))
 
 #VCEA DATA-----------------------------------------------------------------------------------------------------------------
-#use for charting the renewable portfolio schedule
+#use for graphing the renewable portfolio schedule
 source(here('data_retrieval_and_cleaning/reading_in_VCEA_provisions.R')) 
 
 #ENERGYCAP DATA------------------------------------------------------------------------------------------------------------
@@ -42,6 +42,7 @@ source(here('data_retrieval_and_cleaning/retrieving_energycap_data.R'))
 source(here('data_retrieval_and_cleaning/read_ve_mandate_sheets.R')) 
 
 #FACILITY TRACKING SPREADSHEET
+#used for the building tracking goals on the Energy Efficiency page
 source(here("data_retrieval_and_cleaning/update_cova_facility_tracker_data.R"))
 
 #OFFSHORE WIND DATA--------------------------------------------------------------------------------------------------------
