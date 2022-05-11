@@ -74,24 +74,6 @@ offshore_wind_capacity_data <- function(){
   return(offshore_wind_ring)
 }
 
-carbon_free_donut_data <- function(){
-  recent_year = eia_annual_data[!is.na(Percent_carbon_free),last(Year)]
-  carbon_free_percent_gen_recent = round(eia_annual_data[!is.na(Percent_carbon_free),last(Percent_carbon_free)], 1)
-  carbon_free_percent_gen_2050_goal = 100 #100% of Virginia’s electricity from carbon-free sources by 2050
-  
-  carbon_free_ring = data.frame(
-    category = c(
-      paste0(recent_year," carbon free generation (%)"),
-      "Additional progress necessary to reach goal (%)"
-    ),
-    value = c(
-      carbon_free_percent_gen_recent,
-      carbon_free_percent_gen_2050_goal - carbon_free_percent_gen_recent
-    )
-  )
-  return(carbon_free_ring)
-}
-
 storage_capacity_ring_data <- function(){
   storage_capacity_current_mw = 4
   storage_capacity_2035_mw_goal = 3100
