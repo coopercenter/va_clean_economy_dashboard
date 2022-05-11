@@ -488,26 +488,6 @@ reshape_spending_data <- function(utility){
 }
 
 #PROGRESS TOWARDS RENEWABLES-------------------------------------------------------------------------------------------------
-#single_ring_renewable_donut_p
-#renewble_donut_data <- function(){
-#recent_year = eia_annual_data[!is.na(Percent_renewable),last(Year)]
-#renewable_percent_gen_recent = round(eia_annual_data[!is.na(Percent_renewable),
-                                                     #last(Percent_renewable)], 1)
-#renewable_percent_gen_2050_goal = 100
-
-#renewable_ring = data.frame(
-  #category = c(
-   # paste(recent_year, "RPS generation (%)"),
-    #"Additional progress necessary to reach goal (%)"
-  #),
-  #value = c(
-   # renewable_percent_gen_recent,
-    #renewable_percent_gen_2050_goal - renewable_percent_gen_recent
-  #)
-#)
-#return(renewable_ring)
-#}
-
 #single_ring_storage_capacity_donut_p
 #prepping the plot data/variables
 
