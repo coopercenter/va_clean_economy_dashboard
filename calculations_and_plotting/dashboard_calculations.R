@@ -41,9 +41,9 @@ plant_capacities = data.table(dbGetQuery(db,"select * from eia_plant_capacities 
 
 VCEA_onshore_wind_solar <- data.table(dbGetQuery(db,"select * from \"VCEA_onshore_wind_solar\" ;"))
 
-#load in Virginia annual utility sales
-va_utility_sales<-data.table(dbGetQuery(db,"select * from va_annual_utility_sales ;"))
-setnames(va_utility_sales,"year","Year")
+#load in Virginia annual utility sales (or not, since the place this was used is no longer relevant)
+#va_utility_sales<-data.table(dbGetQuery(db,"select * from va_annual_utility_sales ;"))
+#setnames(va_utility_sales,"year","Year")
 
 
 #load in APCO & Dom RPS
@@ -129,13 +129,12 @@ eia_annual_data[,`:=`(Year = year(date),
                       Carbon_free = Wind+Hydropower+Solar_utility+Nuclear,     
                       HWS_Renewable = Wind+Solar_distributed+Solar_utility+Hydropower,
                       RPS_Renewable = Wind+Solar_utility+Hydropower,
-                      Renewable = Wind+Solar_utility+Solar_distributed+Hydropower
-)]
+                      Renewable = Wind+Solar_utility+Solar_distributed+Hydropower)]
+
 eia_annual_data[Total_gen!=0,`:=`(Percent_renewable = (Renewable/(Total_gen-Nuclear))*100, # Percent renewable generation of total generation
                                   Percent_carbon_free = (Carbon_free/Total_gen)*100,        # Percent carbon-free generation of total elec. generation
                                   Not_renewable=Total_gen-Renewable,
-                                  Carbon_emitting=Total_gen-Carbon_free
-)]
+                                  Carbon_emitting=Total_gen-Carbon_free)]
 
 # Renewable and carbon free percent gen---------------------------------------------------------------------
 #This code is a mess and should be redone at some point.
@@ -208,6 +207,22 @@ virginia_emissions_electric_commas <- virginia_emissions_electric[,
                                                                   Electric_sector_CO2_emissions:=signif(Electric_sector_CO2_emissions, digits=4)]
 setnames(virginia_emissions_electric_commas,c('Year','Million Metric Tons of CO2'))
 
+# reformatting the generation dataset (this doesn't even get used! And I just cleaned it up, too!)
+#va_annual_generation <- eia_annual_data %>% select(c(Year,Coal,Oil,Gas,Nuclear,`Solar, utility`=Solar_utility,
+#`Solar, distributed`=Solar_distributed,Hydropower,
+#Wind,Wood,`Other biomass` = Other_biomass,`Total Gen`=Total_gen))
+#cols <- names(va_annual_generation)
+#va_annual_generation <- va_annual_generation[,lapply(.SD,format,big.mark=",",scientific=FALSE,trim=TRUE),
+#.SDcols = cols[2:length(cols)],by=Year]
+
+#va_annual_generation <- va_annual_generation %>% melt(id="Year") %>%  filter(Year>2000)
+
+#reformatting carbon emissions from electricity sector (ALSO NOT USED)
+#virginia_emissions_electric <- eia_annual_data[Electric_sector_CO2_emissions!=0,.(Year,Electric_sector_CO2_emissions)]
+#virginia_emissions_electric_commas <- virginia_emissions_electric[,
+#                                                                  Electric_sector_CO2_emissions:=signif(Electric_sector_CO2_emissions, digits=4)]
+#setnames(virginia_emissions_electric_commas,c('Year','Million Metric Tons of CO2'))
+
 #CLEANING AND RESTRUCTURING THE ENERGYCAP API DATA----------------------------------------------------------------------------------------------
 #create a categorical size range column
 lead_by_example_data$size_range <- lead_by_example_data$size.value
@@ -252,7 +267,8 @@ rm(agency_indices,item)
 
 #data aggregation for energy efficiency plots
 #yearly data by building size
-year_by_building_size <- lead_by_example_data %>% group_by(year,size_range) %>%
+year_by_building_size <- lead_by_example_data %>% 
+  group_by(year,size_range) %>%
   dplyr::summarize(cost=sum(unique(totalCost),na.rm=TRUE),kWh=sum(unique(commonUse),na.rm=TRUE),
                    sqft=sum(unique(size.value),na.rm=TRUE),buildings=n_distinct(placeId),
                    savings=sum(unique(savingsCommonUse),na.rm = TRUE))

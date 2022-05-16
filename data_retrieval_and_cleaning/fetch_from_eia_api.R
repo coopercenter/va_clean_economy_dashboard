@@ -5,8 +5,8 @@ test <- suppressMessages(lapply(lbry, require, character.only=TRUE, warn.conflic
 rm(test,lbry)
 
 #Load the database credentials----------------------------------------------------------------------------
-db_driver = dbDriver("PostgreSQL")
-source(here('my_postgres_credentials.R'))
+#db_driver = dbDriver("PostgreSQL")
+#source(here('my_postgres_credentials.R'))
 
 # Fetching a large number of datasets
 #all_data_series <-lapply(series_id_list,eia_series)
@@ -91,7 +91,7 @@ eia_monthly_data[,year := year(date)]
 #all the years with December values
 latest_year <- eia_monthly_data %>% filter(month(date) == 12)
 #latest year with a December value, the latest full year
-latest_year <- as.numeric(year(max(latest_year$date)))
+latest_year <- as.numeric(max(latest_year$year))
 
 #summarize the monthly data by year
 annual_data.fromMonthly <- eia_monthly_data[year<=latest_year, lapply(.SD,sum), .SDcols = cols,by=year] %>% #groups all the columns of the monthly data by year, with the max year the latest year calculated in the previous step
@@ -118,7 +118,7 @@ eia_annual_data <- merge(eia_annual_data,annual_data.fromMonthly, by="date",all=
 setkey(eia_annual_data,date)
 
 # store both data tables in the database
-db <- dbConnect(db_driver,user=db_user, password=ra_pwd,dbname="postgres", host=db_host)
+#db <- dbConnect(db_driver,user=db_user, password=ra_pwd,dbname="postgres", host=db_host)
 # My postgres instance will only accept lower case column names
 #   The tolower function can be removed if not needed in production
 #
@@ -136,7 +136,7 @@ dbExecute(db, "alter table eia_monthly_data add primary key (date);")
 
 #test_output = dbGetQuery(db, "SELECT ELEC_SALES_VA_ALL_M from eia_monthly_data")
 # Close connection
-dbDisconnect(db)
+#dbDisconnect(db)
 #dbUnloadDriver(db_driver)
 
 #
