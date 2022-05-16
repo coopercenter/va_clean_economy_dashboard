@@ -23,7 +23,7 @@ source(here('data_retrieval_and_cleaning/fetch_eia860_data.R'))
 
 #FRED DATA-----------------------------------------------------------------------------------------------------------------
 #population data
-source(here('data_retrieval_and_cleaning/FRED_series_retrieval.R')) 
+source(here('data_retrieval_and_cleaning/fred_series_retrieval.R')) 
 
 #INTENSITY DATA------------------------------------------------------------------------------------------------------------
 #requires the EIA and FRED data to calculate updates, provides energy use per capita and per GDP
@@ -31,7 +31,7 @@ source(here('data_retrieval_and_cleaning/calculate_intensity_data.R'))
 
 #VCEA DATA-----------------------------------------------------------------------------------------------------------------
 #use for graphing the renewable portfolio schedule
-source(here('data_retrieval_and_cleaning/reading_in_VCEA_provisions.R')) 
+source(here('data_retrieval_and_cleaning/reading_in_vcea_provisions.R')) 
 
 #ENERGYCAP DATA------------------------------------------------------------------------------------------------------------
 #used for the energy efficiency page, tracking state building energy use over time
