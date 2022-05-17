@@ -1,8 +1,4 @@
-#library(groundhog)
-#groundhog.day = "2021-09-01"
-#pkgs = c("here", "ggplot2", "shiny", 'shinydashboard', "plotly", "dplyr", "DT", "sf")
-#groundhog.library(pkgs, groundhog.day)
-
+#Load necessary packages
 library(here)
 library(ggplot2)
 library(shiny)
@@ -12,6 +8,7 @@ library(dplyr)
 library(DT)
 library(sf)
 
+#Read in the plots and plot data for interactive graphs
 load('dashboard_output.RData')
 
 title <- tags$a(
@@ -156,8 +153,8 @@ ui <- tagList(
                                              "Lead By Example Program,"),"and explores the energy use of those facilities as they are added to the database. 
                                       These visualizations will be updated as additional facility information is gathered.")),
                           #plot the building tracking progress compared to the mandated goals, by category
-                         h3("Facility Tracking by Agency Category"),
-                         h4("See how different categories of state agencies are meeting the building tracking targets"),
+                          h3("Facility Tracking by Agency Category"),
+                          h4("See how different categories of state agencies are meeting the building tracking targets"),
                           fluidRow(box(width=10,plotlyOutput('buildings_tracked'))),
                           h4('Select a category to see how many facilities each state agency oversees and how many are currently in the database'),
                           fluidRow(box(width=3,
@@ -178,24 +175,24 @@ ui <- tagList(
                                    box(width=10,height="475px",plotlyOutput('buildings_by_category'))
                                    
                           ),
-                         h2('Annual Energy Use'),
-                         h3('Tracking annual energy use for facilities recorded in the Virginia Energy database'),
-                         h4('Measured in Kilowatt Hours per Square Foot to better understand how facilities of different sizes are using energy, and how their energy savings compare to each other'),
-                         #plot the annual bar chart broken down by square foot range
-                         fluidRow(box(width=8,plotlyOutput('annual_kwh_by_square_feet'))),
-                         #plot the detailed annual kWh by building use for a chosen square foot range
-                         h4('Select a size to see how the facilities are used and how their energy use is changing over time'),
-                         h5("Dot size reflects the number of facilities in a category"),
-                         fluidRow(
-                           box(width=5,                                       #chose a square foot range for a more detailed view of who is using energy
-                               selectInput('square_foot_range',
-                                           label=h5(''),
-                                           choices=c('5,000 - 50,000 square feet',
-                                                     '50,001 - 100,000 square feet',
-                                                     '100,001 - 250,000 square feet',
-                                                     '250,001 - 500,000 square feet',
-                                                     '500,001 - 990,000 square feet'))),
-                           box(width=8,height='700px',plotlyOutput('kwh_by_use_by_sqft')))
+                          h2('Annual Energy Use'),
+                          h3('Tracking annual energy use for facilities recorded in the Virginia Energy database'),
+                          h4('Measured in Kilowatt Hours per Square Foot to better understand how facilities of different sizes are using energy, and how their energy savings compare to each other'),
+                          #plot the annual bar chart broken down by square foot range
+                          fluidRow(box(width=8,plotlyOutput('annual_kwh_by_square_feet'))),
+                          #plot the detailed annual kWh by building use for a chosen square foot range
+                          h4('Select a size to see how the facilities are used and how their energy use is changing over time'),
+                          h5("Dot size reflects the number of facilities in a category"),
+                          fluidRow(
+                            box(width=5,                                       #chose a square foot range for a more detailed view of who is using energy
+                                selectInput('square_foot_range',
+                                            label=h5(''),
+                                            choices=c('5,000 - 50,000 square feet',
+                                                      '50,001 - 100,000 square feet',
+                                                      '100,001 - 250,000 square feet',
+                                                      '250,001 - 500,000 square feet',
+                                                      '500,001 - 990,000 square feet'))),
+                            box(width=8,height='700px',plotlyOutput('kwh_by_use_by_sqft')))
                  ),
                  tabPanel('Energy Efficiency Mandates',style='background: #F0F0F0',
                           h2("Energy Efficiency Spending"),
@@ -219,7 +216,7 @@ ui <- tagList(
           
           #h2("Consumption"),
           #fluidRow(box(plotlyOutput("con_per_capita")),
-                   #box(plotlyOutput("con_per_gdp")))
+          #box(plotlyOutput("con_per_gdp")))
         ),
         
         # tabItem(
@@ -686,7 +683,7 @@ server <- function(input, output) {
             sizes = c(20,50),
             marker = list(sizeref=data$buildings,opacity = 0.78, sizemode = 'diameter'),
             height=675
-            ) %>%
+    ) %>%
       layout(title = paste('Facilities Between ', data$size[1], ' sqft by Primary Use',sep=""),  xaxis = list(title = 'Year', tickangle = -0), 
              yaxis = list(title = 'Kilowatt Hours per Square Foot'), 
              legend = list(title=list(text='<b> Primary Use </b>')),
@@ -695,29 +692,29 @@ server <- function(input, output) {
   
   #plot the energy efficiency spending and other mandates for APCO
   output$apco_ee_spending <- renderPlotly({
-    apco_ee_plot
+    apco_ee_spending
   })
   
   output$apco_mandates_and_progress <- renderPlotly(
-    apco_plot
+    apco_mandates_and_progress
   )
   
   #plot energy efficiency mandates and spending for Dominion
   output$dominion_ee_spending <- renderPlotly(
-    dom_ee_plot
+    dom_ee_spending
   )
   output$dominion_mandates_and_progress <- renderPlotly(
-    dominion_plot
+    dominion_mandates_and_progress
   )
   
   #plot efficiency mandates and spending for odp
   
   output$odp_ee_spending <- renderPlotly(
-    odp_ee_plot
+    odp_ee_spending
   )
   
   output$odp_mandates_and_progress <- renderPlotly(
-    odp_plot
+    odp_mandates_and_progress
   )
   
 }
