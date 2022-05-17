@@ -1,7 +1,12 @@
 #Load necessary packages
-pkgs = c("here", "ggplot2", "shiny", 'shinydashboard', "plotly", "dplyr", "DT", "sf")
-test <- suppressMessages(lapply(pkgs, require, character.only=TRUE, warn.conflicts = FALSE, quietly = TRUE))
-rm(test,pkgs)
+library(here)
+library(ggplot2)
+library(shiny)
+library(shinydashboard)
+library(plotly)
+library(dplyr)
+library(DT)
+library(sf)
 
 #Read in the plots and plot data for interactive graphs
 load('dashboard_output.RData')
