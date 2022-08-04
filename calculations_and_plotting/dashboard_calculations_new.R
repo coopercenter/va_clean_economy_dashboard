@@ -76,6 +76,7 @@ eia_annual_data <- eia_annual_data %>%
          "Commercial"="SEDS_TECCB_VA_A",
          "Industrial"="SEDS_TEICB_VA_A",
          "Transportation"="SEDS_TEACB_VA_A",
+         "Electric_power_sector"="SEDS_TEEIB_VA_A",
          "Imported_electricity"="SEDS_ELISP_VA_A",
          "Electric_sector_CO2_emissions"="EMISS_CO2_TOTV_EC_TO_VA_A",
          "Total_CO2_emissions"="EMISS_CO2_TOTV_TT_TO_VA_A")
@@ -97,10 +98,11 @@ eia_annual_data[is.na(eia_annual_data)]=0
 eia_annual_data[,`:=`(Year = year(date),
                       All_solar = Solar_distributed +  Solar_utility,
                       Other = Total_gen-(Coal+Oil+Gas+Nuclear+Solar_utility+Solar_distributed+Hydropower+Wind+Wood+Other_biomass),
-                      Carbon_free = Wind+Hydropower+Solar_utility+Nuclear,     
+                      Carbon_free = Wind+Hydropower+Solar_utility+Nuclear,
                       HWS_Renewable = Wind+Solar_distributed+Solar_utility+Hydropower,
                       RPS_Renewable = Wind+Solar_utility+Hydropower,
-                      Renewable = Wind+Solar_utility+Solar_distributed+Hydropower)]
+                      Renewable = Wind+Solar_utility+Solar_distributed+Hydropower,
+                      Total_energy_cons_new=Residential+Commercial+Transportation+Industrial+Electric_power_sector),]
 
 eia_annual_data[Total_gen!=0,`:=`(Percent_renewable = (Renewable/(Total_gen-Nuclear))*100, # Percent renewable generation of total generation
                                   Percent_carbon_free = (Carbon_free/Total_gen)*100,        # Percent carbon-free generation of total elec. generation
@@ -367,13 +369,13 @@ return(df)
 #FORMATTING CONSUMPTION DATA-----------------------------------------------------------------------------------------------------------
 #set up the table for va_annual_consumption_area_p and va_annual_consumption_pie_chart_p_with_legend
 consumption_data <- function(){
-df = melt(eia_annual_data[,.(Year,Residential,
-                                                  Commercial ,Transportation,Industrial)],
+df = melt(eia_annual_data[,.(Year,Residential,Commercial ,Transportation,Industrial,Electric_power_sector)],
                                id="Year")
 setnames(df,c("Year","variable","value"),
          c("x_value","fill_variable","y_value")
 ) 
-df <- df %>% filter(y_value !=0)
+df <- df %>% filter(y_value !=0) %>%
+  mutate(fill_variable=str_replace_all(fill_variable,"Electric_power_sector","Electric Power Sector"))
 return(df)
 }
 
