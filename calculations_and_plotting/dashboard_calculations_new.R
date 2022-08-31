@@ -189,7 +189,7 @@ return(df)
 #Projected generation (wind_projected_generation_time_series_line_p)
 wind_projected_generation_data <- function(){
 df <- offshore_wind_data[,.(Year,Total_gen)]  #Stage_1_gen,Stage_2_gen,Stage_3_gen,
-setnames(df,'Total_gen','Total_Production')
+setnames(df,'Total_gen','Total Production')
 df <- melt(df[Year>2019], id = "Year")
 setnames(df,c("Year","variable","value"),
          c("x_value","fill_variable","y_value"))

@@ -346,6 +346,8 @@ rm(solar_data)
 #wind_projected_generation_time_series_line_p
 #hovertext needs commas
 wind_data <- wind_projected_generation_data()
+wind_data <- wind_data %>%
+  mutate(y_value=y_value/1000) #divide by 1000 to convert MWh to GWh
 wind_projected_generation_time_series_line <-
   line_figure(
     wind_data,
@@ -356,7 +358,7 @@ wind_projected_generation_time_series_line <-
     modifications =  theme(legend.position = "none"),
     subtitle_description = "Planned",
     future_date = 2021,
-    modifications2 = scale_y_continuous(label=comma,limits=c(0,10000000))
+    modifications2 = scale_y_continuous(label=comma,limits=c(0,10000))
   )
 wind_projected_generation_time_series_line
 
