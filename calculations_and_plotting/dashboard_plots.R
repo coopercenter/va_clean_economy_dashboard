@@ -622,6 +622,8 @@ veterans_and_defense_affairs <-  filter_by_agency_categories('Veterans and Defen
 other <- filter_by_agency_categories('Other Services or Category Not Known')
 
 
+#SAVE PLOTS TO RDATA--------------------------------------------------------------------------------------------------------
+
 #save plot objects to dashboard_output.Rdata
 save(
   single_ring_renewable_donut_p,
