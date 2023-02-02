@@ -8,7 +8,8 @@ rm(test,lbry)
 #CONNECT TO DATABASE----------------------------------------------------------------------------------------------------------------------
 # Open database connection, load in all saved data tables then close db connection
 
-db_driver = dbDriver("PostgreSQL")
+#db_driver = dbDriver("PostgreSQL")
+db_driver = RPostgres::Postgres()
 source(here::here("my_postgres_credentials.R"))
 db <- dbConnect(db_driver,user=db_user, password=ra_pwd,dbname="postgres", host=db_host)
 

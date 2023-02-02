@@ -10,7 +10,7 @@ lbry<-c("data.table", "RPostgreSQL",  "tidyr", "dplyr","arrow","stringr",
 test <- suppressMessages(lapply(lbry, require, character.only=TRUE, warn.conflicts = FALSE, quietly = TRUE))
 rm(test,lbry)
 
-db_driver = dbDriver("PostgreSQL")
+db_driver = RPostgres::Postgres()
 source(here::here("my_postgres_credentials.R"))
 db <- dbConnect(db_driver,user=db_user, password=ra_pwd,dbname="postgres", host=db_host)
 
