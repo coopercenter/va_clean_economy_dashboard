@@ -6,7 +6,7 @@ Load the packages and connect to the database, run the 'source' code for the dat
 from the database"
 
 lbry<-c("data.table", "RPostgreSQL",  "tidyr", "dplyr","arrow","stringr",
-        "tools","lubridate", "Hmisc", "here", "readxl","read_xlsx",'httr','jsonlite')
+        "tools","lubridate", "Hmisc", "here", "readxl","read_xlsx",'httr','jsonlite','readr','eia')
 test <- suppressMessages(lapply(lbry, require, character.only=TRUE, warn.conflicts = FALSE, quietly = TRUE))
 rm(test,lbry)
 
@@ -16,7 +16,7 @@ db <- dbConnect(db_driver,user=db_user, password=ra_pwd,dbname="postgres", host=
 
 #EIA DATA------------------------------------------------------------------------------------------------------------------
 #updates eia_annual_data, most heavily used in the dashboard
-source(here("data_retrieval_and_cleaning/fetch_from_eia_api.R"))
+source(here("data_retrieval_and_cleaning/fetch_from_eia_api_v2.R"))
 
 #fetch the plant capacity data
 source(here('data_retrieval_and_cleaning/fetch_eia860_data.R'))

@@ -162,8 +162,8 @@ return(df)
 # The display of storage may benefit from a little rethinking
 #comment out until we know what we're doing here, since this is currently none when it should be 4
 #va_storage <- plant_capacities[Prime_Mover=="BA",
-                              # .(id,capacity_mw = Nameplate_Capacity_MW,
-                               #  Plant_Name,Operating_Year)]
+                               #.(id,capacity_mw = Nameplate_Capacity_MW,
+                                 #Plant_Name,Operating_Year)]
 
 # Need to fix how on-shore and off-shore wind are derived
 # Currently there is no on-shore wind in Virginia
@@ -319,7 +319,7 @@ carbon_free_ring = data.frame(
 )
 return(carbon_free_ring)
 }
-#EMISSIONSA DATA----------------------------------------------------------------------------------------------------------------
+#EMISSIONS DATA----------------------------------------------------------------------------------------------------------------
 #co2_combined_emissions_line_p
 # CO2 total emissions & CO2 emissions from electric sector on same figure
 # The SEDS data is greatly delayed. Maybe we can think of a better presentation here.

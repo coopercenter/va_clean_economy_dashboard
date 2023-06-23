@@ -335,7 +335,7 @@ solar_generation_time_series_line <-
     list("eia_elec_gen_sun_va_99_a"),
     return_static = F,
     subtitle_description = "Utility Scale and Distributed",
-    modifications = scale_y_continuous(label=comma,limits=c(0,3500))
+    modifications = scale_y_continuous(label=comma,limits=c(0,5000))
   )
 solar_generation_time_series_line
 solar_generation_time_series_line_p <-
