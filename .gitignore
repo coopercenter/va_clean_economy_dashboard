@@ -29,6 +29,4 @@ vignettes/*.pdf
 .Renviron
 my_postgres_credentials.R
 dashboard_output.RData
-my_postgres_credentials_old.R
 EnergyCAP_API_key.R
-my_eia_api_key.R
