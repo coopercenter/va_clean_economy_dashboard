@@ -191,9 +191,8 @@ stacked_area_figure <- function(data_table,y_value_unit,title_name,character_lis
   category_count <- length(unique(data_table$fill_variable))
   ceps_pal <- c("#00A087B2", "#3C5488B2", "#CEA5AC", "#BE7E8A", "#4DBBD5B2", "#91D1C2B2","#D9C6C9","#8491B4B2","#5868AC","#6FB3D9","#56BD96","#99A9E2","#A94F64","#B0DEFA","#99EEBB","#8FD3FE")
   
-  figure <- ggplot(data_table,aes(x=x_value,y=y_value,fill=fill_variable)) +
-    geom_area(aes(group=fill_variable,
-                  text=paste0(x_label,": ",x_value,"\n","Variable: ",fill_variable,"\n","Value: ",label_comma(accuracy=1,big.mark = ",")(y_value)))) + 
+  figure <- ggplot(data_table,aes(x=x_value,y=y_value,fill=fill_variable,text=paste0(x_label,": ",x_value,"\n","Variable: ",fill_variable,"\n","Value: ",label_comma(accuracy=1,big.mark = ",")(y_value)))) +
+    geom_area(aes(group=fill_variable),stat="identity") + 
     ylab(y_value_unit) + xlab(x_label) + ylim(lower_limit,upper_limit) +
     labs(title=title_name,subtitle=subtitle_description,caption=source_description) +
     scale_fill_manual(name=NULL,values=ceps_pal[1:category_count]) +
