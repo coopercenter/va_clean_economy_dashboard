@@ -119,8 +119,8 @@ for (item in emiss_ids_list){
 }
 
 #Consolidate the monthly data------------------------------------
-eia_monthly_data <- merge(gen_data,c(sales_data,price_data,customers_data),by="date",all=TRUE) %>%
-  select(-c(date.1,date.2))
+#eia_monthly_data <- merge(gen_data,c(sales_data,price_data,customers_data),by="date",all=TRUE) %>%
+  #select(-c(date.1,date.2))
 
 #Consolidate the annual data-------------------------------------
 eia_annual_data <- full_join(seds_data,emiss_data,by="date")
@@ -144,14 +144,14 @@ latest_year <- as.numeric(max(latest_year$year))
 #summarize the monthly data by year
 annual_data.fromMonthly <- eia_monthly_data %>%
   group_by(year) %>%
-  summarise(across(starts_with("ELEC_"),sum,na.rm=TRUE)) %>%
+  summarise(ELEC_CUSTOMERS_VA_ALL_A = sum(ELEC_CUSTOMERS_VA_ALL_M,na.rm=TRUE)) %>%
   filter(year <= latest_year) %>%
   #recreate the date column
   mutate(date = paste0(year,"-01-01")) %>%
   #remove the year column as we are done with it
   select(-year)
 #replace the M suffix for 'Monthly' with an A suffix for 'Annual'
-colnames(annual_data.fromMonthly) <- str_replace_all(colnames(annual_data.fromMonthly),"_M","_A")
+#colnames(annual_data.fromMonthly) <- str_replace_all(colnames(annual_data.fromMonthly),"_M","_A")
 #Tidy up the extra column now that we're done using it
 eia_monthly_data <- eia_monthly_data %>% select(-year)
 # Merge all annual series
