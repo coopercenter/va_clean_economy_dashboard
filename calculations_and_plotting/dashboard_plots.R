@@ -454,7 +454,7 @@ agency_category_progress_plot <- ggplotly(agency_category_progress,tooltip='text
 agency_category_progress_plot
 
 #apco_ee_spending
-apco_ee<- ggplot(eia_standard_projections) + 
+apco_ee<- ggplot(vcea_standard_projections) + 
   geom_col(aes(date,apco_ee_percent_projection,
                text=paste('Projected Energy Savings Achievement :',apco_ee_percent_projection*100,'%'))
            ,fill="#56B4E9") + 
@@ -479,7 +479,7 @@ apco_mandates_and_progress <- plot_ly(apco_reshaped,x=~spending_to_date,y=~spend
 apco_mandates_and_progress
 
 #dominion_ee_spending
-dom_ee <- ggplot(eia_standard_projections) + 
+dom_ee <- ggplot(vcea_standard_projections) + 
   geom_col(aes(date,dominion_ee_percent_projection,
                text=paste('Projected Energy Savings Achievement :',dominion_ee_percent_projection*100,'%'))
            ,fill="#56B4E9") + 
@@ -504,7 +504,7 @@ dominion_mandates_and_progress <- plot_ly(dom_reshaped,x=~spending_to_date,y=~sp
 dominion_mandates_and_progress
 
 #odp_ee_spending
-odp_ee <- ggplot(eia_standard_projections) + 
+odp_ee <- ggplot(vcea_standard_projections) + 
   geom_col(aes(date,odp_ee_percent_projection,
                text=paste('Projected Energy Savings Achievement :',odp_ee_percent_projection*100,'%'))
            ,fill="#56B4E9") + 
