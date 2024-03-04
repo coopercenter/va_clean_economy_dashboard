@@ -15,7 +15,7 @@ source(here::here("my_postgres_credentials.R"))
 db <- dbConnect(db_driver,user=db_user, password=ra_pwd,dbname="postgres", host=db_host)
 
 #EIA DATA------------------------------------------------------------------------------------------------------------------
-#updates eia_annual_data, most heavily used in the dashboard
+#updates EIA data from the API, 99% of data used in the dashboard
 source(here("data_retrieval_and_cleaning/fetch_from_eia_apiv2.R"))
 
 #fetch the plant capacity data
@@ -23,12 +23,7 @@ source(here('data_retrieval_and_cleaning/fetch_eia860_data.R'))
 
 #FRED DATA-----------------------------------------------------------------------------------------------------------------
 #population data
-source(here('data_retrieval_and_cleaning/fred_series_retrieval.R')) 
-
-#INTENSITY DATA------------------------------------------------------------------------------------------------------------
-#NOW CALCULATED AS PART OF VISUALIZATION DATA PREP
-#requires the EIA and FRED data to calculate updates, provides energy use per capita and per GDP 
-#source(here('data_retrieval_and_cleaning/calculate_intensity_data.R'))
+source(here('data_retrieval_and_cleaning/FRED_series_retrieval.R'))
 
 #VCEA DATA-----------------------------------------------------------------------------------------------------------------
 #use for graphing the renewable portfolio schedule
@@ -45,16 +40,6 @@ source(here('data_retrieval_and_cleaning/read_ve_mandate_sheets.R'))
 #FACILITY TRACKING SPREADSHEET
 #used for the building tracking goals on the Energy Efficiency page
 source(here("data_retrieval_and_cleaning/update_cova_facility_tracker_data.R"))
-
-#OFFSHORE WIND DATA--------------------------------------------------------------------------------------------------------
-#THIS IS NOW COLLECTED AS PART OF THE EIA DATA RETRIEVAL PROCESS
-#used for the offshore wind capacity values 
-#source(here('data_retrieval_and_cleaning/offshore_wind_capacity_retrieval.R'))
-
-#SEDS EMISSIONS DATA-------------------------------------------------------------------------------------------------------
-#THIS IS NOW COLLECTED AS PART OF THE EIA DATA RETRIEVAL PROCESS
-#emissions data 
-#source(here('data_retrieval_and_cleaning/fetch_seds_emissions_by_fuel.R'))
 
 dbDisconnect(db)
 

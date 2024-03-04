@@ -11,6 +11,9 @@ db_driver = RPostgres::Postgres()
 source(here::here("my_postgres_credentials.R"))
 db <- dbConnect(db_driver,user=db_user, password=ra_pwd,dbname="postgres", host=db_host)
 
+##Metadata--------------------------------------------------------------------------------------------------------------------
+metadata <- data.table(dbGetQuery(db,"select * from metadata ;"))
+
 ##read in all the EIA data---------------------------------------------------------------------------------------------------
 sector_fuel_consumption <- data.table(dbGetQuery(db, "select * from eia_fuel_consumption_by_sector ;"))
 generation_fuel_consumption_m <- data.table(dbGetQuery(db, "select * from eia_elec_gen_fuel_consumption_monthly ;"))
@@ -26,6 +29,7 @@ all_sector_gen_a <- data.table(dbGetQuery(db, "select * from eia_elec_gen_by_fue
 emissions <- data.table(dbGetQuery(db, "select * from eia_emissions_by_fuel_and_sector ;"))
 plant_data_m <- data.table(dbGetQuery(db, "select * from eia_plant_data_monthly ;"))
 plant_data_a <- data.table(dbGetQuery(db, "select * from eia_plant_data_annual ;"))
+storage_capacity_m <- data.table(dbGetQuery(db, "select * from eia_storage_capacity_monthly ;"))
 
 #Energy Efficiency Page Data Loading------------------------------------------------------------------------------------------------------
 lead_by_example_data <- data.table(dbGetQuery(db,"select * from energycap_place_meter_and_savings_data ;"))
@@ -33,6 +37,9 @@ LBE_building_tracker <- data.table(dbGetQuery(db,'select * from agency_facility_
 vcea_spending_prog <- data.table(dbGetQuery(db,'select * from energy_efficiency_spending_progress ;'))
 vcea_standard_projections <- data.table(dbGetQuery(db,'select * from energy_efficiency_resource_standard_projections'))
 vcea_spending_requirements <- data.table(dbGetQuery(db,'select * from energy_efficiency_spending_requirements'))
+
+#FRED Virginia State Info-------------------------------------------------------------------------------------------------------------------
+va_state_info <- data.table(dbGetQuery(db, "select * from va_state_info ;"))
 
 dbDisconnect(db)
 
@@ -46,7 +53,7 @@ rps_donut_data <- all_sector_gen_m %>%
   filter(year(paste0(all_sector_gen_m$date,"-01"))==year(paste0(last(all_sector_gen_m$date),"-01"))) %>%
   filter(generation_fuel %in% c("ALL","TPV","WND","HYC")) %>%
   group_by(generation_fuel) %>%
-  summarise(ytd_gen=sum(electricity_generation)) %>%
+  summarise(ytd_gen=sum(as.numeric(electricity_generation))) %>%
   as.data.table
 #calculate the percent of renewable generation to the total generation
 percent_renewable <-round(((rps_donut_data[generation_fuel=='TPV',]$ytd_gen + rps_donut_data[generation_fuel=='WND',]$ytd_gen + rps_donut_data[generation_fuel=='HYC',]$ytd_gen) /rps_donut_data[generation_fuel=='ALL',]$ytd_gen * 100),1)
@@ -74,7 +81,7 @@ carbon_free_donut_data <- all_sector_gen_m %>%
   filter(year(paste0(all_sector_gen_m$date,"-01"))==year(paste0(last(all_sector_gen_m$date),"-01"))) %>%
   filter(generation_fuel %in% c("ALL","TPV","WND","HYC","NUC")) %>%
   group_by(generation_fuel) %>%
-  summarise(ytd_gen=sum(electricity_generation)) %>%
+  summarise(ytd_gen=sum(as.numeric(electricity_generation))) %>%
   as.data.table
 
 #calculate the percent of renewable generation to the total generation
@@ -96,8 +103,27 @@ carbon_free_ring = data.frame(
 )
 rm(carbon_free_donut_data,percent_carbon_free,latest_year,carbon_free_percent_gen_2050_goal)
 
-#Energy storage capacity donut: PJM or EIA I need help
+##Energy storage capacity donut-------------------------------------------------------------------------------------------------------
+#summarise the year-to-date MW of battery storage
+storage_capacity_donut_data <- storage_capacity_m %>%
+  filter(storage_capacity_m$date==last(storage_capacity_m$date)) %>%
+  group_by(date) %>%
+  summarise(ytd_storage=sum(as.numeric(storage_capacity_mw))) %>%
+  as.data.table
+#set the target value
+storage_capacity_2035_mw_goal = 3100
 
+#assemble into a dataframe to plug into the donut creation function
+storage_capacity_ring <- data.frame(
+  category=c(
+    paste(year(paste0(storage_capacity_donut_data$date,"-01")), "MW capacity"), 
+    "Additional MW capacity necessary to reach goal"
+  ),
+  value=c(
+    storage_capacity_donut_data$ytd_storage, storage_capacity_2035_mw_goal - storage_capacity_donut_data$ytd_storage
+  )
+)
+rm(storage_capacity_donut_data,storage_capacity_2035_mw_goal)
 ##Electricity production percent by fuel type pie chart-------------------------------------------------------------------------------
 annual_production_pie_data <- all_sector_gen_m %>%
   #get the latest data, YTD
@@ -110,10 +136,11 @@ annual_production_pie_data <- all_sector_gen_m %>%
                                   "NUC"="Nuclear","DFO"="Oil","NG"="Natural gas","COW"="Coal","PET"="Petroleum")) %>%
   #group by fuel, then summarise by fuel totals for the year
   group_by(generation_fuel) %>%
-  summarise(ytd_gen=sum(electricity_generation, na.rm=TRUE)) %>%
+  summarise(ytd_gen=sum(as.numeric(electricity_generation, na.rm=TRUE))) %>%
   #convert to data table to do the percent calculation
   as.data.table %>%
   mutate(percent_gen = round((ytd_gen/.[generation_fuel=="Total",]$ytd_gen*100),1)) %>%
+  filter(generation_fuel != "Total") %>%
   #select only the columns we need for the visualization, and rename them according to the chart convention
   select("value"="percent_gen","variable"="generation_fuel")
 
@@ -124,8 +151,8 @@ annual_production_latest <- all_sector_gen_m %>%
   mutate(generation_fuel = recode(generation_fuel,"SUN"="Solar, utility","DPV"="Solar, distributed",
                                   "WND"="Wind","HYC"="Hydropower","WWW"="Wood","BIO"="Other biomass",
                                   "NUC"="Nuclear","DFO"="Oil","NG"="Natural gas","COW"="Coal","PET"="Petroleum")) %>%
-  group_by(fill_value=generation_fuel) %>%
-  summarise(y_value=sum(electricity_generation, na.rm=TRUE),x_value=year(paste0(last(all_sector_gen_m$date),"-01"))) %>%
+  group_by(fill_variable=generation_fuel) %>%
+  summarise(y_value=sum(as.numeric(electricity_generation), na.rm=TRUE),x_value=year(paste0(last(all_sector_gen_m$date),"-01"))) %>%
   as.data.table
 
 annual_production_past <- all_sector_gen_a %>%
@@ -133,11 +160,12 @@ annual_production_past <- all_sector_gen_a %>%
   mutate(generation_fuel = recode(generation_fuel,"SUN"="Solar, utility","DPV"="Solar, distributed",
                                   "WND"="Wind","HYC"="Hydropower","WWW"="Wood","BIO"="Other biomass",
                                   "NUC"="Nuclear","DFO"="Oil","NG"="Natural gas","COW"="Coal","PET"="Petroleum")) %>%
-  group_by(x_value=date,fill_value=generation_fuel) %>%
-  summarise(y_value=sum(electricity_generation,na.rm=TRUE))%>%
+  group_by(x_value=date,fill_variable=generation_fuel) %>%
+  summarise(y_value=sum(as.numeric(electricity_generation),na.rm=TRUE))%>%
   as.data.table
   
 annual_production_area_data <- rbind(annual_production_past,annual_production_latest) %>%
+  mutate(x_value=as.numeric(x_value)) %>%
   as.data.table
 rm(annual_production_latest,annual_production_past)
 ##Energy consumption percent by Sector Pie Chart-----------------------------------------------------------------------------------
@@ -146,8 +174,8 @@ latest_consumption_pie <- sector_fuel_consumption %>%
   filter(sector %in% c("TEACB","TECCB","TEEIB","TERCB","TEICB")) %>%
   mutate(sector=recode(sector,"TEACB"="Transportation","TECCB"="Commercial","TEEIB"="Electric Power",
                        "TERCB"="Residential","TEICB"="Industrial")) %>%
-  mutate(percent_consumption=round(fuel_consumption/sum(fuel_consumption)*100,1)) %>%
-  select("value"="percent_consumption","variable"="sector") %>%
+  mutate(percent_consumption=round(as.numeric(fuel_consumption)/sum(as.numeric(fuel_consumption))*100,1)) %>%
+  select("value"="percent_consumption","variable"="sector") %>% 
   as.data.table
   
 
@@ -157,6 +185,7 @@ annual_consumption_data <- sector_fuel_consumption %>%
   mutate(sector=recode(sector,"TEACB"="Transportation","TECCB"="Commercial","TEEIB"="Electric Power",
                        "TERCB"="Residential","TEICB"="Industrial")) %>%
   select("x_value"="date","fill_variable"="sector","y_value"="fuel_consumption")%>%
+  mutate(y_value=as.numeric(y_value),x_value=as.numeric(x_value)) %>%
   as.data.table
 
 #Page: Generation and Capacity--------------------------------------------------------------------------------------------------
@@ -168,7 +197,7 @@ onshore_wind_and_solar <- sun_and_wind_capacity %>%
   #there is no onshore wind yet, so just solar for now
   filter(`energy-source-desc`=="Solar") %>%
   group_by(`energy-source-desc`) %>%
-  summarise(capacity = sum(`nameplate-capacity-mw`))
+  summarise(capacity = sum(as.numeric(`nameplate-capacity-mw`)))
 latest_year = year(paste0(last(sun_and_wind_capacity$date),"-01"))
 #target capacity
 onshore_wind_and_solar_2035_goal = 16100
@@ -176,7 +205,7 @@ onshore_wind_and_solar_2035_goal = 16100
 onshore_wind_and_solar_capacity_ring = data.frame(
   category = c(
     paste(latest_year, "capacity (MW)"),
-    "Additional capacity necessary to reach goal (MW)"
+    "Additional capacity necessary to reach goal (MW)" 
   ),
   value = c(
     onshore_wind_and_solar$capacity[1],
@@ -192,7 +221,7 @@ offshore_wind <- sun_and_wind_capacity %>%
   #just focusing on the offshore wind for now
   filter(`energy-source-desc`=="Wind") %>%
   group_by(`energy-source-desc`) %>%
-  summarise(capacity = sum(`nameplate-capacity-mw`))
+  summarise(capacity = sum(as.numeric(`nameplate-capacity-mw`)))
 latest_year = year(paste0(last(sun_and_wind_capacity$date),"-01"))
 #target capacity
 offshore_wind_2034_goal = 5200
@@ -207,25 +236,25 @@ offshore_wind_capacity_ring = data.frame(
     offshore_wind_2034_goal - offshore_wind$capacity[1]
   )
 )
-
+rm(offshore_wind,latest_year,offshore_wind_2034_goal)
 ##Virginia recent renewable and carbon-free electricity generation line graph-------------------------------------------------------------------------------
 all_latest <- all_sector_gen_m %>%
   filter(year(paste0(all_sector_gen_m$date,"-01"))==year(paste0(last(all_sector_gen_m$date),"-01"))) %>%
   filter(generation_fuel=="ALL")%>%
   group_by(generation_fuel)%>%
-  summarise(ytd_gen=sum(electricity_generation)) %>%
+  summarise(ytd_gen=sum(as.numeric(electricity_generation))) %>%
   as.data.table
 
 renewable_latest <- all_sector_gen_m %>% 
   filter(year(paste0(all_sector_gen_m$date,"-01"))==year(paste0(last(all_sector_gen_m$date),"-01"))) %>%
   filter(generation_fuel %in% c("TPV","WND","HYC")) %>%
   group_by(generation_fuel) %>%
-  summarise(ytd_gen = sum(electricity_generation)) %>% 
+  summarise(ytd_gen = sum(as.numeric(electricity_generation))) %>% 
   mutate(x_value=year(paste0(last(all_sector_gen_m$date),"-01"))) %>%
   group_by(x_value) %>%
   summarise(renewable_gen=sum(ytd_gen)) %>%
   mutate(y_value=round(renewable_gen/all_latest$ytd_gen*100,2),
-         fill_variable="Percent renewable") %>%
+         fill_variable="Percent renewable",x_value=as.numeric(x_value)) %>%
   select(-c(renewable_gen)) %>%
   as.data.table
 
@@ -233,67 +262,69 @@ carbon_free_latest <- all_sector_gen_m %>%
   filter(year(paste0(all_sector_gen_m$date,"-01"))==year(paste0(last(all_sector_gen_m$date),"-01"))) %>%
   filter(generation_fuel %in% c("TPV","WND","HYC","NUC")) %>%
   group_by(generation_fuel) %>%
-  summarise(ytd_gen = sum(electricity_generation)) %>% 
+  summarise(ytd_gen = sum(as.numeric(electricity_generation))) %>% 
   mutate(x_value=year(paste0(last(all_sector_gen_m$date),"-01"))) %>%
   group_by(x_value) %>%
   summarise(carbon_free_gen=sum(ytd_gen)) %>%
   mutate(y_value=round(carbon_free_gen/all_latest$ytd_gen*100,2),
-         fill_variable="Percent carbon-free") %>%
+         fill_variable="Percent carbon-free",x_value=as.numeric(x_value)) %>%
   select(-c(carbon_free_gen)) %>%
   as.data.table
 
 renewable_historic <- all_sector_gen_a %>%
   filter(generation_fuel %in% c("TPV","WND","HYC")) %>%
   group_by(x_value=date) %>%
-  summarise(annual_renewable_gen=sum(electricity_generation)) %>%
-  mutate(y_value=round(annual_renewable_gen/all_sector_gen_a[generation_fuel=="ALL",]$electricity_generation*100,2),
-         fill_variable="Percent renewable") %>%
+  summarise(annual_renewable_gen=sum(as.numeric(electricity_generation))) %>%
+  mutate(y_value=round(annual_renewable_gen/as.numeric(all_sector_gen_a[generation_fuel=="ALL",]$electricity_generation)*100,2),
+         fill_variable="Percent renewable",x_value=as.numeric(x_value)) %>%
   select(-c(annual_renewable_gen)) %>%
   as.data.table
 
 carbon_free_historic <- all_sector_gen_a %>%
   filter(generation_fuel %in% c("TPV","WND","HYC","NUC")) %>%
   group_by(x_value=date) %>%
-  summarise(annual_carbon_free_gen = sum(electricity_generation)) %>%
-  mutate(y_value=round(annual_carbon_free_gen/all_sector_gen_a[generation_fuel=="ALL",]$electricity_generation*100,2),
-         fill_variable="Percent carbon-free") %>%
+  summarise(annual_carbon_free_gen = sum(as.numeric(electricity_generation))) %>%
+  mutate(y_value=round(annual_carbon_free_gen/as.numeric(all_sector_gen_a[generation_fuel=="ALL",]$electricity_generation)*100,2),
+         fill_variable="Percent carbon-free",x_value=as.numeric(x_value)) %>%
   select(-c(annual_carbon_free_gen)) %>%
   as.data.table
 
 renewable_and_carbon_free_line <- rbind(renewable_historic,renewable_latest,carbon_free_historic,carbon_free_latest)
-
+rm(all_latest,renewable_latest,carbon_free_latest,renewable_historic,carbon_free_historic)
 ##Virginia RPS schedule line graph: I think we're getting rid of this
 ##Virginia Net Electricity Imports line graph----------------------------------------------------------------------------------------------------------------
 import_data_historic <- imports %>%
   select(x_value=date,y_value=imports) %>%
   #convert MWh to GWh
-  mutate(y_value=abs(y_value)/1000)
+  mutate(y_value=abs(as.numeric(y_value))/1000) %>%
+  mutate(fill_variable="Imports")
 
 latest_sales <- sector_sales %>%
   filter(year(paste0(sector_sales$date,"-01"))==year(paste0(last(sector_sales$date),"-01"))) %>%
   filter(sector=="ALL") %>%
   group_by(sector) %>%
-  summarise(ytd_sales=sum(sales))
+  summarise(ytd_sales=sum(as.numeric(sales)))
 
 latest_gen <- all_sector_gen_m %>%
   filter(year(paste0(all_sector_gen_m$date,"-01"))==year(paste0(last(all_sector_gen_m$date),"-01"))) %>%
   filter(generation_fuel=="ALL") %>%
   group_by(generation_fuel) %>%
-  summarise(ytd_gen=sum(electricity_generation))
+  summarise(ytd_gen=sum(as.numeric(electricity_generation)))
 
-import_estimate_latest <- data.table(x_value = year(paste0(last(sector_sales$date),"-01")),y_value=latest_sales$ytd_sales - latest_gen$ytd_gen)
+import_estimate_latest <- data.table(x_value = year(paste0(last(sector_sales$date),"-01")),y_value=latest_sales$ytd_sales - latest_gen$ytd_gen,fill_variable="Imports")
 
 import_data <- rbind(import_data_historic,import_estimate_latest) %>%
+  mutate(x_value=as.numeric(x_value)) %>%
   as.data.table
 
-rm(import_data_historic,lateat_sales,latest_gen,import_estimate_latest)
+rm(import_data_historic,latest_sales,latest_gen,import_estimate_latest)
 
 ##Virginia Carbon-free electricity generation by source line graph-----------------------------------------------------------------------------------------------
 carbon_free_latest <- all_sector_gen_m %>% 
   filter(year(paste0(all_sector_gen_m$date,"-01"))==year(paste0(last(all_sector_gen_m$date),"-01"))) %>%
   filter(generation_fuel %in% c("SUN","WND","HYC","NUC","DPV")) %>%
   group_by(fill_variable = generation_fuel) %>%
-  summarise(y_value=sum(electricity_generation)) %>%
+  summarise(y_value=sum(as.numeric(electricity_generation))) %>%
   mutate(x_value = year(paste0(last(all_sector_gen_m$date),"-01"))) %>%
   mutate(fill_variable=recode(fill_variable,"SUN"="Solar, utility","WND"="Wind","HYC"="Hydropower","NUC"="Nuclear","DPV"="Solar, distributed"))
 
@@ -301,10 +332,12 @@ carbon_free_historic <- all_sector_gen_a %>%
   filter(generation_fuel %in% c("SUN","WND","HYC","NUC","DPV")) %>%
   select(c("x_value"="date","y_value"="electricity_generation","fill_variable"="generation_fuel")) %>%
   mutate(fill_variable=recode(fill_variable,"SUN"="Solar, utility","WND"="Wind","HYC"="Hydropower","NUC"="Nuclear","DPV"="Solar, distributed")) %>%
+  mutate(y_value=as.numeric(y_value))%>%
   #exclude anything with a value of 0 since it'll create long lines when there should be a starting point
   filter(y_value > 0)
 
 annual_carbon_free_line_data <- rbind(carbon_free_historic,carbon_free_latest) %>%
+  mutate(x_value=as.numeric(x_value)) %>%
   as.data.table
 rm(carbon_free_historic,carbon_free_latest)
 
@@ -313,7 +346,7 @@ solar_latest <- all_sector_gen_m %>%
   filter(year(paste0(all_sector_gen_m$date,"-01"))==year(paste0(last(all_sector_gen_m$date),"-01"))) %>%
   filter(generation_fuel %in% c("SUN","DPV")) %>%
   group_by(fill_variable = generation_fuel) %>%
-  summarise(y_value=sum(electricity_generation)) %>%
+  summarise(y_value=sum(as.numeric(electricity_generation))) %>%
   mutate(x_value = year(paste0(last(all_sector_gen_m$date),"-01"))) %>%
   mutate(fill_variable=recode(fill_variable,"SUN"="Solar, utility","DPV"="Solar, distributed"))
 
@@ -321,10 +354,12 @@ solar_historic <- all_sector_gen_a %>%
   filter(generation_fuel %in% c("SUN","DPV")) %>%
   select(c("x_value"="date","y_value"="electricity_generation","fill_variable"="generation_fuel")) %>%
   mutate(fill_variable=recode(fill_variable,"SUN"="Solar, utility","DPV"="Solar, distributed")) %>%
+  mutate(y_value=as.numeric(y_value)) %>%
   #exclude anything with a value of 0 since it'll create long lines when there should be a starting point
   filter(y_value > 0)
 
 annual_solar_gen_line_data <- rbind(solar_historic,solar_latest) %>%
+  mutate(x_value=as.numeric(x_value)) %>%
   as.data.table
 rm(solar_latest,solar_historic)
 
@@ -442,12 +477,12 @@ reshape_spending_data <- function(utility){
 co2_emissions_total <- emissions %>%
   filter(sector=="TT",fuel=="TO") %>%
   select(c('x_value'=date,"y_value"=emissions,"fill_variable"=sector)) %>%
-  mutate(fill_variable=recode(fill_variable, "TT"="All sectors"))
+  mutate(fill_variable=recode(fill_variable, "TT"="All sectors"),y_value=as.numeric(y_value),x_value=as.numeric(x_value))
 
 co2_emissions_electricity <- emissions %>%
   filter(sector=="EC",fuel=="TO") %>%
   select(c('x_value'=date,"y_value"=emissions,"fill_variable"=sector)) %>%
-  mutate(fill_variable=recode(fill_variable, "EC"="Electricity sector"))
+  mutate(fill_variable=recode(fill_variable, "EC"="Electricity sector"),y_value=as.numeric(y_value),x_value=as.numeric(x_value))
 
 #can only estimate current Electricity sector emissions since monthly numbers for fuel consumption by other industries are not available
 #carbon content coefficients are in units of MMT CO2/QBtu, so divide by 1000 to get to million MMBtu
@@ -458,21 +493,21 @@ co2_emissions_electricity_estimated <- generation_fuel_consumption_m %>%
   filter(year(paste0(generation_fuel_consumption_m$date,"-01")) > last(emissions$date)) %>%
   filter(fuel %in% c("COW","NG","PET")) %>%
   group_by(date=year(paste0(date,"-01")),fuel) %>%
-  summarise(consumption_for_generation = sum(consumption_for_generation,na.rm = TRUE)) %>%
+  summarise(consumption_for_generation = sum(as.numeric(consumption_for_generation),na.rm = TRUE)) %>%
   as.data.table %>%
   mutate(estimated_emissions=fuel) %>%
   mutate(estimated_emissions=recode(estimated_emissions,"COW"=consumption_for_generation/1000*95.82,"NG"=consumption_for_generation/1000*52.91,
                                     "PET"=consumption_for_generation/1000*73.33)) %>%
   group_by(x_value=date) %>%
   summarise(y_value=sum(estimated_emissions)) %>%
-  mutate(fill_variable="Electricity sector, estimated")
+  mutate(fill_variable="Electricity sector, estimated",x_value=as.numeric(x_value))
 
 annual_co2_data <- rbind(co2_emissions_total,co2_emissions_electricity,co2_emissions_electricity_estimated) %>%
+  mutate(x_value=as.numeric(x_value)) %>%
   as.data.table
 rm(co2_emissions_electricity,co2_emissions_electricity_estimated,co2_emissions_total)
 
 ##CO2 emissions from electricity production by fuel type area graph-----------------------------------------------------------------------------------------------------
-
 electric_co2_by_fuel_historic <- emissions %>%
   filter(sector=="EC",fuel %in% c("CO","PE","NG")) %>%
   select(c(x_value=date,y_value=emissions,fill_variable= fuel_name)) %>%
@@ -482,7 +517,7 @@ electric_co2_emissions_by_fuel_estimated <- generation_fuel_consumption_m %>%
   filter(year(paste0(generation_fuel_consumption_m$date,"-01")) > last(emissions$date)) %>%
   filter(fuel %in% c("COW","NG","PET")) %>%
   group_by(date=year(paste0(date,"-01")),fuel) %>%
-  summarise(consumption_for_generation = sum(consumption_for_generation,na.rm = TRUE)) %>%
+  summarise(consumption_for_generation = sum(as.numeric(consumption_for_generation),na.rm = TRUE)) %>%
   as.data.table %>%
   mutate(estimated_emissions=fuel) %>%
   mutate(estimated_emissions=recode(estimated_emissions,"COW"=consumption_for_generation/1000*95.82,"NG"=consumption_for_generation/1000*52.91,
@@ -492,6 +527,7 @@ electric_co2_emissions_by_fuel_estimated <- generation_fuel_consumption_m %>%
   as.data.table
 
 electric_co2_by_fuel_data <- rbind(electric_co2_by_fuel_historic,electric_co2_emissions_by_fuel_estimated) %>%
+  mutate(y_value=as.numeric(y_value),x_value=as.numeric(x_value)) %>%
   as.data.table
 
 rm(electric_co2_by_fuel_historic,electric_co2_emissions_by_fuel_estimated)
@@ -499,25 +535,28 @@ rm(electric_co2_by_fuel_historic,electric_co2_emissions_by_fuel_estimated)
 ##CO2 emissions per capita line graph----------------------------------------------------------------------------------------------------------------------------------------
 #Can't estimate further since there's not monthly data on the types of fuel consumed for each sector
 #tidy up the VA state data for calculations
-va_state_info <- va_state_info %>%
-  mutate(date=year(paste0(date,"-01")),va_pop=va_pop*1000,va_rgsp=va_rgsp*1000000) %>%
+va_state_info_calc <- va_state_info %>%
+  mutate(date=as.numeric(year(date)),va_pop=va_pop*1000) %>%
   filter(date >= first(emissions$date)) %>%
   filter(date <= last(emissions$date))
 
 emissions_total <- emissions %>%
-  filter(sector=="TT",fuel=="TO")
+  filter(sector=="TT",fuel=="TO") %>%
+  mutate(date=as.numeric(date))
 
-emissions_per_capita <- merge(emissions_total,va_state_info,by=c('date')) %>%
+emissions_per_capita <- merge(emissions_total,va_state_info_calc,by=c('date')) %>%
   select(c(x_value=date,y_value=emissions,va_pop)) %>%
-  mutate(y_value=y_value*1000000/va_pop,fill_variable="CO2 Per Capita") %>% #multiply by another million to convert MMTons of CO2 into Tons of CO2
+  mutate(y_value=as.numeric(y_value)*1000000/va_pop,fill_variable="CO2 Per Capita",x_value=as.numeric(x_value)) %>% #multiply by another million to convert MMTons of CO2 into Tons of CO2
   select(-c(va_pop)) %>%
   as.data.table
 
 ##CO2 emissions per dollar of GDP line graph--------------------------------------------------------------------------------------------
-#data is presented as metric tons/thousand $ of GDP
-#source data is in MMTons and ???? dollars
-emissions_per_gdp <- merge(emissions_total, va_state_info,by=c("date")) %>%
+#data is presented as metric tons/thousand $ of GDP, but it's actually NOT it's been in metric tons of CO2 per million dollars
+#source data is in MMTons and millions of dollars
+emissions_per_gdp <- merge(emissions_total, va_state_info_calc,by=c("date")) %>%
   select(c(x_value=date,y_value=emissions,va_rgsp)) %>%
-  mutate(y_value=y_value*1000000*1000/va_rgsp, fill_variable="CO2 Per GDP") %>%
+  mutate(y_value=as.numeric(y_value)*1000000/va_rgsp, fill_variable="CO2 Per GDP",x_value=as.numeric(x_value)) %>%
   select(-c(va_rgsp)) %>%
-  as.data.table
+  as.data.table %>%
+  filter(is.na(y_value)==FALSE)
+rm(va_state_info_calc,emissions_total)

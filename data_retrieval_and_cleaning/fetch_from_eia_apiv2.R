@@ -221,10 +221,18 @@ fuel_consumption_by_sector = GET(data_urls$value[['fuel_consumption_by_sector']]
   as.data.table %>%
   setkey('date')
 
-#write new tables to the database
-db_driver = RPostgres::Postgres()
-source(here::here("my_postgres_credentials.R"))
-db <- dbConnect(db_driver,user=db_user, password=ra_pwd,dbname="postgres", host=db_host)
+battery_storage_initial_response <- GET(data_urls$value[['battery_storage_monthly']])
+battery_storage_temp <- battery_storage_initial_response %>% content('text') %>% fromJSON(flatten = TRUE) %>% as.data.table
+battery_storage_monthly <- battery_storage_temp$response %>% as.data.frame %>%
+  select("date"=period,
+         "id"=plantid,
+         "name"=plantName,
+         "storage_capacity_mw"=nameplate.capacity.mw,
+         "data_description"=energy.source.desc) %>%
+  as.data.table %>%
+  setkey('date')
+
+#write new tables to the database. db connection established and disconnected in data_retrieval.R
 dbWriteTable(db, "eia_fuel_consumption_by_sector", value = fuel_consumption_by_sector, append = FALSE, overwrite = TRUE, row.names = FALSE)
 dbWriteTable(db, "eia_elec_gen_fuel_consumption_monthly", value = elec_gen_fuel_consumption_monthly, append = FALSE, overwrite = TRUE, row.names = FALSE)
 dbWriteTable(db, "eia_elec_gen_fuel_consumption_annual", value = elec_gen_fuel_consumption_annual, append = FALSE, overwrite = TRUE, row.names = FALSE)
@@ -239,4 +247,4 @@ dbWriteTable(db, "eia_elec_gen_by_fuel_all_sectors_annual", value = elec_gen_by_
 dbWriteTable(db, "eia_emissions_by_fuel_and_sector", value = emissions_by_fuel_and_sector, append = FALSE, overwrite = TRUE, row.names = FALSE)
 dbWriteTable(db, "eia_plant_data_monthly", value = plant_data_monthly, append = FALSE, overwrite = TRUE, row.names = FALSE)
 dbWriteTable(db, "eia_plant_data_annual", value = plant_data_annual, append = FALSE, overwrite = TRUE, row.names = FALSE)
-dbDisconnect(db)
+dbWriteTable(db, "eia_storage_capacity_monthly",value = battery_storage_monthly, append = FALSE, overwrite = TRUE, row.names = FALSE)
