@@ -18,9 +18,6 @@ db <- dbConnect(db_driver,user=db_user, password=ra_pwd,dbname="postgres", host=
 #updates EIA data from the API, 99% of data used in the dashboard
 source(here("data_retrieval_and_cleaning/fetch_from_eia_apiv2.R"))
 
-#fetch the plant capacity data
-source(here('data_retrieval_and_cleaning/fetch_eia860_data.R'))
-
 #FRED DATA-----------------------------------------------------------------------------------------------------------------
 #population data
 source(here('data_retrieval_and_cleaning/FRED_series_retrieval.R'))

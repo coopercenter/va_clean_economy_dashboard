@@ -30,5 +30,3 @@ vignettes/*.pdf
 my_postgres_credentials.R
 dashboard_output.RData
 EnergyCAP_API_key.R
-not_used
-defunct_code
