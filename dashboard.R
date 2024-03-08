@@ -118,7 +118,6 @@ ui <- tagList(
                    box(width = 6, plotlyOutput("solar_gen"))),
           
           h3("Virginia's Net Electricity Imports"),
-          h4("Note: Latest year is estimated from the difference between electricity sales and generation"),
           fluidRow(box(
             width = 6,
             plotlyOutput("va_elec_net_imports_line_p")

@@ -78,7 +78,7 @@ single_ring_storage_capacity_donut_p <-
     ),
     "label+value",
     c("#6FB3D9","#B0DEFA"),
-    list("pjm_solar", "VCEA_storage")
+    list("eia_elec_gen_nuc_va_99_a", "VCEA_storage")
   )
 single_ring_storage_capacity_donut_p
 
@@ -136,7 +136,7 @@ va_annual_consumption_area_p
 #va_annual_consumption_pie_chart_p_with_legend
 va_annual_consumption_pie_chart_p_with_legend <-
   pie_chart_figure_p(
-    latest_consumption_pie,
+    latest_consumption_pie_sorted,
     paste0(
       "Virginia ", max(annual_consumption_data$x_value), " Energy Consumption by Sector"
     ),
@@ -304,7 +304,7 @@ solar_generation_time_series_line <-
     list("eia_elec_gen_sun_va_99_a"),
     return_static = F,
     subtitle_description = "Utility Scale and Distributed",
-    modifications = scale_y_continuous(label=comma,limits=c(0,5000))
+    modifications = scale_y_continuous(label=comma,limits=c(0,6000))
   )
 solar_generation_time_series_line
 solar_generation_time_series_line_p <-
@@ -486,8 +486,8 @@ odp_mandates_and_progress
 co2_combined_emissions_line <-
   line_figure(
     annual_co2_data,
-    "Emissions (million metric tons CO2)",
-    "Virginia CO2 Emissions from Electricity Production",
+    "Emissions (million metric tons of CO2)",
+    "Virginia CO2 Emissions: Electricity Production vs. State Total",
     list(
       "eia_emiss_co2_totv_ec_to_va_a"
     ),
@@ -502,8 +502,8 @@ co2_combined_emissions_line_p
 carbon_by_fuel_emissions_stacked <-
   stacked_area_figure(
     electric_co2_by_fuel_data,
-    "Emissions (million metric tons)",
-    "Virginia CO2 Emissions From Electricity Production By Fuel Type",
+    "Emissions (million metric tons of CO2)",
+    "Virginia CO2 Emissions: Electricity Production By Fuel Type",
     list("emissions_co2_by_source_va"),
     return_static = F
   )
