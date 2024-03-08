@@ -31,6 +31,8 @@ line_figure <- function(data_table,y_value_unit,title_name,character_list=NULL,x
     figure <- ggplot(data_table, aes(x=x_value,y=y_value,color=fill_variable)) +
       geom_line(aes(group=fill_variable,
                     text=paste0(x_label,": ",x_value,"\n","Variable: ",fill_variable,"\n","Value: ",format(y_value,big.mark=",",digits=4)))) +
+      geom_point(size=2,aes(group=fill_variable,
+                            text=paste0(x_label,": ",x_value,"\n","Variable: ",fill_variable,"\n","Value: ",format(y_value,big.mark=",",digits=4)))) + 
       ylab(y_value_unit) + xlab(x_label) + ylim(lower_limit,upper_limit) +
       labs(title=title_name,subtitle=subtitle_description,caption=source_description) +
       scale_color_manual(name=NULL,values=ceps_pal[1:category_count])+
