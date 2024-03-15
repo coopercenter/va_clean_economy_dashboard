@@ -503,21 +503,21 @@ co2_emissions_electricity <- emissions %>%
 #Natural Gas coefficient: 52.91
 #electric power coal: 95.82
 #Petroleum Liquids: 73.33
-co2_emissions_electricity_estimated <- generation_fuel_consumption_m %>%
-  filter(year(paste0(generation_fuel_consumption_m$date,"-01")) > last(emissions$date)) %>%
-  filter(fuel %in% c("COW","NG","PET")) %>%
-  group_by(date=year(paste0(date,"-01")),fuel) %>%
-  summarise(consumption_for_generation = sum(as.numeric(consumption_for_generation),na.rm = TRUE)) %>%
-  as.data.table %>%
-  mutate(estimated_emissions=fuel) %>%
-  mutate(estimated_emissions=recode(estimated_emissions,"COW"=consumption_for_generation/1000*95.82,"NG"=consumption_for_generation/1000*52.91,
-                                    "PET"=consumption_for_generation/1000*73.33)) %>%
-  group_by(x_value=date) %>%
-  summarise(y_value=sum(estimated_emissions)) %>%
-  mutate(fill_variable="Electricity sector, est.")
+#co2_emissions_electricity_estimated <- generation_fuel_consumption_m %>%
+#  filter(year(paste0(generation_fuel_consumption_m$date,"-01")) > last(emissions$date)) %>%
+#  filter(fuel %in% c("COW","NG","PET")) %>%
+#  group_by(date=year(paste0(date,"-01")),fuel) %>%
+#  summarise(consumption_for_generation = sum(as.numeric(consumption_for_generation),na.rm = TRUE)) %>%
+#  as.data.table %>%
+#  mutate(estimated_emissions=fuel) %>%
+#  mutate(estimated_emissions=recode(estimated_emissions,"COW"=consumption_for_generation/1000*95.82,"NG"=consumption_for_generation/1000*52.91,
+#                                    "PET"=consumption_for_generation/1000*73.33)) %>%
+#  group_by(x_value=date) %>%
+#  summarise(y_value=sum(estimated_emissions)) %>%
+#  mutate(fill_variable="Electricity sector, est.")
 
 
-annual_co2_data <- rbind(co2_emissions_total,co2_emissions_electricity,co2_emissions_electricity_estimated) %>%
+annual_co2_data <- rbind(co2_emissions_total,co2_emissions_electricity) %>%
   mutate(x_value=as.numeric(x_value)) %>%
   as.data.table
 #rm(co2_emissions_electricity,co2_emissions_electricity_estimated,co2_emissions_total)
@@ -528,20 +528,20 @@ electric_co2_by_fuel_historic <- emissions %>%
   select(c(x_value=date,y_value=emissions,fill_variable= fuel_name)) %>%
   as.data.table
 
-electric_co2_emissions_by_fuel_estimated <- generation_fuel_consumption_m %>%
-  filter(year(paste0(generation_fuel_consumption_m$date,"-01")) > last(emissions$date)) %>%
-  filter(fuel %in% c("COW","NG","PET")) %>%
-  group_by(date=year(paste0(date,"-01")),fuel) %>%
-  summarise(consumption_for_generation = sum(as.numeric(consumption_for_generation),na.rm = TRUE)) %>%
-  as.data.table %>%
-  mutate(estimated_emissions=fuel) %>%
-  mutate(estimated_emissions=recode(estimated_emissions,"COW"=consumption_for_generation/1000*95.82,"NG"=consumption_for_generation/1000*52.91,
-                                    "PET"=consumption_for_generation/1000*73.33)) %>%
-  select(c(x_value=date,y_value=estimated_emissions,fill_variable=fuel)) %>%
-  mutate(fill_variable=recode(fill_variable,"COW"="Coal, est.","NG"="Natural Gas, est.","PET"="Petroleum, est.")) %>%
-  as.data.table
+#electric_co2_emissions_by_fuel_estimated <- generation_fuel_consumption_m %>%
+#  filter(year(paste0(generation_fuel_consumption_m$date,"-01")) > last(emissions$date)) %>%
+#  filter(fuel %in% c("COW","NG","PET")) %>%
+#  group_by(date=year(paste0(date,"-01")),fuel) %>%
+#  summarise(consumption_for_generation = sum(as.numeric(consumption_for_generation),na.rm = TRUE)) %>%
+#  as.data.table %>%
+#  mutate(estimated_emissions=fuel) %>%
+#  mutate(estimated_emissions=recode(estimated_emissions,"COW"=consumption_for_generation/1000*95.82,"NG"=consumption_for_generation/1000*52.91,
+#                                    "PET"=consumption_for_generation/1000*73.33)) %>%
+#  select(c(x_value=date,y_value=estimated_emissions,fill_variable=fuel)) %>%
+#  mutate(fill_variable=recode(fill_variable,"COW"="Coal, est.","NG"="Natural Gas, est.","PET"="Petroleum, est.")) %>%
+#  as.data.table
 
-electric_co2_by_fuel_data <- rbind(electric_co2_by_fuel_historic,electric_co2_emissions_by_fuel_estimated) %>%
+electric_co2_by_fuel_data <- electric_co2_by_fuel_historic %>%
   mutate(y_value=as.numeric(y_value),x_value=as.numeric(x_value)) %>%
   as.data.table
 
