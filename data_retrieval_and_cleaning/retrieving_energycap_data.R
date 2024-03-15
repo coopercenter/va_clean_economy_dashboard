@@ -24,31 +24,44 @@ for(i in (2:pages)){
     as.data.frame() %>% 
     unnest(cols=c(meters))
   energyCAP_building_data <- rbind(energyCAP_building_data,next_page)
-  
 }
+
 #create a function to process the API results for a given query for the meter and savings data
-fetch_from_energyCAP <- function(query, unnest_col){
-  GET(query,add_headers(.headers=c('ECI-ApiKey'=energycap_key))) %>% 
+#fetch_from_energyCAP <- function(query, unnest_col){
+ # GET(query,add_headers(.headers=c('ECI-ApiKey'=energycap_key))) %>% 
+  #  content("text") %>% 
+   # fromJSON(flatten=TRUE) %>% 
+    #as.data.frame() %>% 
+  #  unnest(cols=all_of(unnest_col))
+#}
+
+#get the meter data, which has use and cost, convert to dataframe then unnest the deeper columns
+#meter_query <- "https://app.energycap.com/api/v3/meter/digest/actual/yearly"
+#energyCAP_meter_data <- fetch_from_energyCAP(meter_query,'results')
+
+#get the savings data
+#savings_query <- "https://app.energycap.com/api/v3/meter/digest/savings/yearly"
+#energyCAP_savings_data <- fetch_from_energyCAP(savings_query,'results')
+
+#explore a little for the latest data, repeat the steps for the building data from above
+energyCAP_meter_data <- GET("https://app.energycap.com/api/v3/meter/digest/actual/yearly", 
+                          add_headers(.headers=c('ECI-ApiKey'=energycap_key)))
+meter_pages <- as.numeric(energyCAP_meter_data$headers$totalpages)
+energyCAP_meter_data <- energyCAP_meter_data %>%
+  content("text") %>% 
+  fromJSON(flatten=TRUE) %>%
+  as.data.frame() %>% 
+  unnest(cols=results)
+for(i in (2:meter_pages)){
+  next_page <- GET(paste("https://app.energycap.com/api/v3/meter/digest/actual/yearly?pageNumber=",i,sep=""), 
+                   add_headers(.headers=c('ECI-ApiKey'=energycap_key))) %>% 
     content("text") %>% 
     fromJSON(flatten=TRUE) %>% 
     as.data.frame() %>% 
-    unnest(cols=all_of(unnest_col))
+    unnest(cols=results)
+  energyCAP_meter_data <- rbind(energyCAP_meter_data,next_page)
 }
 
-#get the meter data, which has use and cost, convert to dataframe then unnest the deeper columns
-meter_query <- "https://app.energycap.com/api/v3/meter/digest/actual/yearly"
-energyCAP_meter_data <- fetch_from_energyCAP(meter_query,'results')
-
-#get the savings data
-savings_query <- "https://app.energycap.com/api/v3/meter/digest/savings/yearly"
-energyCAP_savings_data <- fetch_from_energyCAP(savings_query,'results')
-
-#energyCAP_meter_data <- GET("https://app.energycap.com/api/v3/meter/digest/actual/yearly", 
-#                           add_headers(.headers=c('ECI-ApiKey'=energycap_key)))  %>% 
-#content("text") %>% 
-#fromJSON(flatten=TRUE) %>%
-#as.data.frame() %>% 
-#unnest(cols=results)
 
 #energyCAP_savings_data <- GET("https://app.energycap.com/api/v3/meter/digest/savings/yearly", 
 #                             add_headers(.headers=c('ECI-ApiKey'=energycap_key))) %>% 
@@ -56,6 +69,24 @@ energyCAP_savings_data <- fetch_from_energyCAP(savings_query,'results')
 #fromJSON(flatten=TRUE) %>%
 #as.data.frame() %>% 
 #unnest(cols=results)
+
+energyCAP_savings_data <- GET("https://app.energycap.com/api/v3/meter/digest/savings/yearly", 
+                            add_headers(.headers=c('ECI-ApiKey'=energycap_key)))
+savings_pages <- as.numeric(energyCAP_savings_data$headers$totalpages)
+energyCAP_savings_data <- energyCAP_savings_data %>%
+  content("text") %>% 
+  fromJSON(flatten=TRUE) %>%
+  as.data.frame() %>% 
+  unnest(cols=results)
+for(i in (2:meter_pages)){
+  next_page <- GET(paste("https://app.energycap.com/api/v3/meter/digest/savings/yearly?pageNumber=",i,sep=""), 
+                   add_headers(.headers=c('ECI-ApiKey'=energycap_key))) %>% 
+    content("text") %>% 
+    fromJSON(flatten=TRUE) %>% 
+    as.data.frame() %>% 
+    unnest(cols=results)
+  energyCAP_savings_data <- rbind(energyCAP_savings_data,next_page)
+}
 
 #remove the excess variables
 rm(energycap_key,key)

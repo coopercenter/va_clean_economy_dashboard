@@ -13,13 +13,14 @@ fetch_fred_series <- function(fred_series_id,start_date="1990-01-01") {
   return(fred_data)
 }
 
-#Retrieve the population data
+#Retrieve the population data. Data is given in the 1,000's, so we multiply by 1000 in the later calculations
 va_pop = fetch_fred_series("VAPOP","1960-01-01") 
 setnames(va_pop,2,"va_pop")
 
-# Retrieve the real GDP data
+# Retrieve the real GDP data. Data is given in 1,000,000's, so multiply by a million in later calculations
 va_real_gsp = fetch_fred_series("VARGSP","1960-01-01") 
 setnames(va_real_gsp,2,"va_rgsp")
 va_state_info = merge(va_pop,va_real_gsp,by="date",all=TRUE)
 dbRemoveTable(db,"va_state_info")
 dbWriteTable(db,"va_state_info",va_state_info,append=F,row.names=F)
+rm(va_pop,va_real_gsp)

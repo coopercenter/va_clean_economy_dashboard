@@ -108,34 +108,20 @@ ui <- tagList(
           ),
           box(
             width = 6,
-            plotlyOutput("rps_renewable_line_p")
+            plotlyOutput("gen_goal2")
           )),
+          
+          
+          #h3("Breakdown of Carbon Free Generation by Source"),
+          fluidRow(box(plotlyOutput("rc_break_line"),align = "center"),
+                   #h3("Virginia Solar Electric Generation: Utility Scale and Distributed"),
+                   box(width = 6, plotlyOutput("solar_gen"))),
           
           h3("Virginia's Net Electricity Imports"),
           fluidRow(box(
             width = 6,
             plotlyOutput("va_elec_net_imports_line_p")
-          )),
-          
-          
-          h2("Breakdown of Carbon Free Generation by Source"),
-          fluidRow(box(plotlyOutput("rc_break_line"),align = "center")),
-          h3("Virginia Solar Electric Generation: Utility Scale and Distributed"),
-          fluidRow(box(width = 6, plotlyOutput("solar_gen"))),
-          h3("Offshore Wind"),
-          fluidRow(box(
-            width = 6,
-            plotlyOutput("wind_projected_gen")
-          ),
-          box(
-            width = 6,
-            plotlyOutput("wind_projected_capacity") )
-          ),
-          h3("Carbon-Free Generation Progress"),
-          fluidRow(box(
-            width = 6,
-            plotlyOutput("gen_goal2") 
-          ), align = "center")
+          ))
           
           
         ),

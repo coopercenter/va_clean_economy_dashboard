@@ -26,9 +26,9 @@ intensity_data <- data.table(dbGetQuery(db,"select * from intensity_data ;"))
 #Energy Efficiency Page Data Loading------------------------------------------------------------------------------------------------------
 lead_by_example_data <- data.table(dbGetQuery(db,"select * from energycap_place_meter_and_savings_data ;"))
 LBE_building_tracker <- data.table(dbGetQuery(db,'select * from agency_facility_tracking ;'))
-eia_spending_prog <- data.table(dbGetQuery(db,'select * from energy_efficiency_spending_progress ;'))
-eia_standard_projections <- data.table(dbGetQuery(db,'select * from energy_efficiency_resource_standard_projections'))
-eia_spending_requirements <- data.table(dbGetQuery(db,'select * from energy_efficiency_spending_requirements'))
+vcea_spending_prog <- data.table(dbGetQuery(db,'select * from energy_efficiency_spending_progress ;'))
+vcea_standard_projections <- data.table(dbGetQuery(db,'select * from energy_efficiency_resource_standard_projections'))
+vcea_spending_requirements <- data.table(dbGetQuery(db,'select * from energy_efficiency_spending_requirements'))
 
 
 #Generation and Capacity Page Data Loading------------------------------------------------------------------------------------------------
@@ -476,13 +476,13 @@ filter_by_agency_categories <- function(category){
 
 #Function to reshape the spending mandate data for apco_mandates_and_progress, dominion_mandates_and_progress, and odp_mandates_and_progress
 reshape_spending_data <- function(utility){
-  util_current <- eia_spending_prog %>% filter(date==max(date)) %>% 
+  util_current <- vcea_spending_prog %>% filter(date==max(date)) %>% 
     select(date,contains(utility))
   util_reshaped <- melt(util_current,'date',c(paste0(utility,'_ee_costs'),paste0(utility,'_15_percent_carve_out'),
                                               paste0(utility,'_hb2789_petition')),
                         variable.name='spending_category',value.name='spending_to_date') %>%
-    bind_cols(spending_goal=eia_spending_requirements$spending_category,
-              spending_requirements=eia_spending_requirements[[paste0(utility,'_required_2028')]]) %>%
+    bind_cols(spending_goal=vcea_spending_requirements$spending_category,
+              spending_requirements=vcea_spending_requirements[[paste0(utility,'_required_2028')]]) %>%
     select(-spending_category)
   return(util_reshaped)
   
@@ -495,8 +495,8 @@ reshape_spending_data <- function(utility){
 storage_capacity_ring_data <- function(){
   #storage_capacity_current_mw = va_storage[,sum(capacity_mw)] 
   ## Temporary fix until storage data retrieval can be fixed
-  recent_year=2021
-  storage_capacity_current_mw = 4
+  recent_year=2023
+  storage_capacity_current_mw = 24
   storage_capacity_2035_mw_goal = 3100
 
   storage_ring = data.frame(
